@@ -1,0 +1,85 @@
+# This file defines Suunto Whiteboard API for Movesense Hackathon 2016 sample
+#
+swagger: '2.0'
+
+# Document metadata
+info:
+  version: "0.0.1.BA"
+  title: Gyroscope tests
+  description: |
+    This file defines API for Fyysikkokilta handwaving measurement service.
+  termsOfService:
+  contact:
+    name: Eemil Visakorpi
+    url: http://fyysikkokilta.fi
+# Paths
+paths:
+  /Fyssa/Bailu:
+    get:
+      description: Get current config and temperature.
+      responses:
+        200:
+         schema:
+            $ref: '#/definitions/FyssaBailuResponse'
+        204:
+          description: Source unavailable.
+    put:
+      description: Prepare to measure party data for a configured amount of time.
+              Get a Data value.
+      parameters:
+        - name: fyssaBailuConfig
+          in: body
+          description: New configurations for the test.
+          required: true
+          schema:
+            $ref: '#/definitions/FyssaBailuConfig'
+      responses:
+        200:
+          description: Success
+        204:
+          description: Measurement source is unavailable
+  /Fyssa/Bailu/Stop:
+    get:
+      description: Get current status and stop measuring.
+      responses:
+        200:
+         schema:
+            $ref: '#/definitions/FyssaBailuResponse'
+        204:
+          description: Source unavailable.
+definitions:
+  FyssaBailuConfig:
+    type: object
+    required:
+      - time
+      - threshold
+    properties:
+      time:
+        description: |
+          Time for measuring in minutes
+        type: integer
+        format: uint32
+      threshold:
+        description: Smallest temperature in celcius to be considered partyable
+        type: integer
+        format: uint32
+  FyssaBailuResponse:
+    type: object
+    required:
+      - time
+      - threshold
+      - curTemp
+    properties:
+      time:
+        description: |
+          Time for measuring in minutes
+        type: integer
+        format: uint32
+      threshold:
+        description: Smallest temperature in celcius to be considered partyable
+        type: integer
+        format: uint32
+      curTemp:
+        description: Temperature in celcius
+        type: number
+        format: float

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorBackground"
+    android:orientation="vertical"
+    tools:context="com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="17dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/nimi_tv"
+        android:layout_width="match_parent"
+        android:layout_height="277dp"
+        android:layout_weight="1"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:typeface="serif"
+        tools:text="Heiluttelija: Pekka" />
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</LinearLayout>
