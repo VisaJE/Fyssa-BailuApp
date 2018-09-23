@@ -352,7 +352,7 @@ public enum BleManager implements BLEDelegate {
                 .subscribe(new Action1<byte[]>() {
                     @Override
                     public void call(byte[] bytes) {
-                        Log.d(TAG, "Send complete");
+                        //Log.d(TAG, "Send complete");
                     }
                 }, new ThrowableLoggingAction(TAG, "Data write failed"));
 
@@ -361,7 +361,7 @@ public enum BleManager implements BLEDelegate {
 
     @Override
     public boolean cancelSendCb(long wbLocalDataPointer) {
-        Log.d(TAG, "cancelSendCb(" + wbLocalDataPointer + ")");
+        //Log.d(TAG, "cancelSendCb(" + wbLocalDataPointer + ")");
 
         // Cancel is not really supported here, so just return true
         return true;
@@ -421,7 +421,7 @@ public enum BleManager implements BLEDelegate {
 
         byte[] packet = device.getNextPacket();
         if (packet != null) {
-            Log.d(TAG, "Received data: " + wbPacketDemystifier(packet));
+            //Log.d(TAG, "Received data: " + wbPacketDemystifier(packet));
             bleWrapper.dataReceived(addressMap.getWbAddress(bleMac), packet, packet.length);
         }
     }

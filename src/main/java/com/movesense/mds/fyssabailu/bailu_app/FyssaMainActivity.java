@@ -18,6 +18,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
@@ -26,6 +27,8 @@ import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
 import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.ConnectionLostDialog;
+import com.movesense.mds.fyssabailu.DataSender;
+import com.movesense.mds.fyssabailu.DataUser;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.ScanFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
@@ -55,7 +58,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-public class FyssaMainActivity extends AppCompatActivity {
+public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
 
     @BindView(R.id.nimi_tv) TextView nimiTv;
@@ -76,6 +79,10 @@ public class FyssaMainActivity extends AppCompatActivity {
 
     private boolean closeApp = false;
     private boolean disconnect = false;
+
+    private static Integer temp_threshold;
+
+    DataSender sender;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,9 +110,37 @@ public class FyssaMainActivity extends AppCompatActivity {
         } else {
             nimiTv.setText(app.getMemoryTools().getName());
         }
+        temp_threshold = 1;
+        disableButtons();
+        sender = new DataSender(FyssaMainActivity.this.getCacheDir(), this);
+        toast("Setting things up...");
+        sender.get(FyssaApp.SERVER_THRESHOLD_URL);
 
     }
 
+    @Override
+    public void onGetSuccess(String response) {
+         temp_threshold = Integer.parseInt(response);
+         Log.d(TAG, "Threshold is now " + temp_threshold + ". Now sending the current name");
+         sender.post(FyssaApp.SERVER_INSERT_URL + "?name=" + app.getMemoryTools().getName() + "&mac=" + MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
+
+    }
+    @Override
+    public void onGetError(VolleyError error) {
+        toast("Connection to the server failed");
+        onBackPressed();
+    }
+    @Override
+    public void onPostSuccess(String response) {
+        Log.d(TAG, response);
+        app.getMemoryTools().saveSerial(MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
+        enableButtons();
+    }
+    @Override
+    public void onPostError(VolleyError error) {
+        toast("Connection to the server failed");
+        onBackPressed();
+    }
 
 
     private void addConnectionSubscription() {
@@ -250,7 +285,7 @@ public class FyssaMainActivity extends AppCompatActivity {
     }
 
     private void startService() {
-        FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(4, 25));
+        FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(4, temp_threshold));
         Log.d(TAG, "startService()->" + new Gson().toJson(fbc));
         Mds.builder().build(this).put(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH,

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.MemoryFile;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
+import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
@@ -85,7 +88,9 @@ public class ScanFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
 
         // Set up list and adapter for scanned devices
-        scannedDevicesAdapter = new ScannedDevicesAdapter(true);
+        String mac = ((FyssaApp) getActivity().getApplication()).getMemoryTools().getSerial();
+        if (mac.equals(MemoryTools.DEFAULT_STRING)) mac = "";
+        scannedDevicesAdapter = new ScannedDevicesAdapter(true, mac);
         RecyclerView deviceList = (RecyclerView) view.findViewById(R.id.device_list);
         deviceList.setLayoutManager(new LinearLayoutManager(getContext()));
         deviceList.setAdapter(scannedDevicesAdapter);

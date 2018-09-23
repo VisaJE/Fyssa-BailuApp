@@ -110,4 +110,6 @@
     <string name="stop_button">Stop</string>
     <string name="bailu_get_button">Get info</string>
     <string name="battery_level">Battery level</string>
+    <string name="reset_name_button">Reset username</string>
+    <string name="reset_serial">Forget your device</string>
 </resources>

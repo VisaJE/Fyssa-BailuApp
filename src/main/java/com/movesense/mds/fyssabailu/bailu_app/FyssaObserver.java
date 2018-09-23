@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
@@ -21,7 +22,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.VolleyError;
+import com.movesense.mds.fyssabailu.DataSender;
+import com.movesense.mds.fyssabailu.DataUser;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.RxBle;
@@ -30,6 +35,9 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
 
+import java.util.AbstractQueue;
+import java.util.Queue;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.functions.Action1;
@@ -37,7 +45,7 @@ import rx.subscriptions.CompositeSubscription;
 
 
 // Mostly copied from ScanFragment.java
-public class FyssaObserver extends AppCompatActivity {
+public class FyssaObserver extends AppCompatActivity implements DataUser {
 
     private final String LOG_TAG = this.getClass().getCanonicalName();
 
@@ -54,6 +62,7 @@ public class FyssaObserver extends AppCompatActivity {
     private RxBleClient rxBleClient;
     private CompositeSubscription subscriptions;
     private FyssaDeviceView deviceView;
+    DataSender dataSender;
 
     private FyssaApp app;
     @Override
@@ -82,6 +91,7 @@ public class FyssaObserver extends AppCompatActivity {
         subscriptions = new CompositeSubscription();
         infoTv.setText("---Scanning for parties---");
         createView();
+        dataSender = new DataSender(FyssaObserver.this.getCacheDir(), this);
         startScanning();
     }
 
@@ -107,19 +117,27 @@ public class FyssaObserver extends AppCompatActivity {
     }
 
 
-    void handleScanResult(RxBleScanResult scanResult) {
+    void checkScanResult(RxBleScanResult scanResult) {
         RxBleDevice device = scanResult.getBleDevice();
         //Log.d(LOG_TAG, "Found device " + device.getName()+ "\n");
         //Log.d(LOG_TAG, bytesToHex(scanResult.getScanRecord()));
         if (device.getName() != null && device.getName().contains("Movesense")) {
             byte[] adv = scanResult.getScanRecord();
             if (adv[11] == (byte)0xEA) {
-                int score = ((adv[7] & 0xFF) << 8) | (adv[8] & 0xFF);
-                int timePartying = ((adv[9]&0xFF) << 8) | (adv[10] & 0xFF);
+                Integer score = ((adv[7] & 0xFF) << 8) | (adv[8] & 0xFF);
+                Integer timePartying = ((adv[9]&0xFF) << 8) | (adv[10] & 0xFF);
                 //Log.d(LOG_TAG, "Getting advertisement " + score + ", " + timePartying + " from device" + device.getMacAddress() + "\n");
                 //Log.d(LOG_TAG, "Full hex adv: " + bytesToHex(adv) + "\n");
-                deviceView.handle(device, score, timePartying);
+                handleScanResult(device, score, timePartying);
             }
+        }
+
+    }
+    private void handleScanResult(RxBleDevice rxBleScanResult, Integer score, Integer timePartying) {
+        if (deviceView.nameMap.(rxBleScanResult.getMacAddress())) deviceView.handle(rxBleScanResult, score, timePartying);
+        else {
+            dataSender.get(FyssaApp.SERVER_GET_URL +rxBleScanResult.getMacAddress());
+            deviceView.handle(rxBleScanResult, score, timePartying);
         }
 
     }
@@ -170,10 +188,12 @@ public class FyssaObserver extends AppCompatActivity {
                 .subscribe(new Action1<RxBleScanResult>() {
                     @Override
                     public void call(RxBleScanResult rxBleScanResult) {
-                        handleScanResult(rxBleScanResult);
+                        checkScanResult(rxBleScanResult);
                     }
                 }, new ThrowableToastingAction(this)));
     }
+
+
 
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
 
@@ -215,4 +235,30 @@ public class FyssaObserver extends AppCompatActivity {
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
 
     }
+
+    @Override
+    public void onGetSuccess(String response) {
+        Log.d(LOG_TAG, "onGetSucces:" +response);
+        deviceView.nameMap.put(response.substring(0, 16), response.substring(17));
+    }
+
+    @Override
+    public void onGetError(VolleyError error) {
+        toast("Error while getting a name");
+    }
+
+    @Override
+    public void onPostSuccess(String response) {
+
+    }
+
+    @Override
+    public void onPostError(VolleyError error) {
+
+    }
+    public void toast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
 }
+

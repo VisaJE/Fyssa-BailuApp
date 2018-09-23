@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
 import com.movesense.mds.fyssabailu.update_app.ScanActivity;
 
@@ -21,11 +20,6 @@ public class MainActivity extends AppCompatActivity  {
     private static final String TAG = MainActivity.class.getSimpleName();
     private CompositeSubscription subscriptions;
     private AlertDialog alertDialog;
-    private static SharedPreferences sharedPreferences;
-
-    public static SharedPreferences getSharedPreferences() {
-        return sharedPreferences;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,11 +27,9 @@ public class MainActivity extends AppCompatActivity  {
 
         String version = BuildConfig.VERSION_NAME;
         getSupportActionBar().setTitle("Bailumittari "+ version);
-
         setContentView(R.layout.activity_select_test);
 
         subscriptions = new CompositeSubscription();
-
 
         findViewById(R.id.start_button2).setOnClickListener(new View.OnClickListener() {
             @Override
