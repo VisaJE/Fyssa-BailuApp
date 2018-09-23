@@ -62,6 +62,16 @@
             android:text="@string/bailu_get_button"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/stop" />
+
+        <Button
+            android:id="@+id/battery_button"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/battery_level"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/get_button" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout

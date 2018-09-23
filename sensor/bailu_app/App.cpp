@@ -12,8 +12,8 @@ MOVESENSE_PROVIDERS_END(1)
 MOVESENSE_FEATURES_BEGIN()
 // Explicitly enable or disable Movesense framework core modules.
 // List of modules and their default state is found in documentation
-OPTIONAL_CORE_MODULE(DataLogger, true)
-OPTIONAL_CORE_MODULE(Logbook, true)
+OPTIONAL_CORE_MODULE(DataLogger, false)
+OPTIONAL_CORE_MODULE(Logbook, false)
 OPTIONAL_CORE_MODULE(LedService, true)
 OPTIONAL_CORE_MODULE(IndicationService, true)
 OPTIONAL_CORE_MODULE(BleService, true)

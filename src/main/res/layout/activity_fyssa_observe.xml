@@ -14,20 +14,32 @@
         android:layout_weight="1" />
 
     <TextView
-        android:id="@+id/nimi_tv"
+        android:id="@+id/info_tv"
         android:layout_width="match_parent"
-        android:layout_height="277dp"
+        android:layout_height="101dp"
         android:layout_weight="1"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
         android:typeface="serif"
-        tools:text="Heiluttelija: Pekka" />
+        tools:text="Partyukko: Pekka" />
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="500dp">
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/partiers_view"
+            android:layout_width="352dp"
+            android:layout_height="427dp"
+            android:layout_marginBottom="46dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
 

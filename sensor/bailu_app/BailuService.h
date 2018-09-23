@@ -8,8 +8,14 @@
 
 #include "wb-resources/resources.h"
 #include <string>
+#include <vector>
 
 #define ACC_SAMPLERATE 13
+
+typedef struct {
+    const char* address;
+    uint32_t timeAdded;
+} Device;
 
 class BailuService FINAL : private whiteboard::ResourceClient,
                                          private whiteboard::ResourceProvider,
@@ -74,7 +80,9 @@ private:
     */
     virtual void onGetResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData);
     virtual void onPutResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData);
-    /**
+    
+
+/**
     * Local client 'disconnect' notification handler.
     *
     *  This can be used for example to cleanup possible subscription related information of the client.
@@ -108,6 +116,14 @@ private:
     void startAcc(whiteboard::RequestId& remoteRequestId);
     void stopAcc();
 
+    void startScanning();
+    void stopScanning();
+
+    std::vector<Device> foundDevices;
+    void removeOldScans();
+
+    void shutDown();
+
     void onAccData(whiteboard::ResourceId resourceId, const whiteboard::Value& value,
                                           const whiteboard::ParameterList& parameters);
 
@@ -122,6 +138,7 @@ private:
     bool prepareRun;
     bool isRunning;
     bool isMeasuringAcc;
+    bool isScanning;
 
     uint32_t runningTime;
     uint32_t tempThreshold;
@@ -132,5 +149,10 @@ private:
 
     whiteboard::TimerId mTimer;
 
+    // Setting secure ble settings.
+    void getBonding();
+    void setBonding();
+
     uint32_t timerCounter;
+    uint16_t timePartying;
 };

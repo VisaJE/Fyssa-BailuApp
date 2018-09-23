@@ -3,29 +3,24 @@ package com.movesense.mds.fyssabailu;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
-import com.movesense.mds.fyssabailu.update_app.ConnectingDialog;
-import com.movesense.mds.fyssabailu.update_app.SelectTestActivity;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseDevice;
-import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
-import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
-import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
-import com.polidea.rxandroidble.RxBleDevice;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
+import com.movesense.mds.fyssabailu.update_app.ScanActivity;
 
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-public class MainActivity extends AppCompatActivity implements ScanFragment.DeviceSelectionListener {
+public class MainActivity extends AppCompatActivity  {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private CompositeSubscription subscriptions;
-
+    private AlertDialog alertDialog;
     private static SharedPreferences sharedPreferences;
 
     public static SharedPreferences getSharedPreferences() {
@@ -39,58 +34,43 @@ public class MainActivity extends AppCompatActivity implements ScanFragment.Devi
         String version = BuildConfig.VERSION_NAME;
         getSupportActionBar().setTitle("Bailumittari "+ version);
 
-
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_select_test);
 
         subscriptions = new CompositeSubscription();
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.content, new ScanFragment(), ScanFragment.class.getSimpleName())
-                    .commit();
-        }
-    }
 
-    @Override
-    public void onDeviceSelected(final RxBleDevice device) {
-        Log.d(TAG, "onDeviceSelected: " + device.getName() + " (" + device.getMacAddress() + ")");
-        MdsRx.Instance.connect(device, this);
+        findViewById(R.id.start_button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ScanActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            }
+        });
+        findViewById(R.id.start_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, FyssaObserver.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            }
+        });
 
-        ConnectingDialog.INSTANCE.showDialog(this);
-
-        // Monitor for connected devices
-        subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<MdsConnectedDevice>() {
-                    @Override
-                    public void call(MdsConnectedDevice mdsConnectedDevice) {
-                        // Stop refreshing
-                        if (mdsConnectedDevice.getConnection() != null) {
-                            ConnectingDialog.INSTANCE.dismissDialog();
-                            // Add connected device
-                            // Fixme: this should be deleted after 1.0 SW release
-
-                            if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoNewSw) {
-                                MdsDeviceInfoNewSw mdsDeviceInfoNewSw = (MdsDeviceInfoNewSw) mdsConnectedDevice.getDeviceInfo();
-                                MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
-                                        device.getMacAddress(),
-                                        mdsDeviceInfoNewSw.getDescription(),
-                                        mdsDeviceInfoNewSw.getSerial(),
-                                        mdsDeviceInfoNewSw.getSw()));
-                            } else if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoOldSw) {
-                                MdsDeviceInfoOldSw mdsDeviceInfoOldSw = (MdsDeviceInfoOldSw) mdsConnectedDevice.getDeviceInfo();
-                                MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
-                                        device.getMacAddress(),
-                                        mdsDeviceInfoOldSw.getDescription(),
-                                        mdsDeviceInfoOldSw.getSerial(),
-                                        mdsDeviceInfoOldSw.getSw()));
-                            }
-                            // We have a new SdsDevice
-                            startActivity(new Intent(MainActivity.this, FyssaMainActivity.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
-                        }
+        alertDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.close_app)
+                .setMessage(R.string.do_you_want_to_close_application)
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        finishAndRemoveTask();
+                    } else {
+                        finish();
                     }
-                }, new ThrowableToastingAction(this)));
+                })
+                .setNegativeButton(R.string.no, (dialog, which) -> alertDialog.dismiss())
+                .create();
+
     }
+    @Override
+    public void onBackPressed() {
+        alertDialog.show();
+    }
+
 }

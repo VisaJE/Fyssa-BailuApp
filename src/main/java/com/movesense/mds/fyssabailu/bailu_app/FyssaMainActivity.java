@@ -27,8 +27,14 @@ import com.movesense.mds.MdsSubscription;
 import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.ConnectionLostDialog;
 import com.movesense.mds.fyssabailu.MainActivity;
+import com.movesense.mds.fyssabailu.ScanFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaBailuGson;
+import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
+import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
+import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
+import com.movesense.mds.fyssabailu.update_app.ConnectingDialog;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.update_app.SelectTestActivity;
 import com.movesense.mds.fyssabailu.update_app.model.DebugResponse;
@@ -38,12 +44,15 @@ import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.update_app.model.InfoAppResponse;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
+import com.movesense.mds.fyssabailu.update_app.model.MovesenseDevice;
+import com.polidea.rxandroidble.RxBleDevice;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
 public class FyssaMainActivity extends AppCompatActivity {
@@ -60,42 +69,46 @@ public class FyssaMainActivity extends AppCompatActivity {
 
     public static final String URI_EVENTLISTENER = "suunto://MDS/EventListener";
     public static final String BAILU_PATH = "/Fyssa/Bailu";
+    public static final String BATTERY_PATH = "/System/Energy";
 
     private MdsSubscription mdsSubscription;
-    private AlertDialog alertDialog;
+
 
     private boolean closeApp = false;
     private boolean disconnect = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fyssa_main);
-        ButterKnife.bind(this);
 
-        alertDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.close_app)
-                .setMessage(R.string.do_you_want_to_close_application)
-                .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    closeApp = true;
-                    removeAndDisconnectFromDevice();
-                })
-                .setNegativeButton(R.string.no, (dialog, which) -> alertDialog.dismiss())
-                .create();
+        setContentView(R.layout.activity_main);
 
         app = (FyssaApp) getApplication();
-        doButton.setEnabled(false);
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Fyssasensori");
         }
 
+
+        subscriptions = new CompositeSubscription();
+        addConnectionSubscription();
+
+
+        setContentView(R.layout.activity_fyssa_main);
+        ButterKnife.bind(this);
+
         if (app.getMemoryTools().getName().equals(MemoryTools.DEFAULT_STRING)) {
             startInfoActivity();
+            Log.d(TAG, "No name yet");
             finish();
         } else {
-            nimiTv.setText("Käyttäjä: " + app.getMemoryTools().getName());
+            nimiTv.setText(app.getMemoryTools().getName());
         }
-        subscriptions = new CompositeSubscription();
 
+    }
+
+
+
+    private void addConnectionSubscription() {
         subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mdsConnectedDevice -> {
@@ -112,13 +125,28 @@ public class FyssaMainActivity extends AppCompatActivity {
                             startMainActivity();
                         } else {
                             ConnectionLostDialog.INSTANCE.showDialog(FyssaMainActivity.this);
+                            disableButtons();
                         }
                     } else {
                         ConnectionLostDialog.INSTANCE.dismissDialog();
+                        enableButtons();
                         Log.e(TAG, "call: Rx Connect");
                     }
                 }, new ThrowableToastingAction(this)));
-
+    }
+    private void disableButtons() {
+        findViewById(R.id.do_button).setEnabled(false);
+        findViewById(R.id.stop).setEnabled(false);
+        findViewById(R.id.get_button).setEnabled(false);
+        findViewById(R.id.start_service_button).setEnabled(false);
+        findViewById(R.id.stop_service_button).setEnabled(false);
+    }
+    private void enableButtons() {
+        findViewById(R.id.do_button).setEnabled(true);
+        findViewById(R.id.stop).setEnabled(true);
+        findViewById(R.id.get_button).setEnabled(true);
+        findViewById(R.id.start_service_button).setEnabled(true);
+        findViewById(R.id.stop_service_button).setEnabled(true);
     }
 
     private void checkSensorSoftware() {
@@ -155,9 +183,6 @@ public class FyssaMainActivity extends AppCompatActivity {
                     @Override
                     public void onError(MdsException e) {
                         Log.e(TAG, "Info onError: ", e);
-                        if (e.toString().contains("404")) {
-                            updateSensorSoftware();
-                        }
                     }
                 });
     }
@@ -172,6 +197,7 @@ public class FyssaMainActivity extends AppCompatActivity {
 
     private void updateSensorSoftware() {
         //removeAndDisconnectFromDevice();
+        subscriptions.unsubscribe();
         startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
@@ -179,7 +205,7 @@ public class FyssaMainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        addConnectionSubscription();
         try {
             toast("Serial: " + MovesenseConnectedDevices.getConnectedDevice(0).getSerial());
         } catch (Exception e) {
@@ -190,7 +216,7 @@ public class FyssaMainActivity extends AppCompatActivity {
         checkSensorSoftware();
     }
 
-    @OnClick({R.id.start_service_button, R.id.stop_service_button, R.id.do_button, R.id.stop, R.id.get_button})
+    @OnClick({R.id.start_service_button, R.id.stop_service_button, R.id.do_button, R.id.stop, R.id.get_button, R.id.battery_button})
     public void onViewClicked(View view) {
         switch(view.getId()) {
             case R.id.start_service_button:
@@ -209,20 +235,22 @@ public class FyssaMainActivity extends AppCompatActivity {
             case R.id.get_button:
                 getInfo();
                 break;
+            case R.id.battery_button:
+                getBatteryLevel();
+                break;
         }
     }
 
     private void startObserving() {
         removeAndDisconnectFromDevice();
-        alertDialog.hide();
-        alertDialog.dismiss();
+        subscriptions.unsubscribe();
         finish();
         startActivity(new Intent(FyssaMainActivity.this, FyssaObserver.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     private void startService() {
-        FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(4, 20));
+        FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(4, 25));
         Log.d(TAG, "startService()->" + new Gson().toJson(fbc));
         Mds.builder().build(this).put(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH,
@@ -266,6 +294,23 @@ public class FyssaMainActivity extends AppCompatActivity {
                                 MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH);
                         toast(s);
                         Log.d(TAG, s);
+                    }
+
+                    @Override
+                    public void onError(MdsException e) {
+                        Log.e(TAG, "onError: ", e);
+                    }
+                });
+    }
+
+    private void getBatteryLevel() {
+        Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
+                        MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BATTERY_PATH,
+                null, new MdsResponseListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        EnergyGet e = new Gson().fromJson(s, EnergyGet.class);
+                        toast("Battery percentage: " + e.getPercentage() + ", mV: " + e.getVoltage());
                     }
 
                     @Override
@@ -352,8 +397,12 @@ public class FyssaMainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         unsubscribeDebug();
-        alertDialog.show();
-
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        unsubscribeDebug();
+        subscriptions.unsubscribe();
     }
 
 

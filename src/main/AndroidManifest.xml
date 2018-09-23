@@ -64,7 +64,10 @@
             android:name="com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity"
             android:screenOrientation="portrait">
         </activity>
-
+        <activity
+            android:name="com.movesense.mds.fyssabailu.update_app.ScanActivity"
+            android:screenOrientation="portrait">
+        </activity>
 
 
 

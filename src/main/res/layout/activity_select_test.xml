@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/start_button2"
             android:layout_centerHorizontal="true"
-            android:text="Start Imu"
+            android:text="Setup sensor"
             android:textSize="15sp" />
 
     </RelativeLayout>
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/start_button"
             android:layout_centerHorizontal="true"
-            android:text="Start Gyro"
+            android:text="Scan partiers"
             android:textSize="15sp" />
 
     </RelativeLayout>

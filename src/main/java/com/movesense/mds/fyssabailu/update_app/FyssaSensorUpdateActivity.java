@@ -471,6 +471,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         // Reconnect to last connected device
         MdsRx.Instance.reconnect(this);
+        finish();
     }
 
     public void onUploadCanceled() {

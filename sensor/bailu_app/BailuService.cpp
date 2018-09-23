@@ -11,8 +11,10 @@
 #include "comm_ble/resources.h"
 #include <float.h>
 #include <math.h>
+#include <vector>
 
 #define ASSERT WB_DEBUG_ASSERT
+
 
 
 // Also the led blinking period
@@ -20,12 +22,25 @@
 // Shut down after this 
 #define SHUTDOWN_TIME 120000
 
+#define RECOVERY_TIME 1
+
+#define SCAN_PATH "/Comm/Ble/Scan"
+
+int find(std::vector<Device> v, const char* s)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (strcmp(v[i].address, s)) return i;
+    }
+    return -1;
+}
+
 const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 
 uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device 
-    0x7, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0              // Block: Manuf specific data for embedding our custom data. Data here is uint16_t for CompanyID, and two uint16_t for our data payload
+    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0xEA            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. Last byte determines the sensor to be advertising for this service.
     };
-const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -4; // Points to second last byte
+const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5; // Points to second last byte
 
 static const whiteboard::ExecutionContextId sExecutionContextId =
     WB_RES::LOCAL::FYSSA_BAILU::EXECUTION_CONTEXT;
@@ -49,7 +64,9 @@ BailuService::BailuService()
       runningTime(0),
       isPartying(false),
       prepareRun(false),
-      isMeasuringAcc(false)
+      isMeasuringAcc(false),
+      isScanning(false),
+      timePartying(0)
 {
 
     mTimer = whiteboard::ID_INVALID_TIMER;
@@ -94,6 +111,22 @@ void BailuService::stopModule()
     stopAcc();
 }
 
+
+void BailuService::getBonding()
+{
+    asyncGet(WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS(), NULL);
+}
+
+void BailuService::setBonding()
+{
+    WB_RES::BondingSettings bSettings;
+    bSettings.policy = WB_RES::BondingPolicyValues::BONDINGONCE;
+    bSettings.recoveryTime = RECOVERY_TIME;
+    
+    asyncPut(WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS(), AsyncRequestOptions::Empty, bSettings);
+}
+
+
 void BailuService::onGetRequest(const whiteboard::Request& request,
                                       const whiteboard::ParameterList& parameters)
 {
@@ -111,6 +144,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         if (isMeasuringAcc) stopAcc();
         prepareRun = false;
         isRunning = false;
+        timerCounter = 0;
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
         res.time = runningTime;
@@ -121,6 +155,13 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
     }
     case WB_RES::LOCAL::FYSSA_BAILU::ID:
     {
+        WB_RES::ScanParams pars;
+        pars.active = false;
+        pars.timeout = 60;
+        pars.window = 6;
+        pars.interval = 5;
+        whiteboard::Result r = asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(),AsyncRequestOptions::Empty, pars);
+        DEBUGLOG("D/SENSOR/Result: %u", (uint32_t)r);
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
         res.time = runningTime;
@@ -151,6 +192,7 @@ void BailuService::onPutRequest(const whiteboard::Request& request,
     {
 
         if (isMeasuringAcc) stopAcc();
+        stopScanning();
         // Parse and gather the specified settings
         auto config = WB_RES::LOCAL::FYSSA_BAILU::PUT::ParameterListRef(parameters).getFyssaBailuConfig();
         runningTime = config.time;
@@ -244,6 +286,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
 void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard::Value& value,
                                           const whiteboard::ParameterList& parameters)
 {
+    DEBUGLOG("onNotify()");
     // Confirm that it is the correct resource
     switch (resourceId.getConstId())
     {
@@ -252,7 +295,31 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
         onAccData(resourceId, value, parameters);
         break;
     }
-
+    case WB_RES::LOCAL::COMM_BLE_SCAN::ID:
+    {
+        auto res = value.convertTo<WB_RES::ScanResult>();
+        if (!res.isScanResponse)
+        {
+            for (int i = 0; i < 7; i++) if (res.dataPacket[i] != s_customAvertiseData[i]) return; // Checking the advertisement to be indentical to the one of this app.
+            if (res.dataPacket[11] == 0xEA) // Checking that the movesense sensor is indeed running this service.
+            {
+                int i = find(foundDevices, res.address);
+                if (i == -1) 
+                {
+                    Device d;
+                    d.address = res.address;
+                    d.timeAdded = timerCounter;
+                    foundDevices.insert(foundDevices.end(), d);
+                }
+                else foundDevices[i] = {res.address, timerCounter};
+            }
+        }
+        removeOldScans();
+            // Make PUT request to trigger led blink
+        asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
+        timerCounter += TEMP_CHECK_TIME;
+        break;
+    }
     }
 }
 
@@ -276,30 +343,84 @@ void BailuService::onGetResult(whiteboard::RequestId requestId, whiteboard::Reso
             {
                 isPartying = true;
                 startAcc(mRemoteRequestId);
+                startScanning();
             }
             else
             {
                 isPartying = false;
                 stopAcc();
+                stopScanning();
             }
             advPartyScore();
         }
         break;
     }
-    
+    case WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS::ID:
+        if (resultCode == whiteboard::HTTP_CODE_OK)
+        {
+            auto value = rResultData.convertTo<WB_RES::BondingSettings>();
+            DEBUGLOG("Found policy %u, %u", value.policy, value.recoveryTime);
+            if (value.policy == WB_RES::BondingPolicyValues::BONDINGONCE && value.recoveryTime == RECOVERY_TIME) return;
+            else setBonding();
+        }
+        else shutDown();
+        break;
     }
 }
 
 
 void BailuService::onPutResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData)
 {
-    if (resourceId.localResourceId == WB_RES::LOCAL::COMM_BLE_ADV_SETTINGS::LID)
+    switch (resourceId.getConstId())
+    {
+    case WB_RES::LOCAL::COMM_BLE_ADV_SETTINGS::ID:
     {
         DEBUGLOG("COMM_BLE_ADV_SETTINGS returned status: %d", resultCode);
+        break;
     }
+    case WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS::ID:
+        if (resultCode == whiteboard::HTTP_CODE_OK) return;
+        else shutDown();
+        break;
+    }
+
 }
 
 
+void BailuService::startScanning()
+{
+    if (isScanning) return;
+    WB_RES::ScanParams pars;
+    pars.active = false;
+    pars.timeout = 0;
+    pars.window = 6;
+    pars.interval = 5;
+    if (asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(), AsyncRequestOptions::Empty, pars) == whiteboard::HTTP_CODE_OK)
+    {
+      isScanning = true;
+      DEBUGLOG("Scanning");
+    }
+    else 
+    {
+        DEBUGLOG("Failure in subscribing to scan");
+    }
+}
+
+void BailuService::removeOldScans()
+{
+    int i = -1;
+    while (++i < foundDevices.size())
+    {
+        if (foundDevices[i].timeAdded+TEMP_CHECK_TIME < timerCounter) foundDevices.erase(foundDevices.begin()+i);
+    }
+}
+
+void BailuService::stopScanning()
+{
+    if (!isScanning) return;
+    if (asyncUnsubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(),NULL) ==  whiteboard::HTTP_CODE_OK) isScanning = false;
+    foundDevices.clear();
+}
 
 
 void BailuService::checkPartyStatus()
@@ -313,20 +434,23 @@ void BailuService::checkPartyStatus()
 void BailuService::advPartyScore()
 {
     
-    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*minuteAccAvr);
-    if (!isPartying) score = 0;
+    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1));
+    if (!isPartying) 
+    {
+      score = 0;
+      timePartying = 0;
+    }
     // Update data to advertise packet
-    s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)(score >> 8);
+    s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)((score & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+1] = (uint8_t)(score & 0xFF);
 
-    uint16_t timePartying = (uint16_t)timerCounter/60000;
-    DEBUGLOG("D/SENSOR/getPartyScore() with values %u %u", score, timePartying);
-        s_customAvertiseData[s_dataPayloadIndex+2] = (uint8_t)(timePartying >> 8);
+
+    s_customAvertiseData[s_dataPayloadIndex+2] = (uint8_t)((timePartying & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+3] = (uint8_t)(timePartying & 0xFF);
 
     // Update advertising packet
     WB_RES::AdvSettings advSettings;
-    advSettings.interval = 1600; // 1000ms in 0.625ms BLE ticks
+    advSettings.interval = 6400; // 2000ms in 0.625ms BLE ticks
     advSettings.timeout = 0; // Advertise forever
     advSettings.advPacket = whiteboard::MakeArray<uint8>(s_customAvertiseData, sizeof(s_customAvertiseData));
     // NOTE: To modify scan response packet, just set similarily advSettings.scanRespPacket. Data format is the same
@@ -343,13 +467,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             timerCounter += TEMP_CHECK_TIME;
             if (timerCounter >= SHUTDOWN_TIME)
             {
-            asyncPut(WB_RES::LOCAL::COMPONENT_MAX3000X_WAKEUP::ID,
-                     AsyncRequestOptions(NULL, 0, true), (uint8_t)1);
-
-            // Make PUT request to enter power off mode
-            asyncPut(WB_RES::LOCAL::SYSTEM_MODE::ID,
-                     AsyncRequestOptions(NULL, 0, true), // Force async
-                     (uint8_t)1U);                       // WB_RES::SystemMode::FULLPOWEROFF
+                shutDown();
             }
         }
         else if (timerCounter >= runningTime*60000) 
@@ -360,7 +478,10 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
         }
         else
         {
-            if (!isPartying) minuteAccAvr = 0;
+            if (!isPartying) {
+                minuteAccAvr = 0;
+                timePartying = 0;
+            } else timePartying += TEMP_CHECK_TIME/1000;
             // Make PUT request to trigger led blink
             asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
             timerCounter += TEMP_CHECK_TIME;
@@ -370,13 +491,25 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
 
     }
 }
+
+void BailuService::shutDown()
+{
+    asyncPut(WB_RES::LOCAL::COMPONENT_MAX3000X_WAKEUP::ID,
+                     AsyncRequestOptions(NULL, 0, true), (uint8_t)1);
+
+            // Make PUT request to enter power off mode
+    asyncPut(WB_RES::LOCAL::SYSTEM_MODE::ID,
+                     AsyncRequestOptions(NULL, 0, true), // Force async
+                     (uint8_t)1U);                       // WB_RES::SystemMode::FULLPOWEROFF
+}
+
 void BailuService::onClientUnavailable(whiteboard::ClientId clientId)
 {
     DEBUGLOG("onClientUnavailable()");
-    if (prepareRun) {
+    /*if (prepareRun) {
       prepareRun = false;
       isRunning = true;
-    }
+    }*/
 }
 void BailuService::onRemoteWhiteboardDisconnected(whiteboard::WhiteboardId whiteboardId)
 {
@@ -384,6 +517,8 @@ void BailuService::onRemoteWhiteboardDisconnected(whiteboard::WhiteboardId white
     if (prepareRun) {
       prepareRun = false;
       isRunning = true;
+      timerCounter = 0;
+      advPartyScore();
     }
 }
 

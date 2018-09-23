@@ -9,21 +9,28 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.RxBle;
-import com.movesense.mds.fyssabailu.ScanFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
@@ -34,12 +41,19 @@ public class FyssaObserver extends AppCompatActivity {
 
     private final String LOG_TAG = this.getClass().getCanonicalName();
 
+    @BindView(R.id.info_tv)
+    TextView infoTv;
+
+
+
+
     private BluetoothAdapter bluetoothAdapter;
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
     private RxBleClient rxBleClient;
     private CompositeSubscription subscriptions;
+    private FyssaDeviceView deviceView;
 
     private FyssaApp app;
     @Override
@@ -66,8 +80,19 @@ public class FyssaObserver extends AppCompatActivity {
 
         // Create one composite subscription to hold everything
         subscriptions = new CompositeSubscription();
-
+        infoTv.setText("---Scanning for parties---");
+        createView();
         startScanning();
+    }
+
+
+    protected void createView() {
+        // Set up list and adapter for scanned devices
+        deviceView = new FyssaDeviceView();
+        RecyclerView deviceList = (RecyclerView) findViewById(R.id.partiers_view);
+        deviceList.setLayoutManager(new LinearLayoutManager(this));
+        deviceList.setAdapter(deviceView);
+        //deviceList.setItemAnimator(null);
     }
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
@@ -84,15 +109,16 @@ public class FyssaObserver extends AppCompatActivity {
 
     void handleScanResult(RxBleScanResult scanResult) {
         RxBleDevice device = scanResult.getBleDevice();
+        //Log.d(LOG_TAG, "Found device " + device.getName()+ "\n");
+        //Log.d(LOG_TAG, bytesToHex(scanResult.getScanRecord()));
         if (device.getName() != null && device.getName().contains("Movesense")) {
             byte[] adv = scanResult.getScanRecord();
-            byte startSize = adv[0];
-            byte advSize = adv[startSize + 1];
-            if (advSize == 0x7) {
-                Integer score = ((adv[7]) << 8) | adv[8];
-                Integer timePartying = ((adv[9]) << 8) | adv[10];
-                Log.d(LOG_TAG, "Getting advertisement " + score + ", " + timePartying + " from device" + device.getMacAddress());
-                Log.d(LOG_TAG, "Full hex adv: " + bytesToHex(adv));
+            if (adv[11] == (byte)0xEA) {
+                int score = ((adv[7] & 0xFF) << 8) | (adv[8] & 0xFF);
+                int timePartying = ((adv[9]&0xFF) << 8) | (adv[10] & 0xFF);
+                //Log.d(LOG_TAG, "Getting advertisement " + score + ", " + timePartying + " from device" + device.getMacAddress() + "\n");
+                //Log.d(LOG_TAG, "Full hex adv: " + bytesToHex(adv) + "\n");
+                deviceView.handle(device, score, timePartying);
             }
         }
 
@@ -184,6 +210,7 @@ public class FyssaObserver extends AppCompatActivity {
     public void onBackPressed() {
         subscriptions.unsubscribe();
         subscriptions.clear();
+        finish();
         startActivity(new Intent(FyssaObserver.this, MainActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
 

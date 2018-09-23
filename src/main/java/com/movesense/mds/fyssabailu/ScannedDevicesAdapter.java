@@ -121,7 +121,7 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         DeviceViewHolder deviceViewHolder = (DeviceViewHolder) holder;
         RxBleDevice device = devices.get(position);
 
-        deviceViewHolder.textView.setText(device.getName() + " (" + device.getMacAddress() + ")");
+        deviceViewHolder.textView.setText(device.getName());
     }
 
     @Override

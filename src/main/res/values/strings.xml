@@ -70,7 +70,7 @@
     <string name="log_in">Log In</string>
     <string name="connection_error_title">Connection Error</string>
     <string name="connection_error_message">Something went wrong. Please Try again</string>
-    <string name="remove_device">Vaihda sensoria</string>
+    <string name="remove_device">Disconnect</string>
     <string name="dfu_file_type_title">Select file type</string>
     <string name="uploading">Uploading....</string>
     <string name="update">Update</string>
@@ -99,14 +99,15 @@
     <string name="subs_switch">Subscribe</string>
     <string name="post_result">Post to server</string>
     <string name="get_info">Get info</string>
-    <string name="minimum_angle_input">Angle treshold</string>
+    <string name="minimum_angle_input">Angle threshold</string>
     <string name="sample_rate_input">Sample rate</string>
     <string name="set_config">Apply config</string>
     <string name="filter_switch">Gyroscopic filter</string>
     <string name="acc_threshold">"Min acceleration"</string>
     <string name="plot_button">Plot</string>
     <string name="min_acc">Min acc</string>
-    <string name="main_button">Start or sth</string>
+    <string name="main_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="bailu_get_button">Get info</string>
+    <string name="battery_level">Battery level</string>
 </resources>
