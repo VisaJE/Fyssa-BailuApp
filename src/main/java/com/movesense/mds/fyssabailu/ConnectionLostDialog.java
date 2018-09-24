@@ -22,7 +22,7 @@ public enum  ConnectionLostDialog {
                     .setTitle("Connection Lost")
                     .setMessage("Appliaction will connect automatically with Movesense device" +
                             " when it will be available.")
-                    .setPositiveButton("Connect with other Movesense", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;

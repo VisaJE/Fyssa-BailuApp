@@ -18,7 +18,7 @@
 
 
 // Also the led blinking period
-#define TEMP_CHECK_TIME 5000
+#define TEMP_CHECK_TIME 6000
 // Shut down after this 
 #define SHUTDOWN_TIME 120000
 
@@ -30,7 +30,7 @@ int find(std::vector<Device> v, const char* s)
 {
     for (int i = 0; i < v.size(); i++)
     {
-        if (strcmp(v[i].address, s)) return i;
+        if (strcmp(v[i].address, s) == 0) return i;
     }
     return -1;
 }
@@ -38,8 +38,8 @@ int find(std::vector<Device> v, const char* s)
 const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 
 uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device 
-    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0xEA            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. Last byte determines the sensor to be advertising for this service.
-    };
+    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. 
+    };                  //Last byte determines the sensor to be advertising for this service when set 0xEA
 const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5; // Points to second last byte
 
 static const whiteboard::ExecutionContextId sExecutionContextId =
@@ -147,6 +147,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         timerCounter = 0;
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
+        res.seenDevices = mostDevices;
         res.time = runningTime;
         res.curTemp = currentTemp;
         returnResult(request, whiteboard::HTTP_CODE_OK,
@@ -159,11 +160,12 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         pars.active = false;
         pars.timeout = 60;
         pars.window = 6;
-        pars.interval = 5;
+        pars.interval = 6;
         whiteboard::Result r = asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(),AsyncRequestOptions::Empty, pars);
         DEBUGLOG("D/SENSOR/Result: %u", (uint32_t)r);
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
+        res.seenDevices = mostDevices;
         res.time = runningTime;
         res.curTemp = currentTemp;
         returnResult(request, whiteboard::HTTP_CODE_OK,
@@ -314,10 +316,9 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
                 else foundDevices[i] = {res.address, timerCounter};
             }
         }
+        if (foundDevices.size() > mostDevices) mostDevices = foundDevices.size();
         removeOldScans();
-            // Make PUT request to trigger led blink
-        asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
-        timerCounter += TEMP_CHECK_TIME;
+
         break;
     }
     }
@@ -393,8 +394,8 @@ void BailuService::startScanning()
     WB_RES::ScanParams pars;
     pars.active = false;
     pars.timeout = 0;
-    pars.window = 6;
-    pars.interval = 5;
+    pars.window = 0x0055;
+    pars.interval = 0x1000;
     if (asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(), AsyncRequestOptions::Empty, pars) == whiteboard::HTTP_CODE_OK)
     {
       isScanning = true;
@@ -411,7 +412,7 @@ void BailuService::removeOldScans()
     int i = -1;
     while (++i < foundDevices.size())
     {
-        if (foundDevices[i].timeAdded+TEMP_CHECK_TIME < timerCounter) foundDevices.erase(foundDevices.begin()+i);
+        if (foundDevices[i].timeAdded+60000 < timerCounter) foundDevices.erase(foundDevices.begin()+i);
     }
 }
 
@@ -438,8 +439,8 @@ void BailuService::advPartyScore()
     if (!isPartying) 
     {
       score = 0;
-      timePartying = 0;
     }
+    if (score == 0) timePartying = 0;
     // Update data to advertise packet
     s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)((score & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+1] = (uint8_t)(score & 0xFF);
@@ -447,6 +448,25 @@ void BailuService::advPartyScore()
 
     s_customAvertiseData[s_dataPayloadIndex+2] = (uint8_t)((timePartying & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+3] = (uint8_t)(timePartying & 0xFF);
+    s_customAvertiseData[s_dataPayloadIndex+4] = (uint8_t) 0xEA;
+    // Update advertising packet
+    WB_RES::AdvSettings advSettings;
+    advSettings.interval = 6400; // 2000ms in 0.625ms BLE ticks
+    advSettings.timeout = 0; // Advertise forever
+    advSettings.advPacket = whiteboard::MakeArray<uint8>(s_customAvertiseData, sizeof(s_customAvertiseData));
+    // NOTE: To modify scan response packet, just set similarily advSettings.scanRespPacket. Data format is the same
+    // Here the scanRespPacket is left default so that the device is found with the usual name.
+    asyncPut(WB_RES::LOCAL::COMM_BLE_ADV_SETTINGS(), AsyncRequestOptions::Empty, advSettings);
+}
+
+void BailuService::advNormal()
+{
+
+    s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)(0);
+    s_customAvertiseData[s_dataPayloadIndex+1] = (uint8_t)(0);
+    s_customAvertiseData[s_dataPayloadIndex+2] = (uint8_t)(0);
+    s_customAvertiseData[s_dataPayloadIndex+3] = (uint8_t)(0);
+    s_customAvertiseData[s_dataPayloadIndex+4] = (uint8_t) 0x00;
 
     // Update advertising packet
     WB_RES::AdvSettings advSettings;
@@ -474,6 +494,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
         {
             stopAcc();
             timerCounter = 0;
+            advNormal();
             isRunning = false;
         }
         else

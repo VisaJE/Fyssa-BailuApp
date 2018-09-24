@@ -134,12 +134,13 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
 
     }
     private void handleScanResult(RxBleDevice rxBleScanResult, Integer score, Integer timePartying) {
-        if (deviceView.nameMap.(rxBleScanResult.getMacAddress())) deviceView.handle(rxBleScanResult, score, timePartying);
+        if (deviceView.nameMap.containsKey(rxBleScanResult.getMacAddress())) deviceView.handle(rxBleScanResult, score, timePartying);
         else {
+            Log.d(LOG_TAG, "No name was found for " + rxBleScanResult.getMacAddress()
+            );
             dataSender.get(FyssaApp.SERVER_GET_URL +rxBleScanResult.getMacAddress());
             deviceView.handle(rxBleScanResult, score, timePartying);
         }
-
     }
 
     private boolean checkLocationPermission() {
@@ -239,7 +240,10 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     @Override
     public void onGetSuccess(String response) {
         Log.d(LOG_TAG, "onGetSucces:" +response);
-        deviceView.nameMap.put(response.substring(0, 16), response.substring(17));
+        deviceView.nameMap.put(response.substring(0, 17), response.substring(17));
+        /*for (String i : deviceView.nameMap.keySet()) {
+            Log.d(LOG_TAG, "Found in nameMap:" + i + ">" + deviceView.nameMap.get(i));
+        }*/
     }
 
     @Override
@@ -260,5 +264,10 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    protected void onDestroy() {
+        deviceView.timer.cancel();
+        super.onDestroy();
+    }
 }
 

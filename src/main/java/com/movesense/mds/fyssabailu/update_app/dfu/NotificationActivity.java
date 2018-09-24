@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
-import com.movesense.mds.fyssabailu.update_app.SelectTestActivity;
 
 /**
  *

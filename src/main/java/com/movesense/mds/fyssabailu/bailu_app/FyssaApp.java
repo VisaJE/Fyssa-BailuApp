@@ -21,7 +21,7 @@ import java.util.LinkedList;
 public class FyssaApp extends Application {
 
     private MemoryTools memoryTools;
-    public static final String deviceVersion = "0.0.1.BA";
+    public static final String deviceVersion = "0.1.1.BA";
     public static final String SERVER_THRESHOLD_URL = "http://tommi.la:5000/bailu/threshold";
     public static final String SERVER_INSERT_URL = "http://tommi.la:5000/bailu/name/insert";
     public static final String SERVER_GET_URL = "http://tommi.la:5000/bailu/name/";

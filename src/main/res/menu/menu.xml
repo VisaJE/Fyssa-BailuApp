@@ -7,5 +7,8 @@
     <item
         android:id="@+id/reset_serial"
         android:title="@string/reset_serial" />
+    <item
+        android:id="@+id/update_sensor"
+        android:title="@string/update" />
 
 </menu>

@@ -120,6 +120,7 @@ private:
     void stopScanning();
 
     std::vector<Device> foundDevices;
+    uint32_t mostDevices = 0;
     void removeOldScans();
 
     void shutDown();
@@ -132,6 +133,7 @@ private:
     float currentTemp;
 
     void advPartyScore();
+    void advNormal();
     
     whiteboard::RequestId mRemoteRequestId;
 

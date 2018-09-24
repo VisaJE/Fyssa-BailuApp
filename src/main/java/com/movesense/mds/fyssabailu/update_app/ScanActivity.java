@@ -86,5 +86,10 @@ public class ScanActivity  extends AppCompatActivity implements ScanFragment.Dev
                     }
                 }, new ThrowableToastingAction(this)));
     }
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(ScanActivity.this, MainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    }
 
 }

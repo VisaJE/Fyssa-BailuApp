@@ -249,12 +249,13 @@ public enum BleManager implements BLEDelegate {
     }
 
     public void reconnect(final Activity activity) {
-        disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
+        RxBleDevice here = MovesenseConnectedDevices.getConnectedRxDevice(0);
+        disconnect(here);
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                connect(MovesenseConnectedDevices.getConnectedRxDevice(0), activity);
+                connect(here, activity);
             }
         }, 2000);
     }

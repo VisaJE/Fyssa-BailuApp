@@ -4,7 +4,7 @@ swagger: '2.0'
 
 # Document metadata
 info:
-  version: "0.0.1.BA"
+  version: "0.1.1.BA"
   title: Gyroscope tests
   description: |
     This file defines API for Fyysikkokilta handwaving measurement service.
@@ -69,6 +69,7 @@ definitions:
       - time
       - threshold
       - curTemp
+      - seenDevices
     properties:
       time:
         description: |
@@ -83,3 +84,7 @@ definitions:
         description: Temperature in celcius
         type: number
         format: float
+      seenDevices:
+        description: Most scanned devices partying
+        type: integer
+        format: uint16    

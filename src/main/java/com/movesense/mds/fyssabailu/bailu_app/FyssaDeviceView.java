@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
 import rx.Observable;
 import rx.subjects.PublishSubject;
@@ -24,7 +28,7 @@ import rx.subjects.PublishSubject;
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final String LOG_TAG = FyssaDeviceView.class.getSimpleName();
-
+    private final Integer CLEAR_DELAY = 15000;
 
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
@@ -37,16 +41,51 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private final ArrayList<String> devices;
+    private final Vector<String> devices;
     private final HashMap<String, String> infoMap;
     public HashMap<String, String> nameMap;
+    private Hashtable<String, Long> addTimeMap;
+    TimerTask timerTask;
+    public Timer timer;
+    Semaphore semaphore = new Semaphore(1, true);
 
     FyssaDeviceView() {
 
-        devices = new ArrayList<>();
+        devices = new Vector<>();
         infoMap = new HashMap<>();
         nameMap = new HashMap<>();
+        addTimeMap = new Hashtable<>();
         setHasStableIds(true);
+        timer = new Timer();
+        timerTask = new TimerTask() {
+            public void run() {
+                Log.d(LOG_TAG, "Checking addTimeMap ");
+                //use a handler to run a toast that shows the current timestamp
+                for (String i : addTimeMap.keySet()) {
+                    try
+                    {
+                        semaphore.acquire(1);
+                        if (addTimeMap.get(i) > (System.currentTimeMillis()/1000)-CLEAR_DELAY) {
+                            addTimeMap.remove(i);
+                            devices.remove(i);
+                            infoMap.remove(i);
+                            notifyDataSetChanged();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.d(LOG_TAG, "Muted");
+                    }
+                    finally
+                    {
+                        semaphore.release(1);
+                    }
+
+                }
+            }
+
+        };
+        timer.schedule(timerTask, 5000, 5000);
     }
 
 
@@ -59,17 +98,32 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
     public void handle(RxBleDevice device, int score, int timePartying) {
-        if (devices.contains(device.getMacAddress())) {
-            infoMap.remove(device.getMacAddress());
-            infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
+        try
+        {
+            semaphore.acquire(1);
+            if (devices.contains(device.getMacAddress())) {
+                infoMap.remove(device.getMacAddress());
+                infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
+                addTimeMap.put(device.getMacAddress(), System.currentTimeMillis()/1000);
+            }
+            else {
+                Log.d(LOG_TAG, "Adding device:" + device.getMacAddress());
+                devices.add(device.getMacAddress());
+                infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
+                addTimeMap.remove(device.getMacAddress());
+                addTimeMap.put(device.getMacAddress(), System.currentTimeMillis()/1000);
+            }
+            notifyDataSetChanged();
         }
-        else {
-            Log.d(LOG_TAG, "Adding device:" + device.getMacAddress());
-            devices.add(device.getMacAddress());
-            infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Muted");
         }
-        notifyDataSetChanged();
+        finally
+        {
+            semaphore.release(1);
         }
+    }
 
 
     @Override
@@ -93,11 +147,24 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        DeviceViewHolder deviceViewHolder = (DeviceViewHolder) holder;
-        String device = devices.get(position);
-        String text = infoMap.get(device);
-        Log.d(LOG_TAG, "onBind(): "+ text);
-        if (deviceViewHolder.textView != null) deviceViewHolder.textView.setText(text);
+        try
+        {
+            semaphore.acquire(1);
+            DeviceViewHolder deviceViewHolder = (DeviceViewHolder) holder;
+            String device = devices.get(position);
+            String text = infoMap.get(device);
+            Log.d(LOG_TAG, "onBind(): "+ text);
+            if (deviceViewHolder.textView != null) deviceViewHolder.textView.setText(text);
+
+        }
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Muted");
+        }
+        finally
+        {
+            semaphore.release(1);
+        }
     }
 
     @Override

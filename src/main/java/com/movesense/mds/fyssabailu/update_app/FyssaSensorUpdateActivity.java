@@ -29,6 +29,7 @@ import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.fyssabailu.BleManager;
+import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 
@@ -256,9 +257,9 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private void enableDfu() {
         Log.d(LOG_TAG, "enableDfu()");
-        if (BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable && isDfuEnable) {
-            Log.d(LOG_TAG, "enableDfu() BleManager.isReconnectToLastConnectedDeviceEnable");
-            Toast.makeText(this, "Dfu Already Enabled", Toast.LENGTH_SHORT).show();
+        if ((BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable && isDfuEnable) || MovesenseConnectedDevices.getConnectedDevices().size() == 0) {
+            Log.d(LOG_TAG, "enableDfu() BleManager.isReconnectToLastConnectedDeviceEnable, or no device available!");
+            //Toast.makeText(this, "Dfu Already Enabled", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -470,7 +471,13 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         isDfuEnable = false;
 
         // Reconnect to last connected device
-        MdsRx.Instance.reconnect(this);
+        try {
+            MdsRx.Instance.reconnect(this);
+        } catch (java.lang.NullPointerException e) {
+            startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        }
+
         finish();
     }
 
@@ -526,7 +533,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             public void run() {
                 Toast.makeText(FyssaSensorUpdateActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                 if (mDfuCompleted) {
-                    startActivity(new Intent(FyssaSensorUpdateActivity.this, SelectTestActivity.class)
+                    startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }
             }
