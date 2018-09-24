@@ -30,6 +30,8 @@ def getName(name_id):
 def insertName():
     name = request.args.get('name')
     serial = request.args.get('mac')
+    if name is None or serial is None or len(name) == 0 or len(serial) == 0:
+        return 202
     query = 'UPDATE bailutable SET name=%s WHERE mac=%s;'
     params = ( name, serial)
     print(query, params)  
