@@ -39,18 +39,22 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final ArrayList<String> devices;
     private final HashMap<String, String> infoMap;
+    public HashMap<String, String> nameMap;
 
     FyssaDeviceView() {
 
         devices = new ArrayList<>();
         infoMap = new HashMap<>();
-
+        nameMap = new HashMap<>();
         setHasStableIds(true);
     }
 
 
+
     private String getText(RxBleDevice device, int score, int timePartying) {
-        return device.getMacAddress() + " Party level:" + score + " Time spent partying: " + timePartying;
+        String name = "Unknown player";
+        if (nameMap.containsKey(device.getMacAddress())) name = nameMap.get(device.getMacAddress());
+        return name + "\nParty level:" + score + " Time spent partying: " + timePartying;
     }
 
 
@@ -60,6 +64,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
         }
         else {
+            Log.d(LOG_TAG, "Adding device:" + device.getMacAddress());
             devices.add(device.getMacAddress());
             infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
         }

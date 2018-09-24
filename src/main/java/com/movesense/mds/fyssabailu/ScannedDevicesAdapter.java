@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
 
@@ -23,7 +24,7 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private final String LOG_TAG = ScannedDevicesAdapter.class.getSimpleName();
     private final boolean showOnlyMovesense;
-
+    private String address;
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView textView;
@@ -38,7 +39,8 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final List<RxBleDevice> devices;
     private final PublishSubject<RxBleDevice> deviceSelectionSubject;
 
-    ScannedDevicesAdapter(boolean showOnlyMovesense) {
+    ScannedDevicesAdapter(boolean showOnlyMovesense, String address) {
+        this.address = address;
         this.showOnlyMovesense = showOnlyMovesense;
         devices = new ArrayList<>();
         deviceSelectionSubject = PublishSubject.create();
@@ -59,8 +61,7 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         // Show only Movesense devices on the list
         if (showOnlyMovesense) {
-            if (device.getName() != null && device.getName().contains("Movesense")) {
-
+            if (device.getName() != null && device.getName().contains("Movesense") && (address.equals("") || device.getMacAddress().equals(address))) {
 
                 // Check for duplicates
                 for (RxBleDevice d : devices) {
@@ -68,7 +69,6 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         return;
                     }
                 }
-
                 // It was not a duplicate
                 devices.add(device);
                 notifyDataSetChanged();

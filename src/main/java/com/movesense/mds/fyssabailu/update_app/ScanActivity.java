@@ -10,6 +10,7 @@ import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.ScanFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
@@ -26,10 +27,12 @@ public class ScanActivity  extends AppCompatActivity implements ScanFragment.Dev
     private final String TAG = ScanActivity.class.getSimpleName();
 
     private CompositeSubscription subscriptions;
-
+    FyssaApp app;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        app = (FyssaApp) getApplication();
+
         subscriptions = new CompositeSubscription();
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {

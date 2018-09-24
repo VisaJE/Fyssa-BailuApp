@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.ConnectionLostDialog;
@@ -16,7 +17,10 @@ import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaInfoActivity;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
+import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 
@@ -35,7 +39,7 @@ public class SelectTestActivity extends AppCompatActivity {
     private ImageButton startButton;
     private ImageButton startButton2;
     private ImageButton updateButton;
-
+    FyssaApp app;
     private final String TAG = SelectTestActivity.class.getSimpleName();
 
     @Override
@@ -43,7 +47,7 @@ public class SelectTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_test);
         ButterKnife.bind(this);
-
+        app = (FyssaApp) getApplication();
         subscriptions = new CompositeSubscription();
 
         alertDialog = new AlertDialog.Builder(this)
@@ -110,19 +114,21 @@ public class SelectTestActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
 
-            case R.id.update:
-                startActivity(new Intent(SelectTestActivity.this, FyssaSensorUpdateActivity.class));
+            case R.id.reset_name:
+                app.getMemoryTools().saveName(MemoryTools.DEFAULT_STRING);
+                toast("Your username has been reset.");
                 return true;
 
-            case R.id.disconnect:
-                BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
-                disconnect = true;
+            case R.id.reset_serial:
+                app.getMemoryTools().saveSerial(MemoryTools.DEFAULT_STRING);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    public void toast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
     @Override
     public void onBackPressed() {
         alertDialog.show();
