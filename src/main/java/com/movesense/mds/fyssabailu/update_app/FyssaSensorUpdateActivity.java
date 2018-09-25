@@ -202,6 +202,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.start_update:
+                isDfuEnable = true;
                 if (!isBLEEnabled()) {
                     showBLEDialog();
                 }
@@ -504,7 +505,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     @Override
     public void onBackPressed() {
-        if (BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable || !mIsDeviceReconnected) {
+        if (isDfuEnable) {
             new AlertDialog.Builder(this)
                     .setTitle("Dfu Mode")
                     .setMessage("DFU operations are running. Please wait until process will be finished.")

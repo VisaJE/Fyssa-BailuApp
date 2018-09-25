@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
@@ -49,7 +50,7 @@ public class ScanActivity  extends AppCompatActivity implements ScanFragment.Dev
     public void onDeviceSelected(final RxBleDevice device) {
         Log.d(TAG, "onDeviceSelected: " + device.getName() + " (" + device.getMacAddress() + ")");
         MdsRx.Instance.connect(device, this);
-
+        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
         ConnectingDialog.INSTANCE.showDialog(this);
 
         // Monitor for connected devices

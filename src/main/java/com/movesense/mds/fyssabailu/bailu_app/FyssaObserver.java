@@ -1,6 +1,7 @@
 package com.movesense.mds.fyssabailu.bailu_app;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -47,6 +48,7 @@ import rx.subscriptions.CompositeSubscription;
 // Mostly copied from ScanFragment.java
 public class FyssaObserver extends AppCompatActivity implements DataUser {
 
+    public static Activity enclosingClass;
     private final String LOG_TAG = this.getClass().getCanonicalName();
 
     @BindView(R.id.info_tv)
@@ -70,7 +72,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fyssa_observe);
         ButterKnife.bind(this);
-
+        enclosingClass = this;
 
         app = (FyssaApp) getApplication();
 
@@ -268,6 +270,16 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     protected void onDestroy() {
         deviceView.timer.cancel();
         super.onDestroy();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        deviceView.schedule();
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        deviceView.stopTimer();
     }
 }
 

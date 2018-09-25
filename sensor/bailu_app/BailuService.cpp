@@ -20,7 +20,7 @@
 // Also the led blinking period
 #define TEMP_CHECK_TIME 6000
 // Shut down after this 
-#define SHUTDOWN_TIME 120000
+#define SHUTDOWN_TIME 220000
 
 #define RECOVERY_TIME 1
 

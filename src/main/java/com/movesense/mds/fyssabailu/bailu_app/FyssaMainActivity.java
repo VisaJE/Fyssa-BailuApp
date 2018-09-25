@@ -227,10 +227,13 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 });
     }
 
-    private void removeAndDisconnectFromDevice(){
-        if(MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+    public static void removeAndDisconnectFromDevices(){
+        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+        while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+            MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
+        }
+        while (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() > 0) {
             BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
-            BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
             MovesenseConnectedDevices.removeRxConnectedDevice(MovesenseConnectedDevices.getConnectedRxDevice(0));
         }
     }
@@ -301,7 +304,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void startObserving() {
-        removeAndDisconnectFromDevice();
+        removeAndDisconnectFromDevices();
         subscriptions.unsubscribe();
         finish();
         startActivity(new Intent(FyssaMainActivity.this, FyssaObserver.class)
@@ -437,7 +440,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 return true;
 
             case R.id.remove_device:
-                removeAndDisconnectFromDevice();
+                removeAndDisconnectFromDevices();
                 disconnect = true;
                 return true;
             default:
@@ -456,7 +459,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     @Override
     public void onBackPressed() {
-        removeAndDisconnectFromDevice();
+        removeAndDisconnectFromDevices();
         disconnect = true;
 
     }
