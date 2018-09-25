@@ -10,5 +10,8 @@
     <item
         android:id="@+id/update_sensor"
         android:title="@string/update" />
+    <item
+        android:id="@+id/update_sensor_s"
+        android:title="@string/update_s" />
 
 </menu>

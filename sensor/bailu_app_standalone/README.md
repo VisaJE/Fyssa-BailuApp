@@ -1,0 +1,1 @@
+Standalone sensor app that will turn on the service when the module starts. Also does not bond only once.

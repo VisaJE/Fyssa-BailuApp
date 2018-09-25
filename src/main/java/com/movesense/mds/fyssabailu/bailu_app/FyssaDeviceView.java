@@ -28,7 +28,7 @@ import rx.subjects.PublishSubject;
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final String LOG_TAG = FyssaDeviceView.class.getSimpleName();
-    private final Integer CLEAR_DELAY = 15000;
+    private final Integer CLEAR_DELAY = 5000;
 
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
@@ -59,7 +59,6 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-                Log.d(LOG_TAG, "Checking addTimeMap ");
                 //use a handler to run a toast that shows the current timestamp
                 for (String i : addTimeMap.keySet()) {
                     try
@@ -74,7 +73,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                     catch (Exception e)
                     {
-                        Log.d(LOG_TAG, "Muted");
+                        Log.e(LOG_TAG, "Muted", e);
                     }
                     finally
                     {

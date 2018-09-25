@@ -18,6 +18,7 @@ import com.movesense.mds.fyssabailu.bailu_app.FyssaInfoActivity;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
+import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateStandaloneActivity;
 import com.movesense.mds.fyssabailu.update_app.ScanActivity;
 
 import rx.subscriptions.CompositeSubscription;
@@ -97,6 +98,10 @@ public class MainActivity extends AppCompatActivity  {
                 return true;
             case R.id.update_sensor:
                 startActivity(new Intent(MainActivity.this, FyssaSensorUpdateActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return true;
+            case R.id.update_sensor_s:
+                startActivity(new Intent(MainActivity.this, FyssaSensorUpdateStandaloneActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                 return true;
             default:

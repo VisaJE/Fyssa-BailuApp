@@ -21,7 +21,14 @@ import java.util.LinkedList;
 public class FyssaApp extends Application {
 
     private MemoryTools memoryTools;
-    public static final String deviceVersion = "0.1.1.BA";
+    // Accepted versions
+    private static final String deviceVersions[] = {"0.1.1.BA","0.1.1.BS"} ;
+    public static final Boolean isSupported(String deviceVersion) {
+        for (String i : deviceVersions) {
+            if (i.equals(deviceVersion)) return true;
+        }
+        return false;
+    }
     public static final String SERVER_THRESHOLD_URL = "http://tommi.la:5000/bailu/threshold";
     public static final String SERVER_INSERT_URL = "http://tommi.la:5000/bailu/name/insert";
     public static final String SERVER_GET_URL = "http://tommi.la:5000/bailu/name/";

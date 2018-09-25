@@ -68,7 +68,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     @BindView(R.id.start_update) Button startUpdate;
     @BindView(R.id.dfu_select_device_btn2) Button dfuSelectDeviceBtn;
 
-    private final String fileName = "movesense_dfu";
+    // Defined as a string for overriding.
+    String fileName(){
+        return "movesense_dfu";
+    }
 
     private static final int PERMISSION_REQ = 25;
     private static final int ENABLE_BT_REQ = 0;
@@ -239,8 +242,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         .setPacketsReceiptNotificationsValue(DfuServiceInitiator.DEFAULT_PRN_VALUE)
                         .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
 
-                Log.d(LOG_TAG, "File id:" + this.getResources().getIdentifier(fileName, "raw", this.getPackageName()));
-                serviceInitiator.setZip(this.getResources().getIdentifier(fileName, "raw", this.getPackageName()));
+                Log.d(LOG_TAG, "File id:" + this.getResources().getIdentifier(fileName(), "raw", this.getPackageName()));
+                serviceInitiator.setZip(this.getResources().getIdentifier(fileName(), "raw", this.getPackageName()));
 
                 serviceInitiator.start(this, DfuService.class);
                 break;
@@ -473,7 +476,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         // Reconnect to last connected device
         try {
             MdsRx.Instance.reconnect(this);
-        } catch (java.lang.NullPointerException e) {
+        } catch (Exception e) {
+            BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
             startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
         }

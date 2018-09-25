@@ -6,4 +6,5 @@ cmake -G Ninja -DMOVESENSE_CORE_LIBRARY=../MovesenseCoreLib/ -DCMAKE_TOOLCHAIN_F
 ninja dfupkg
 cp movesense_dfu.zip ..
 cd ..
+rm -r buildfolder
 

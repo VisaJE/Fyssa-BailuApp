@@ -156,17 +156,17 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void disableButtons() {
         findViewById(R.id.do_button).setEnabled(false);
         findViewById(R.id.stop).setEnabled(false);
-        findViewById(R.id.get_button).setEnabled(false);
+        /*findViewById(R.id.get_button).setEnabled(false);
         findViewById(R.id.start_service_button).setEnabled(false);
-        findViewById(R.id.stop_service_button).setEnabled(false);
+        findViewById(R.id.stop_service_button).setEnabled(false);*/
         findViewById(R.id.battery_button).setEnabled(false);
     }
     private void enableButtons() {
         findViewById(R.id.do_button).setEnabled(true);
         findViewById(R.id.stop).setEnabled(true);
-        findViewById(R.id.get_button).setEnabled(true);
+        /*findViewById(R.id.get_button).setEnabled(true);
         findViewById(R.id.start_service_button).setEnabled(true);
-        findViewById(R.id.stop_service_button).setEnabled(true);
+        findViewById(R.id.stop_service_button).setEnabled(true);*/
         findViewById(R.id.battery_button).setEnabled(true);
     }
     private void checkSensorSoftware() {
@@ -189,7 +189,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                             Log.d(TAG, "Version: " + infoAppResponse.getContent().getVersion());
                             Log.d(TAG, "Company: " + infoAppResponse.getContent().getCompany());
                         }
-                        if (!infoAppResponse.getContent().getVersion().equals(FyssaApp.deviceVersion)) {
+                        if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
                             builder.setMessage("Update?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
@@ -256,15 +256,18 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         checkSensorSoftware();
     }
 
-    @OnClick({R.id.start_service_button, R.id.stop_service_button, R.id.do_button, R.id.stop, R.id.get_button, R.id.battery_button})
+    @OnClick({/*R.id.start_service_button, R.id.stop_service_button, R.id.stop, R.id.get_button, */R.id.do_button,  R.id.battery_button})
     public void onViewClicked(View view) {
         switch(view.getId()) {
-            case R.id.start_service_button:
+            /*case R.id.start_service_button:
                 subscribeDebug();
                 break;
             case R.id.stop_service_button:
                 unsubscribeDebug();
                 break;
+            case R.id.get_button:
+                getInfo();
+                break;*/
             case R.id.do_button:
                 final Calendar c = Calendar.getInstance();
                 final int mHour = c.get(Calendar.HOUR_OF_DAY);
@@ -290,9 +293,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
             case R.id.stop:
                 deleteService();
                 break;
-            case R.id.get_button:
-                getInfo();
-                break;
+
             case R.id.battery_button:
                 getBatteryLevel();
                 break;

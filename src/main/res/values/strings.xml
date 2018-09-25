@@ -112,4 +112,5 @@
     <string name="battery_level">Battery level</string>
     <string name="reset_name_button">Reset username</string>
     <string name="reset_serial">Forget your device</string>
+    <string name="update_s">Update with standalone app</string>
 </resources>

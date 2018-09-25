@@ -20,9 +20,8 @@
 // Also the led blinking period
 #define TEMP_CHECK_TIME 6000
 // Shut down after this 
-#define SHUTDOWN_TIME 120000
+#define SHUTDOWN_TIME 30000
 
-#define RECOVERY_TIME 1
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -53,13 +52,13 @@ BailuService::BailuService()
     : ResourceClient(WBDEBUG_NAME(__FUNCTION__), sExecutionContextId),
       ResourceProvider(WBDEBUG_NAME(__FUNCTION__), sExecutionContextId),
       LaunchableModule(LAUNCHABLE_NAME, sExecutionContextId),
-      isRunning(false),
+      isRunning(true),
       secondAccAvr(0.0),
       minuteAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
-      tempThreshold(0),
-      runningTime(0),
+      tempThreshold(25),
+      runningTime(30),
       isPartying(false),
       prepareRun(false),
       isMeasuringAcc(false),
@@ -97,7 +96,6 @@ void BailuService::deinitModule()
 bool BailuService::startModule()
 {
     mModuleState = WB_RES::ModuleStateValues::STARTED;
-    getBonding();
     mTimer = whiteboard::ResourceProvider::startTimer((size_t) TEMP_CHECK_TIME, true);
     return true;
 }
@@ -111,19 +109,6 @@ void BailuService::stopModule()
 }
 
 
-void BailuService::getBonding()
-{
-    asyncGet(WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS(), NULL);
-}
-
-void BailuService::setBonding()
-{
-    WB_RES::BondingSettings bSettings;
-    bSettings.policy = WB_RES::BondingPolicyValues::BONDINGONCE;
-    bSettings.recoveryTime = RECOVERY_TIME;
-    
-    asyncPut(WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS(), AsyncRequestOptions::Empty, bSettings);
-}
 
 
 void BailuService::onGetRequest(const whiteboard::Request& request,
@@ -355,16 +340,6 @@ void BailuService::onGetResult(whiteboard::RequestId requestId, whiteboard::Reso
         }
         break;
     }
-    case WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS::ID:
-        if (resultCode == whiteboard::HTTP_CODE_OK)
-        {
-            auto value = rResultData.convertTo<WB_RES::BondingSettings>();
-            DEBUGLOG("Found policy %u, %u", value.policy, value.recoveryTime);
-            if (value.policy == WB_RES::BondingPolicyValues::BONDINGONCE && value.recoveryTime == RECOVERY_TIME) return;
-            else setBonding();
-        }
-        else shutDown();
-        break;
     }
 }
 
