@@ -29,7 +29,7 @@ import rx.subjects.PublishSubject;
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final String LOG_TAG = FyssaDeviceView.class.getSimpleName();
-    private final Long CLEAR_DELAY = 8000L;
+    private final Long CLEAR_DELAY = 8L;
 
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
