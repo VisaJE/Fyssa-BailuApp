@@ -141,7 +141,6 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
             Log.d(LOG_TAG, "No name was found for " + rxBleScanResult.getMacAddress()
             );
             dataSender.get(FyssaApp.SERVER_GET_URL +rxBleScanResult.getMacAddress());
-            deviceView.handle(rxBleScanResult, score, timePartying);
         }
     }
 

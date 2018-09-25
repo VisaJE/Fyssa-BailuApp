@@ -51,15 +51,25 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     Boolean isGoing = false;
     public void schedule() {
         if (!isGoing) {
-            isGoing = true;
-            timer.schedule(timerTask, 3000, 3000);
+            try {
+                timer.schedule(timerTask, 3000, 3000);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Unexpected stuff", e);
+            }
+
         }
+        isGoing = true;
     }
     public void stopTimer() {
         if(isGoing){
-            isGoing = false;
-            timer.cancel();
+            try {
+                timer.cancel();
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Unexpected cancel.", e);
+            }
+
         }
+        isGoing = false;
     }
     Semaphore semaphore = new Semaphore(1, true);
 
