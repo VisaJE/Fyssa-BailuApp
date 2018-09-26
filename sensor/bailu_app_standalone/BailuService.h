@@ -147,6 +147,7 @@ private:
 
     double secondAccAvr;
     double minuteAccAvr;
+    double halfHourAccAvr;
     uint16_t msCounter;
 
     whiteboard::TimerId mTimer;

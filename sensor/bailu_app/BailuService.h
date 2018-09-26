@@ -146,6 +146,7 @@ private:
     uint32_t tempThreshold;
 
     double secondAccAvr;
+    double hourAccAvr;
     double minuteAccAvr;
     uint16_t msCounter;
 

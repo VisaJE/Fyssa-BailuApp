@@ -12,7 +12,7 @@
 #include <float.h>
 #include <math.h>
 #include <vector>
-
+#define MIN_ACC_SQUARED 2
 #define ASSERT WB_DEBUG_ASSERT
 
 
@@ -55,6 +55,7 @@ BailuService::BailuService()
       isRunning(true),
       secondAccAvr(0.0),
       minuteAccAvr(0.0),
+      halfHourAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
       tempThreshold(25),
@@ -257,6 +258,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
     {
         whiteboard::FloatVector3D accValue = arrayData[i];
         double acc = sqrt(accValue.mX*accValue.mX + accValue.mY*accValue.mY + accValue.mZ*accValue.mZ) - 9.81;
+        if (acc*acc < MIN_ACC_SQUARED) acc = 0;
         secondAccAvr = secondAccAvr*(ACC_SAMPLERATE-1)/ACC_SAMPLERATE + acc/ACC_SAMPLERATE;
         if (msCounter >= ACC_SAMPLERATE)
         {
@@ -409,7 +411,7 @@ void BailuService::checkPartyStatus()
 void BailuService::advPartyScore()
 {
     
-    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1));
+    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+0.5*halfHourAccAvr);
     if (!isPartying) 
     {
       score = 0;
@@ -476,6 +478,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             if (!isPartying) {
                 minuteAccAvr = 0;
                 timePartying = 0;
+                halfHourAccAvr = 0;
             } else timePartying += TEMP_CHECK_TIME/1000;
             // Make PUT request to trigger led blink
             asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);

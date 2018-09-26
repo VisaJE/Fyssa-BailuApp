@@ -18,11 +18,12 @@
 
 
 // Also the led blinking period
-#define TEMP_CHECK_TIME 6000
+#define TEMP_CHECK_TIME 10000
 // Shut down after this 
 #define SHUTDOWN_TIME 220000
 
 #define RECOVERY_TIME 1
+#define MIN_ACC_SQUARED 2
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -56,6 +57,7 @@ BailuService::BailuService()
       isRunning(false),
       secondAccAvr(0.0),
       minuteAccAvr(0.0),
+      hourAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
       tempThreshold(0),
@@ -272,11 +274,13 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
     {
         whiteboard::FloatVector3D accValue = arrayData[i];
         double acc = sqrt(accValue.mX*accValue.mX + accValue.mY*accValue.mY + accValue.mZ*accValue.mZ) - 9.81;
+        if (acc*acc < MIN_ACC_SQUARED) acc = 0;
         secondAccAvr = secondAccAvr*(ACC_SAMPLERATE-1)/ACC_SAMPLERATE + acc/ACC_SAMPLERATE;
         if (msCounter >= ACC_SAMPLERATE)
         {
             msCounter = 0;
             minuteAccAvr = minuteAccAvr*59/60 + secondAccAvr/60;
+            hourAccAvr = hourAccAvr*59/60 + minuteAccAvr/60;
         }
         else ++msCounter;
         
@@ -434,7 +438,7 @@ void BailuService::checkPartyStatus()
 void BailuService::advPartyScore()
 {
     
-    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1));
+    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
     if (!isPartying) 
     {
       score = 0;
@@ -500,6 +504,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
         {
             if (!isPartying) {
                 minuteAccAvr = 0;
+                hourAccAvr = 0;
                 timePartying = 0;
             } else timePartying += TEMP_CHECK_TIME/1000;
             // Make PUT request to trigger led blink
