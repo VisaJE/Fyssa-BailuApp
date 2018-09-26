@@ -259,7 +259,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         checkSensorSoftware();
     }
 
-    @OnClick({/*R.id.start_service_button, R.id.stop_service_button, R.id.stop, R.id.get_button, */R.id.do_button,  R.id.battery_button})
+    @OnClick({/*R.id.start_service_button, R.id.stop_service_button,  R.id.get_button, */R.id.do_button,R.id.stop, R.id.battery_button})
     public void onViewClicked(View view) {
         switch(view.getId()) {
             /*case R.id.start_service_button:
