@@ -24,6 +24,10 @@ OPTIONAL_CORE_MODULE(BleNordicUART, false)
 
 //Debug!
 OPTIONAL_CORE_MODULE(DebugService, false)
+// NOTE: If building a simulator build, these macros are obligatory!
+DEBUGSERVICE_BUFFER_SIZE(6, 120); // 6 lines, 120 characters total
+DEBUG_EEPROM_MEMORY_AREA(false, 0, 0)
+LOGBOOK_MEMORY_AREA(0, 384 * 1024);
 
 APPINFO_NAME("FyssaBailu");
 APPINFO_VERSION("0.1.1.BA");
