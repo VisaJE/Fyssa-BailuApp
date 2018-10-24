@@ -284,6 +284,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                                 int nMinute = c.get(Calendar.MINUTE);
                                 int time = (hourOfDay-nHour)*60 + (minute-nMinute);
                                 if (time > 0) startService(time);
+                                else  if (time < 0) startService(24*60+time);
                                 else toast("Invalid time.");
 
                             }
