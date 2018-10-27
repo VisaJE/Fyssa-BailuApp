@@ -8,3 +8,4 @@ cp movesense_dfu.zip ../movesense_dfu_s.zip
 cd ..
 rm -r buildSfolder
 
+cp movesense_dfu_s.zip ../src/main/res/raw/

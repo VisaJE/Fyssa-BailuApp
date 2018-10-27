@@ -21,6 +21,7 @@
 // Shut down after this 
 #define SHUTDOWN_TIME 30000
 
+#define PARTY_THRESHOLD 50
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -411,6 +412,7 @@ void BailuService::advPartyScore()
 {
     
     uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+0.5*halfHourAccAvr);
+    if (score < PARTY_THRESHOLD) score = 0;
     if (!isPartying) 
     {
       score = 0;
