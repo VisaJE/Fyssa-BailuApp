@@ -173,6 +173,10 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         checkSensorSoftware(0);
     }
     private void checkSensorSoftware(int iteration) {
+        if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) {
+            startMainActivity();
+            return;
+        }
         Log.d(TAG, "Checking software");
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + "/Info/App",
@@ -210,7 +214,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         if (iteration < 2) {
                             try {
                                 Thread.sleep(2000);
-                                if (MovesenseConnectedDevices.getConnectedRxDevice(0) == null) {
+                                if (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() <= 0) {
                                     toast("Connection failed");
                                     startMainActivity();
                                 } else MdsRx.Instance.reconnect(FyssaMainActivity.this);
