@@ -133,7 +133,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
         res.seenDevices = mostDevices;
-        res.time = runningTime;
+        res.time = (runningTime * 60000 - timerCounter) * 60000;
         res.curTemp = currentTemp;
         returnResult(request, whiteboard::HTTP_CODE_OK,
              ResponseOptions::Empty, res);

@@ -344,6 +344,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     public void onSuccess(String s) {
                         Log.d(TAG, "Stopped party metering at: " + MdsRx.SCHEME_PREFIX +
                                 MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH);
+                        Log.d(TAG, "deleteService: Got response" + s);
                     }
 
                     @Override

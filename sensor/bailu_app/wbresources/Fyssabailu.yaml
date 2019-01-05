@@ -16,7 +16,8 @@ info:
 paths:
   /Fyssa/Bailu:
     get:
-      description: Get current config and temperature.
+      description: |
+        Get current config and temperature. 
       responses:
         200:
          schema:
@@ -40,7 +41,7 @@ paths:
           description: Measurement source is unavailable
   /Fyssa/Bailu/Stop:
     get:
-      description: Get current status and stop measuring.
+      description: Get current status and stop measuring. Time shows how much scanning is left.
       responses:
         200:
          schema:

@@ -7,4 +7,5 @@ ninja dfupkg
 cp Movesense_dfu.zip ../movesense_dfu.zip
 cd ..
 rm -r buildfolder
+echo "Copying zip to ../src/main/res/raw"
 cp movesense_dfu.zip ../src/main/res/raw/

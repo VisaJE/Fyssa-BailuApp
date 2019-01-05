@@ -29,7 +29,7 @@ import rx.subjects.PublishSubject;
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final String LOG_TAG = FyssaDeviceView.class.getSimpleName();
-    private final Long CLEAR_DELAY = 8L;
+    private final Long CLEAR_DELAY = 15L;
 
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
@@ -90,7 +90,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         semaphore.acquire(1);
                         for (String i : addTimeMap.keySet()) {
                             if (addTimeMap.get(i) < (System.currentTimeMillis() / 1000) - CLEAR_DELAY) {
-                                Log.d(LOG_TAG, "Removing: " + ( (System.currentTimeMillis() / 1000) - CLEAR_DELAY) + "<" +addTimeMap.get(i));
+                                Log.d(LOG_TAG, "Removing: " + ( (System.currentTimeMillis() / 1000) - CLEAR_DELAY) + ">" +addTimeMap.get(i));
                                 addTimeMap.remove(i);
                                 devices.remove(i);
                                 infoMap.remove(i);
