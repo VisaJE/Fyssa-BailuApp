@@ -29,9 +29,9 @@ public class FyssaApp extends Application {
         }
         return false;
     }
-    public static final String SERVER_THRESHOLD_URL = "http://tommi.la:5000/bailu/threshold";
-    public static final String SERVER_INSERT_URL = "http://tommi.la:5000/bailu/name/insert";
-    public static final String SERVER_GET_URL = "http://tommi.la:5000/bailu/name/";
+    public static final String SERVER_THRESHOLD_URL = "http://82.130.33.5:5000/bailu/threshold";
+    public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
+    public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";
 
 
     @Override
