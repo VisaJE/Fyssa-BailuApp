@@ -13,10 +13,12 @@ import android.content.Intent;
 
 import android.content.pm.PackageManager;
 
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
+import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -116,7 +118,34 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         knownMac = null;
         setContentView(R.layout.activity_sensor_update);
         ButterKnife.bind(this);
-        Log.e(LOG_TAG, "onCreate");
+        Log.d(LOG_TAG, "onCreate");
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.e(LOG_TAG, "Location services unavailable!");
+            startUpdate.setEnabled(false);
+            dfuSelectDeviceBtn.setEnabled(false);
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.title_location_on)
+                    .setMessage(R.string.text_location_on)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                        this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        if (Build.VERSION.SDK_INT >= 21) {
+                            finishAndRemoveTask();
+                        } else {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, (dialog, which) -> {
+                        if (Build.VERSION.SDK_INT >= 21) {
+                            finishAndRemoveTask();
+                        } else {
+                            finish();
+                        }
+                    })
+                    .create().show();
+            return;
+        }
         if (!checkLocationPermission()) {
             Log.d(LOG_TAG, "No permission!");
             startUpdate.setEnabled(false);

@@ -9,8 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.MemoryFile;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -71,6 +74,25 @@ public class ScanFragment extends Fragment {
         if (!bluetoothAdapter.isEnabled()) {
             // Bluetooth is not enable so run
             bluetoothAdapter.enable();
+        }
+
+        final LocationManager manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.title_location_on)
+                    .setMessage(R.string.text_location_on)
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                        this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    })
+                    .setNegativeButton(R.string.no, (dialog, which) -> {
+                        if (Build.VERSION.SDK_INT >= 21) {
+                            getActivity().finishAndRemoveTask();
+                        } else {
+                            getActivity().finish();
+                        }
+                    })
+                    .create().show();
+
         }
 
         // Capture instance of RxBleClient to make code look cleaner
