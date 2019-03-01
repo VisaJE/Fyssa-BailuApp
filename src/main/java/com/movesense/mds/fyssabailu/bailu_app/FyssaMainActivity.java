@@ -35,6 +35,7 @@ import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaBailuGson;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
+import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateBootloaderActivity;
 import com.movesense.mds.fyssabailu.update_app.model.DebugResponse;
 
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
@@ -195,12 +196,16 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         }
                         if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
+
                             builder.setMessage("Update?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {
                                         case DialogInterface.BUTTON_POSITIVE:
-                                            updateSensorSoftware();
+                                            if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
+                                                updateSensorSoftware();
+                                            else
+                                                updateSensorSoftwareBootloader();
                                             break;
                                     }
                                 }
@@ -246,6 +251,12 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         //removeAndDisconnectFromDevice();
         subscriptions.unsubscribe();
         startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    }
+    private void updateSensorSoftwareBootloader() {
+        //removeAndDisconnectFromDevice();
+        subscriptions.unsubscribe();
+        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateBootloaderActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
 

@@ -29,6 +29,14 @@ public class FyssaApp extends Application {
         }
         return false;
     }
+    public static final Boolean hasBootloader(String deviceVersion) {
+        if (deviceVersion.charAt(2) == '1' &&
+                (deviceVersion.contains("BA") || deviceVersion.contains("BS") ||
+                        deviceVersion.contains("HW") || deviceVersion.contains("IMU"))) {
+            return true;
+        }
+        return false;
+    }
     public static final String SERVER_THRESHOLD_URL = "http://82.130.33.5:5000/bailu/threshold";
     public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
     public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";

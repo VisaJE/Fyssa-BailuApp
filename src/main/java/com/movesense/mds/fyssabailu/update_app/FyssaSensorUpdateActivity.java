@@ -1,5 +1,6 @@
 package com.movesense.mds.fyssabailu.update_app;
 
+import android.Manifest;
 import android.app.ActivityManager;
 
 import android.app.NotificationManager;
@@ -16,6 +17,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
@@ -39,6 +42,7 @@ import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
+import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleClient;
@@ -109,38 +113,44 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        knownMac = null;
         setContentView(R.layout.activity_sensor_update);
         ButterKnife.bind(this);
         Log.e(LOG_TAG, "onCreate");
-        isBLESupported();
-        if (!isBLEEnabled()) {
-            showBLEDialog();
+        if (!checkLocationPermission()) {
+            Log.d(LOG_TAG, "No permission!");
+            startUpdate.setEnabled(false);
+        } else {
+            isBLESupported();
+            if (!isBLEEnabled()) {
+                showBLEDialog();
+            }
+
+            if (savedInstanceState != null) {
+                selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
+                mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
+                startUpdate.setEnabled(selectedDevice != null && mStatusOk);
+                mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
+                mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
+            }
+            checkDFUMac();
+
+            enableDfu();
+            // Ask For Bluetooth
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (!bluetoothAdapter.isEnabled()) {
+                // Bluetooth is not enable so run
+                bluetoothAdapter.enable();
+            }
+
+            DfuServiceListenerHelper.registerProgressListener(this, dfuProgressListener);
+
+            BleManager.INSTANCE.addBleConnectionMonitorListener(this);
+
+            startUpdate.setEnabled(false);
+
+            skipDeviceScanningDialog();
         }
-
-        if (savedInstanceState != null) {
-            selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
-            mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
-            startUpdate.setEnabled(selectedDevice != null && mStatusOk);
-            mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
-            mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
-        }
-
-        enableDfu();
-        // Ask For Bluetooth
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            // Bluetooth is not enable so run
-            bluetoothAdapter.enable();
-        }
-
-        DfuServiceListenerHelper.registerProgressListener(this, dfuProgressListener);
-
-        BleManager.INSTANCE.addBleConnectionMonitorListener(this);
-
-        startUpdate.setEnabled(false);
-
-        skipDeviceScanningDialog();
-
     }
 
     private void checkDFUMac() {
@@ -152,6 +162,13 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     @Override
                     public void onSuccess(String s) {
                         Log.d(LOG_TAG, "onSuccess: Found info" + s);
+                        FyssaDeviceInfo info = new Gson().fromJson(s, FyssaDeviceInfo.class);
+                        try{
+                            knownMac = info.getDfuAddress();
+                        } catch (Exception e) {
+                            Log.e(LOG_TAG, "Info wasn't suitable", e);
+                            knownMac = null;
+                        }
                     }
 
                     @Override
@@ -345,12 +362,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     String dName = rxBleScanResult.getBleDevice().getName();
                     if (dName != null && dName.equals("DfuTarg")) {
                         if (!exists(devices, rxBleScanResult.getBleDevice())) {
-
-                            Log.d(LOG_TAG, "New device!");
+                            if (knownMac == null || rxBleScanResult.getBleDevice().getMacAddress().equals(knownMac))
+                            Log.d(LOG_TAG, "Found device!");
                             devices.add(rxBleScanResult.getBleDevice());
                             signalStrengths.add(rxBleScanResult.getRssi());
                             startUpdate.setEnabled(true);
-
                         }
                     }
                 },  new ThrowableToastingAction(null)));
@@ -573,6 +589,40 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             if (listed.get(i).getMacAddress().equals(device.getMacAddress()) ) res = true;
         }
         return res;
+    }
+
+
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
+    private boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.title_location_permission)
+                        .setMessage(R.string.text_location_permission)
+                        .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
+                            }
+                        })
+                        .create()
+                        .show();
+
+            } else {
+                // No explanation needed, we can request the permission.
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 }
 
