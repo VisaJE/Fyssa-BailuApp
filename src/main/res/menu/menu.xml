@@ -13,5 +13,8 @@
     <item
         android:id="@+id/update_sensor_s"
         android:title="@string/update_s" />
+    <item
+        android:id="@+id/update_sensor_b"
+        android:title="@string/update_bootloader" />
 
 </menu>

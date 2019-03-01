@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsResponseListener;
@@ -37,6 +38,7 @@ import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleClient;
@@ -85,6 +87,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     private static final String DATA_DFU_COMPLETED = "dfu_completed";
     private static final String DATA_DFU_ERROR = "dfu_error";
 
+    private static final String DFU_MAC_ADDRESS = "Info";
+
     private ScannerFragment scannerFragment;
     private boolean mStatusOk;
     private RxBleDevice selectedDevice = null;
@@ -100,6 +104,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     Boolean subscribed = false;
     ArrayList<RxBleDevice> devices;
     ArrayList<Integer> signalStrengths;
+    String knownMac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +141,24 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         skipDeviceScanningDialog();
 
+    }
+
+    private void checkDFUMac() {
+        Log.e(LOG_TAG, "checkDFUMac: Looking for known mac.");
+        Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
+                        MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
+                        DFU_MAC_ADDRESS,
+                null, new MdsResponseListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        Log.d(LOG_TAG, "onSuccess: Found info" + s);
+                    }
+
+                    @Override
+                    public void onError(MdsException e) {
+                        Log.e(LOG_TAG, "onError: Didn't get a mac address.", e);
+                    }
+                });
     }
 
     @Override
