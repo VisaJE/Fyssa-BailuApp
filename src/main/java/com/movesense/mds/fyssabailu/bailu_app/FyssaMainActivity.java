@@ -35,7 +35,6 @@ import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaBailuGson;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
-import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateBootloaderActivity;
 import com.movesense.mds.fyssabailu.update_app.model.DebugResponse;
 
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
@@ -205,7 +204,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                                             if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
                                                 updateSensorSoftware();
                                             else
-                                                updateSensorSoftwareBootloader();
+                                                updateSensorSoftware(); // Useless now that everythin happens within the same update activity.
                                             break;
                                     }
                                 }
@@ -253,12 +252,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
-    private void updateSensorSoftwareBootloader() {
-        //removeAndDisconnectFromDevice();
-        subscriptions.unsubscribe();
-        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateBootloaderActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-    }
+
 
     @Override
     protected void onResume() {

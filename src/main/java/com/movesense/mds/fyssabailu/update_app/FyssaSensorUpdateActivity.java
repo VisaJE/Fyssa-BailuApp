@@ -115,6 +115,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     String knownMac;
     boolean bootloaderFound = false;
 
+    String[] listFiles = {"movesense_dfu", "movesense_dfu_bootloader", "movesense_dfu_s", "movesense_dfu_s_bootloader"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -181,7 +182,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             devices = new ArrayList();
             signalStrengths = new ArrayList<>();
             if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
-                Log.d(LOG_TAG, "Already connected to" + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
+                Log.d(LOG_TAG, "Already connected to " + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
                 setupUpdate();
             }
             else {
@@ -192,7 +193,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         })
                         .setNegativeButton(R.string.no, (dialog, which) -> {
                             startActivity(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
                         })
                         .create().show();
             }
@@ -202,14 +203,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private void setupUpdate(){
         checkDFUMac();
-
-        enableDfu();
-
-        skipDeviceScanningDialog();
     }
 
     private void checkDFUMac() {
-        Log.e(LOG_TAG, "checkDFUMac: Looking for known mac.");
+        Log.d(LOG_TAG, "checkDFUMac: Looking for known mac.");
         if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
@@ -225,11 +222,15 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                             Log.e(LOG_TAG, "Info wasn't suitable", e);
                             knownMac = null;
                         }
+                        enableDfu();
+                        skipDeviceScanningDialog();
                     }
 
                     @Override
                     public void onError(MdsException e) {
                         Log.e(LOG_TAG, "onError: Didn't get a mac address.", e);
+                        enableDfu();
+                        skipDeviceScanningDialog();
                     }
                 });
     }
@@ -343,11 +344,18 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         .setPacketsReceiptNotificationsEnabled(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                         .setPacketsReceiptNotificationsValue(DfuServiceInitiator.DEFAULT_PRN_VALUE)
                         .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
+                new AlertDialog.Builder(this)
+                        .setTitle("Choose an item")
+                        .setCancelable(false)
+                        .setSingleChoiceItems(listFiles, -1, (DialogInterface.OnClickListener) (dialogInterface, i) -> {
+                            dialogInterface.dismiss();
+                            Log.d(LOG_TAG, "File id:" + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+                            serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
 
-                Log.d(LOG_TAG, "File id:" + this.getResources().getIdentifier(fileName(), "raw", this.getPackageName()));
-                serviceInitiator.setZip(this.getResources().getIdentifier(fileName(), "raw", this.getPackageName()));
+                            serviceInitiator.start(this, DfuService.class);
+                        })
+                        .create().show();
 
-                serviceInitiator.start(this, DfuService.class);
                 break;
             case R.id.dfu_select_device_btn2:
                 if (!isBLEEnabled()) {
@@ -582,8 +590,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
         }
-
-        finish();
     }
 
     public void onUploadCanceled() {
@@ -638,8 +644,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             public void run() {
                 Toast.makeText(FyssaSensorUpdateActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                 if (mDfuCompleted) {
-                    startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    finish();
                 }
             }
         });
