@@ -10,7 +10,7 @@ public class FyssaSensorUpdateStandaloneActivity extends FyssaSensorUpdateActivi
 
     @Override
     String fileName() {
-        return "movesense_dfu_s";
+        return "movesense_dfu_s_bootloader";
     }
 
 

@@ -115,12 +115,28 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         schedule();
     }
 
-
+    private String partyTime(int t) {
+        if (t > 0)" Partied for: " + partyTimeToString(t);
+        else return "";
+    }
+    private String partyTimeToString(int t) {
+        if (t == 0) return "0"
+        if (t < 60) return "< 1 min";
+        else {
+            int mins = t/60;
+            if (mins < 60) return "" + mins + " min";
+            else {
+                int hours = mins/60;
+                mins = mins - hours*60;
+                return "" + hours + " h " + mins + " min";
+            }
+        }
+    }
 
     private String getText(RxBleDevice device, int score, int timePartying) {
         String name = "Unknown player";
         if (nameMap.containsKey(device.getMacAddress())) name = nameMap.get(device.getMacAddress());
-        return name + "\nParty level:" + score + " Time spent partying: " + timePartying;
+        return name + "\nParty level: " + score + ;
     }
 
 

@@ -162,9 +162,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
                 mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
             }
-            checkDFUMac();
 
-            enableDfu();
             // Ask For Bluetooth
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             if (!bluetoothAdapter.isEnabled()) {
@@ -177,6 +175,12 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             BleManager.INSTANCE.addBleConnectionMonitorListener(this);
 
             startUpdate.setEnabled(false);
+            devices = new ArrayList();
+            signalStrengths = new ArrayList<>();
+            if (MovesenseConnectedDevices.getConnectedDevices() == null || MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
+            checkDFUMac();
+
+            enableDfu();
 
             skipDeviceScanningDialog();
         }
@@ -184,6 +188,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private void checkDFUMac() {
         Log.e(LOG_TAG, "checkDFUMac: Looking for known mac.");
+        if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
                         DFU_MAC_ADDRESS,
@@ -383,8 +388,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         Log.d(LOG_TAG, "Subscribing to rxBle devices.");
         cSubscriptions = new CompositeSubscription();
         subscribed = true;
-        devices = new ArrayList<>();
-        signalStrengths = new ArrayList<>();
         cSubscriptions.add(rxBleClient.scanBleDevices()
                 .subscribe(rxBleScanResult -> {
                     //Log.d(LOG_TAG, "Found device name " + rxBleScanResult.getBleDevice().getName() + " mac: " + rxBleScanResult.getBleDevice().getMacAddress());

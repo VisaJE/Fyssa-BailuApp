@@ -54,9 +54,6 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     @BindView(R.id.info_tv)
     TextView infoTv;
 
-
-
-
     private BluetoothAdapter bluetoothAdapter;
 
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
