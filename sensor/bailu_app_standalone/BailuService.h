@@ -113,6 +113,9 @@ protected:
     virtual void onTimer(whiteboard::TimerId timerId) OVERRIDE;
 
 private:
+    void listenDoubleTaps();
+    void onDoubleTap();
+
     void startAcc(whiteboard::RequestId& remoteRequestId);
     void stopAcc();
 

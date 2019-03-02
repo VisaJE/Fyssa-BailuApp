@@ -74,7 +74,7 @@ definitions:
     properties:
       time:
         description: |
-          Time for measuring in minutes
+          Time spent partying in seconds.
         type: integer
         format: uint32
       threshold:

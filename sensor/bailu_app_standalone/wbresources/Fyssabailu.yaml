@@ -73,7 +73,7 @@ definitions:
     properties:
       time:
         description: |
-          Time for measuring in minutes
+          Time partied in seconds
         type: integer
         format: uint32
       threshold:

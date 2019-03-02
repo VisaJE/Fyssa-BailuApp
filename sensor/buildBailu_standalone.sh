@@ -5,7 +5,9 @@ cmake -G Ninja -DMOVESENSE_CORE_LIBRARY=../../../movesense-device-lib/MovesenseC
 
 ninja dfupkg
 cp Movesense_dfu.zip ../movesense_dfu_s.zip
+cp Movesense_dfu_w_bootloader.zip ../movesense_dfu_s_bootloader.zip
 cd ..
 rm -r buildSfolder
 echo "Copying to ../src/main/res/raw"
 cp movesense_dfu_s.zip ../src/main/res/raw/
+cp movesense_dfu_s_bootloader.zip ../src/main/res/raw/

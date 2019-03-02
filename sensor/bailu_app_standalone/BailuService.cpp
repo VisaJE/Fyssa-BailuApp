@@ -6,20 +6,24 @@
 #include "whiteboard/builtinTypes/UnknownStructure.h"
 #include "component_max3000x/resources.h"
 #include "system_mode/resources.h"
+#include "system_states/resources.h"
 #include "ui_ind/resources.h"
 #include "comm_ble/resources.h"
 #include <float.h>
 #include <math.h>
 #include <vector>
-#define MIN_ACC_SQUARED 2
+
 #define ASSERT WB_DEBUG_ASSERT
 
 
 
 // Also the led blinking period
-#define TEMP_CHECK_TIME 6000
+#define TEMP_CHECK_TIME 10000
 // Shut down after this 
 #define SHUTDOWN_TIME 30000
+
+#define DEFAULT_RUNNING_TIME 30
+#define MIN_ACC_SQUARED 2
 
 #define PARTY_THRESHOLD 50
 
@@ -58,8 +62,8 @@ BailuService::BailuService()
       halfHourAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
-      tempThreshold(25),
-      runningTime(30),
+      tempThreshold(20),
+      runningTime(DEFAULT_RUNNING_TIME),
       isPartying(false),
       prepareRun(false),
       isMeasuringAcc(false),
@@ -307,6 +311,12 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
 
         break;
     }
+    case WB_RES::LOCAL::SYSTEM_STATES_STATEID::ID:
+    {
+        auto res = value.convertTo<WB_RES::StateChange>();
+        WB_RES::State newState = res.newState;
+        if (newState == 1) onDoubleTap();
+    }
     }
 }
 
@@ -522,5 +532,31 @@ void BailuService::onRemoteWhiteboardDisconnected(whiteboard::WhiteboardId white
 }
 
 
+void BailuService::listenDoubleTaps()
+{
+    DEBUGLOG("listenDoubleTaps()");
+    whiteboard::ResourceId resId;
+    wb::Result result = getResource("/system/states/doubletap", resId);
+    if (!wb::RETURN_OKC(result))
+    {
+        return;
+    }
+    result = asyncSubscribe(resId, AsyncRequestOptions::Empty);
+    if (result == whiteboard::HTTP_CODE_OK) DEBUGLOG("Listening to taps");
+    else DEBUGLOG("Error listening to taps. Code %u", (uint8_t) result);
 
+}
+
+void BailuService::onDoubleTap()
+{
+    DEBUGLOG("onDoubleTap");
+    // Make PUT request to trigger led blink
+    asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
+    timerCounter = 0;
+    if (!isRunning)
+    {
+    isRunning = true;
+    advPartyScore();
+    }
+}
 

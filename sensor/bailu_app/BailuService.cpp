@@ -21,7 +21,7 @@
 // Shut down after this 
 #define SHUTDOWN_TIME 220000
 
-#define RECOVERY_TIME 1
+#define RECOVERY_TIME 2
 #define MIN_ACC_SQUARED 2
 
 #define PARTY_THRESHOLD 50
@@ -40,7 +40,7 @@ const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device 
     0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. 
     };                  //Last byte determines the sensor to be advertising for this service when set 0xEA
-const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5; // Points to second last byte
+const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5;
 
 static const whiteboard::ExecutionContextId sExecutionContextId =
     WB_RES::LOCAL::FYSSA_BAILU::EXECUTION_CONTEXT;
