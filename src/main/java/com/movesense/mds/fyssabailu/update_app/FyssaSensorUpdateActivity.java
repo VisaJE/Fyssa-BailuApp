@@ -41,6 +41,7 @@ import com.movesense.mds.fyssabailu.R;
 
 
 import com.movesense.mds.fyssabailu.RxBle;
+
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
@@ -96,6 +97,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     private static final String DFU_MAC_ADDRESS = "Info";
 
     private ScannerFragment scannerFragment;
+
     private boolean mStatusOk;
     private RxBleDevice selectedDevice = null;
     private boolean mDfuCompleted;
@@ -111,6 +113,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     ArrayList<RxBleDevice> devices;
     ArrayList<Integer> signalStrengths;
     String knownMac;
+    boolean bootloaderFound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,13 +180,32 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             startUpdate.setEnabled(false);
             devices = new ArrayList();
             signalStrengths = new ArrayList<>();
-            if (MovesenseConnectedDevices.getConnectedDevices() == null || MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
-            checkDFUMac();
+            if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+                Log.d(LOG_TAG, "Already connected to" + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
+                setupUpdate();
+            }
+            else {
+                new AlertDialog.Builder(this)
+                        .setMessage(R.string.connect_for_update)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.yes, (dialog, which) -> {
+                        })
+                        .setNegativeButton(R.string.no, (dialog, which) -> {
+                            startActivity(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                        })
+                        .create().show();
+            }
 
-            enableDfu();
-
-            skipDeviceScanningDialog();
         }
+    }
+
+    private void setupUpdate(){
+        checkDFUMac();
+
+        enableDfu();
+
+        skipDeviceScanningDialog();
     }
 
     private void checkDFUMac() {
@@ -259,6 +281,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
     private int findMySense() {
+        if (knownMac != null) {
+            for (RxBleDevice i : devices) {
+                if (i.getMacAddress().equals(knownMac)) return devices.indexOf(i);
+            }
+        }
         Integer highest = 0;
         Integer secondHighest = -1;
         for (Integer i : signalStrengths) {
@@ -408,13 +435,15 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     @Override
     public void onDeviceSelected(RxBleDevice device) {
         Log.d(LOG_TAG, "onDeviceSelected()");
-        selectedDevice = device;
-        scannerFragment.dismiss();
-        if (subscribed) {
-            subscribed = false;
-            cSubscriptions.unsubscribe();
-        }
-        startUpdate.setEnabled(true);
+            selectedDevice = device;
+            scannerFragment.dismiss();
+            if (subscribed) {
+                subscribed = false;
+                cSubscriptions.unsubscribe();
+            }
+            startUpdate.setEnabled(true);
+
+
     }
 
     DfuProgressListener dfuProgressListener = new DfuProgressListener() {

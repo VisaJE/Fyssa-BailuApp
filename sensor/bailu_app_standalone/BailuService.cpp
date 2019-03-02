@@ -102,6 +102,7 @@ bool BailuService::startModule()
 {
     mModuleState = WB_RES::ModuleStateValues::STARTED;
     mTimer = whiteboard::ResourceProvider::startTimer((size_t) TEMP_CHECK_TIME, true);
+    listenDoubleTaps();
     return true;
 }
 
@@ -550,6 +551,7 @@ void BailuService::listenDoubleTaps()
 void BailuService::onDoubleTap()
 {
     DEBUGLOG("onDoubleTap");
+    timesTapped += 1;
     // Make PUT request to trigger led blink
     asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
     timerCounter = 0;

@@ -2,7 +2,7 @@ App for measuring and advertising partying. Detects whether the holder of a sens
 Requires the movesense device libraries available at:git clone git@bitbucket.org:suunto/movesense-device-lib.git
 
 TODO: Sometimes hides the app after updating the sensor. Still reconnects properly. 
-Location services need to be turned on by the app!! Otherwise crashes ensue.
+Update activity should be refractored to ask for the file you want and offer connecting to devices.
 
 
 

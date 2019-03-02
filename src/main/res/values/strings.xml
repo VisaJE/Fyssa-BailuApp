@@ -7,6 +7,8 @@
     <string name="title_location_on">Enable location services</string>
     <string name="btn_ok">Ok</string>
 
+    <string name="connect_for_update">Is DFU mode already on?</string>
+
     <string name="serial">Serial</string>
     <string name="path">Path</string>
     <string name="contract">Contract</string>
@@ -116,4 +118,5 @@
     <string name="reset_serial">Forget your device</string>
     <string name="update_s">Update with standalone app</string>
     <string name="update_bootloader">Update with bootloader</string>
+    <string name="update_s_b">Update standalone + bootloader</string>
 </resources>
