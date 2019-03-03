@@ -430,7 +430,6 @@ void BailuService::advPartyScore()
     }
     if (score == 0) timePartying = 0;
 
-    score = timesTapped; // FOR DEBUGGING!!
 
     // Update data to advertise packet
     s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)((score & 0xFF00) >> 8);
