@@ -196,7 +196,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
 
-                            builder.setMessage("Update?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     switch (which) {
@@ -271,15 +271,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     @OnClick({/*R.id.start_service_button, R.id.stop_service_button,  R.id.get_button, */R.id.do_button,R.id.stop, R.id.battery_button})
     public void onViewClicked(View view) {
         switch(view.getId()) {
-            /*case R.id.start_service_button:
-                subscribeDebug();
-                break;
-            case R.id.stop_service_button:
-                unsubscribeDebug();
-                break;
-            case R.id.get_button:
-                getInfo();
-                break;*/
+
             case R.id.do_button:
                 final Calendar c = Calendar.getInstance();
                 final int mHour = c.get(Calendar.HOUR_OF_DAY);
@@ -378,22 +370,6 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void getBatteryLevel() {
-        //TRIALING DOUBLE TAP STUFF
-        /*Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
-                        MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + "/System/States/3",
-                null, new MdsResponseListener() {
-                    @Override
-                    public void onSuccess(String s) {
-                        Log.i(TAG, s);
-                        toast(s);
-                    }
-
-                    @Override
-                    public void onError(MdsException e) {
-                        Log.e(TAG, "onError: ", e);
-                    }
-                });*/
-
 
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BATTERY_PATH,

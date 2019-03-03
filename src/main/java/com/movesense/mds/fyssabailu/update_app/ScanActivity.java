@@ -83,6 +83,7 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
                                         mdsDeviceInfoOldSw.getSw()));
                             }
                             // We have a new SdsDevice
+                            subscriptions.clear();
                             continueToActivity();
                         }
                     }
@@ -90,6 +91,7 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
     }
     @Override
     public void onBackPressed() {
+        subscriptions.clear();
         startActivity(new Intent(ScanActivity.this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }

@@ -113,10 +113,15 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     ArrayList<RxBleDevice> devices;
     ArrayList<Integer> signalStrengths;
     String knownMac;
-    boolean bootloaderFound = false;
+
+    int selectedFile = -1;
+    boolean tryWithBootloader = false;
     boolean wasConnected = false;
 
-    String[] listFiles = {"movesense_dfu", "movesense_dfu_bootloader", "movesense_dfu_s", "movesense_dfu_s_bootloader"};
+    // Bootloaderfiles are automatically tried.
+    String[] listFiles = {"movesense_dfu","movesense_dfu_s", "movesense_dfu_bootloader",  "movesense_dfu_s_bootloader"};
+    int bootPadding = listFiles.length/2;
+    String[] listExplanations = {"Bailu2000 with seasonal configuration", "Bailu2000 with autoactivation"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,6 +194,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         .setMessage(R.string.connect_for_update)
                         .setCancelable(false)
                         .setPositiveButton(R.string.yes, (dialog, which) -> {
+                            setupUpdate();
                         })
                         .setNegativeButton(R.string.no, (dialog, which) -> {
                             startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1);
@@ -257,7 +263,15 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         if (mDfuCompleted)
             onTransferCompleted();
         if (mDfuError != null)
+            if (!tryWithBootloader) {
+                Log.d(LOG_TAG, "TRYING INSTALLATION WITH BOOTLOADER");
+                tryWithBootloader = true;
+                startUpdate();
+            }
+            else {
+            Log.e(LOG_TAG, "DFU TOTALLY FAILED");
             showErrorMessage(mDfuError);
+            }
         if (mDfuCompleted || mDfuError != null) {
             // if this activity is still open and upload process was completed, cancel the notification
             final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -350,25 +364,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 Log.d(LOG_TAG, "Name: " + selectedDevice.getBluetoothDevice().getName());
                 Log.d(LOG_TAG, "Address: " + selectedDevice.getBluetoothDevice().getAddress());
 
-                DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(selectedDevice.getBluetoothDevice().getAddress())
-                        .setDeviceName(selectedDevice.getBluetoothDevice().getName())
-                        .setKeepBond(false)
-                        .setForceDfu(false)
-                        .setPacketsReceiptNotificationsEnabled(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        .setPacketsReceiptNotificationsValue(DfuServiceInitiator.DEFAULT_PRN_VALUE)
-                        .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
-                new AlertDialog.Builder(this)
-                        .setTitle("Choose an item")
-                        .setCancelable(false)
-                        .setSingleChoiceItems(listFiles, -1, (DialogInterface.OnClickListener) (dialogInterface, i) -> {
-                            dialogInterface.dismiss();
-                            Log.d(LOG_TAG, "File id:" + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
-                            serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
 
-                            serviceInitiator.start(this, DfuService.class);
+                new AlertDialog.Builder(this)
+                        .setTitle("Software version")
+                        .setCancelable(false)
+                        .setItems(listExplanations, (dialogInterface, i) -> {
+                            dialogInterface.dismiss();
+                            selectedFile = i;
+                            startUpdate();
                         })
                         .create().show();
-
                 break;
             case R.id.dfu_select_device_btn2:
                 if (!isBLEEnabled()) {
@@ -379,6 +384,23 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 break;
 
         }
+    }
+
+    private void startUpdate() {
+
+        DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(selectedDevice.getBluetoothDevice().getAddress())
+                .setDeviceName(selectedDevice.getBluetoothDevice().getName())
+                .setKeepBond(false)
+                .setForceDfu(false)
+                .setPacketsReceiptNotificationsEnabled(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                .setPacketsReceiptNotificationsValue(DfuServiceInitiator.DEFAULT_PRN_VALUE)
+                .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
+
+        int i = tryWithBootloader?  selectedFile+bootPadding : selectedFile;
+        Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        serviceInitiator.start(this, DfuService.class);
+
     }
 
     private void enableDfu() {
@@ -518,6 +540,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         public void onDfuCompleted(String deviceAddress) {
             Log.d(LOG_TAG, "DfuProgress onDfuCompleted");
             dfuUploadingPercentTv.setText(R.string.dfu_status_completed);
+            tryWithBootloader = false;
+            selectedFile = -1;
             if (mResumed) {
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
@@ -555,22 +579,32 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         @Override
         public void onError(String deviceAddress, int error, int errorType, String message) {
-            Log.d(LOG_TAG, "DfuProgress onError");
-            if (mResumed) {
-                showErrorMessage(message);
+            Log.e(LOG_TAG, "DfuProgress onError " + error + " " + errorType + " " + message);
+            if (!tryWithBootloader) {
+                Log.d(LOG_TAG, "TRYING INSTALLATION WITH BOOTLOADER");
+                tryWithBootloader = true;
+                new Handler().postDelayed(() -> {
+                    // if this activity is still open and upload process was completed, cancel the notification
+                    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    manager.cancel(DfuService.NOTIFICATION_ID);
+                    startUpdate();
+                }, 1000);
+                }
+                else {
+                if (mResumed) {
+                    Log.e(LOG_TAG, "UPLOADING UTTERLY FAILED");
+                    showErrorMessage(message);
 
-                // We have to wait a bit before canceling notification. This is called before DfuService creates the last notification.
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
+                    // We have to wait a bit before canceling notification. This is called before DfuService creates the last notification.
+                    new Handler().postDelayed(() -> {
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                         manager.cancel(DfuService.NOTIFICATION_ID);
-                    }
-                }, 200);
-            } else {
-                mDfuError = message;
-            }
+                    }, 200);
+                } else {
+                    mDfuError = message;
+                }
+                }
         }
     };
 

@@ -22,7 +22,7 @@
 // Shut down after this 
 #define SHUTDOWN_TIME 30000
 
-#define DEFAULT_RUNNING_TIME 30
+#define DEFAULT_RUNNING_TIME 60 // In minutes
 #define MIN_ACC_SQUARED 2
 
 #define PARTY_THRESHOLD 50
@@ -62,7 +62,7 @@ BailuService::BailuService()
       halfHourAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
-      tempThreshold(20),
+      tempThreshold(25),
       runningTime(DEFAULT_RUNNING_TIME),
       isPartying(false),
       prepareRun(false),

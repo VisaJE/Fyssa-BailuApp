@@ -21,7 +21,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
             android:background="@color/scanBackground"
-            android:src="@mipmap/teach_small" />
+            android:src="@mipmap/ic_launcher" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -47,7 +47,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
             android:background="@color/scanBackground"
-            android:src="@mipmap/teach_small" />
+            android:src="@mipmap/classify_small" />
 
         <TextView
             android:layout_width="wrap_content"
