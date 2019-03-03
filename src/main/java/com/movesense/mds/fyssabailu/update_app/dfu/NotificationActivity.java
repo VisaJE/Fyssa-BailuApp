@@ -30,6 +30,7 @@ public class NotificationActivity extends Activity {
             parentIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             final Intent startAppIntent = new Intent(this, FyssaSensorUpdateActivity.class);
             startAppIntent.putExtras(getIntent().getExtras());
+            Log.d(TAG, "Starting parent!");
             startActivities(new Intent[] { parentIntent, startAppIntent });
         } else {
             Log.e(TAG, "NOT isTaskRoot()");

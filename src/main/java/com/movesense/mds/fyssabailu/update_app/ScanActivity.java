@@ -24,7 +24,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-public class ScanActivity  extends AppCompatActivity implements ScanFragment.DeviceSelectionListener {
+public abstract class ScanActivity  extends AppCompatActivity implements ScanFragment.DeviceSelectionListener {
     private final String TAG = ScanActivity.class.getSimpleName();
 
     private CompositeSubscription subscriptions;
@@ -46,10 +46,7 @@ public class ScanActivity  extends AppCompatActivity implements ScanFragment.Dev
 
     }
 
-    protected void continueToActivity() {
-        startActivity(new Intent(ScanActivity.this, FyssaMainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-    }
+    protected abstract void continueToActivity();
 
     @Override
     public void onDeviceSelected(final RxBleDevice device) {

@@ -378,6 +378,23 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void getBatteryLevel() {
+        //TRIALING DOUBLE TAP STUFF
+        /*Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
+                        MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + "/System/States/3",
+                null, new MdsResponseListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        Log.i(TAG, s);
+                        toast(s);
+                    }
+
+                    @Override
+                    public void onError(MdsException e) {
+                        Log.e(TAG, "onError: ", e);
+                    }
+                });*/
+
+
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BATTERY_PATH,
                 null, new MdsResponseListener() {

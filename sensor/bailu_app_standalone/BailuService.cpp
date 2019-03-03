@@ -429,6 +429,9 @@ void BailuService::advPartyScore()
       score = 0;
     }
     if (score == 0) timePartying = 0;
+
+    score = timesTapped; // FOR DEBUGGING!!
+
     // Update data to advertise packet
     s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)((score & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+1] = (uint8_t)(score & 0xFF);
@@ -537,13 +540,17 @@ void BailuService::listenDoubleTaps()
 {
     DEBUGLOG("listenDoubleTaps()");
     whiteboard::ResourceId resId;
-    wb::Result result = getResource("/system/states/doubletap", resId);
+    wb::Result result = getResource("/System/States/3", resId);
     if (!wb::RETURN_OKC(result))
     {
+        timesTapped = 404;
         return;
     }
     result = asyncSubscribe(resId, AsyncRequestOptions::Empty);
-    if (result == whiteboard::HTTP_CODE_OK) DEBUGLOG("Listening to taps");
+    if (result == whiteboard::HTTP_CODE_OK) {
+      DEBUGLOG("Listening to taps");
+      timesTapped = 200;
+    }
     else DEBUGLOG("Error listening to taps. Code %u", (uint8_t) result);
 
 }

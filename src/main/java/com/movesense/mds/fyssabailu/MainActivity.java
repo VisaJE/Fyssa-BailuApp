@@ -22,6 +22,7 @@ import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
+import com.movesense.mds.fyssabailu.update_app.MainScanActivity;
 import com.movesense.mds.fyssabailu.update_app.ScanActivity;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseDevice;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity  {
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     Log.d(TAG, "No name yet");
                 } else {
-                    startActivity(new Intent(MainActivity.this, ScanActivity.class)
+                    startActivity(new Intent(MainActivity.this, MainScanActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }
 

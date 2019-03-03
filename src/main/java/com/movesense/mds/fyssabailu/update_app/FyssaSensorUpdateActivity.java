@@ -114,6 +114,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     ArrayList<Integer> signalStrengths;
     String knownMac;
     boolean bootloaderFound = false;
+    boolean wasConnected = false;
 
     String[] listFiles = {"movesense_dfu", "movesense_dfu_bootloader", "movesense_dfu_s", "movesense_dfu_s_bootloader"};
     @Override
@@ -174,15 +175,13 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 bluetoothAdapter.enable();
             }
 
-            DfuServiceListenerHelper.registerProgressListener(this, dfuProgressListener);
-
-            BleManager.INSTANCE.addBleConnectionMonitorListener(this);
 
             startUpdate.setEnabled(false);
             devices = new ArrayList();
             signalStrengths = new ArrayList<>();
             if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
                 Log.d(LOG_TAG, "Already connected to " + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
+                wasConnected = true;
                 setupUpdate();
             }
             else {
@@ -192,8 +191,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         .setPositiveButton(R.string.yes, (dialog, which) -> {
                         })
                         .setNegativeButton(R.string.no, (dialog, which) -> {
-                            startActivity(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1);
                         })
                         .create().show();
             }
@@ -201,7 +199,22 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(LOG_TAG, "onActivityResult");
+        setContentView(R.layout.activity_sensor_update);
+        ButterKnife.bind(this);
+        if(resultCode == RESULT_OK){
+            Log.d(LOG_TAG, "onActivityResult: Starting update procedure.");
+            setupUpdate();
+        }
+        else finish();
+
+    }
+
     private void setupUpdate(){
+        DfuServiceListenerHelper.registerProgressListener(this, dfuProgressListener);
+        BleManager.INSTANCE.addBleConnectionMonitorListener(this);
         checkDFUMac();
     }
 
@@ -582,14 +595,19 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         isDfuEnable = false;
 
-        // Reconnect to last connected device
-        try {
-            MdsRx.Instance.reconnect(this);
-        } catch (Exception e) {
-            BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-            startActivity(new Intent(FyssaSensorUpdateActivity.this, MainActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        if (wasConnected) {
+            // Reconnect to last connected device
+            try {
+                MdsRx.Instance.reconnect(this);
+            } catch (Exception e) {
+                BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+                finish();
+            }
+        } else {
+            finish();
         }
+
+
     }
 
     public void onUploadCanceled() {

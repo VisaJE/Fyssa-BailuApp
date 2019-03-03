@@ -1,13 +1,14 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 import android.content.Intent;
+import android.util.Log;
 
-import com.movesense.mds.fyssabailu.MainActivity;
-import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 
 public class UpdateScanActivity extends ScanActivity {
-    @Override protected void continueToActivity() {
-        startActivity(new Intent(UpdateScanActivity.this,FyssaSensorUpdateActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    @Override
+    protected void continueToActivity() {
+        Log.d("UpdateScanActivity:", "Continuing back to earlier activity");
+        setResult(RESULT_OK,new Intent());
+        finish();
     }
 }
