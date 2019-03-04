@@ -1,11 +1,28 @@
 <resources>
-    <string name="app_name">FyssaBailu</string>
+    <string name="app_name">Bailu meter</string>
+
+    <string-array name="dfu_files">
+        <item>movesense_dfu</item>
+        <item>"movesense_dfu_s</item>
+        <item>movesense_dfu_bootloader</item>
+        <item>movesense_dfu_s_bootloader</item>
+    </string-array>
+    <string-array name="dfu_file_titles">
+        <item>Bailu2000A with seasonal configuration</item>
+        <item>Bailu2000B with autoactivation</item>
+    </string-array>
+
+    <string name="disclaimer">"Your name and sensor number will be sent to the server."</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="title_disclaimer">Disclaimer</string>
+    <string name="title_info">Set information</string>
 
     <string name="title_location_permission">Location permission</string>
     <string name="text_location_permission">Bluetooth LE scanning requires location permission</string>
     <string name="text_location_on">Location services have to be turned on for the app to work. Go to settings?</string>
     <string name="title_location_on">Enable location services</string>
-    <string name="btn_ok">Ok</string>
+    <string name="ok">Ok</string>
 
     <string name="connect_for_update">Is DFU mode already on?</string>
 
@@ -116,4 +133,20 @@
     <string name="battery_level">Battery level</string>
     <string name="reset_name_button">Reset username</string>
     <string name="reset_serial">Forget your device</string>
+    <string name="title_help">Help</string>
+    <string name="help_text">Bailu app is a setup tool and scanner for Movesense party app.
+    The sensors measure your activity to come up with a party level, which it will advertise via bluetooth
+    along with other partying related info. When scanning, Bailu app recognizes nearby sensors showing their
+    party status.\n\nThe app automatically forces updates on non compatible sensor software. You can choose between two versions.
+        In both versions the led blinks every 10 seconds indicating that the sensor is on. If not
+        scanning parties the sensor turns off after few minutes.
+        The sensors do NOT turn off if their tabs remain connected. The overall pad keeps the sensor
+        on.\n\nBailu2000B is primarily meant for usage without Bailu app. It automatically turns starts seeking
+    parties when turned on, and refreshes the one hour timer when shaken (or double tapped). The led blinks
+        when this happens.\n\nBailu2000A is only controlled with the setup tool in Bailu app. Scanning for parties uses more
+        battery than idling! This also allows for continuous party metering for up to 24 hours. This version
+        can also use online settings configured for the season.\n\nThe battery life has been tested to be around 70 h.
+        This is bound to be inaccurate.</string>
+    <string name="btn_name_ready">Submit</string>
+    <string name="name_view_hint">Username</string>
 </resources>

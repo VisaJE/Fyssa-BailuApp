@@ -4,14 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:layout_marginTop="20dp"
+    android:layout_marginTop="0dp"
+    android:background="@color/colorBackground"
     android:orientation="vertical">
 
 
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="425dp"
+        android:layout_height="326dp"
+        android:layout_weight="1"
+        android:background="@color/colorBackground">
+
+        <ImageButton
+            android:id="@+id/help_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:background="@color/colorBackground"
+            android:contentDescription="Opens @string/title_help"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@mipmap/help_button_smaller" />
+    </android.support.constraint.ConstraintLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_weight="1">
+        android:layout_height="471dp"
+        android:layout_weight="1"
+        android:background="@color/colorBackground"
+        tools:background="@color/colorBackground">
 
         <ImageButton
             android:id="@+id/start_button2"
@@ -20,7 +41,7 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
-            android:background="@color/scanBackground"
+            android:background="@color/colorBackground"
             android:src="@mipmap/ic_launcher" />
 
         <TextView
@@ -36,8 +57,9 @@
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/colorBackground">
 
         <ImageButton
             android:id="@+id/start_button"
@@ -46,7 +68,7 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
-            android:background="@color/scanBackground"
+            android:background="@color/colorBackground"
             android:src="@mipmap/classify_small" />
 
         <TextView

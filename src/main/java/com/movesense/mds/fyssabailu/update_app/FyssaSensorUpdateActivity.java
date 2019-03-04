@@ -77,11 +77,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     @BindView(R.id.start_update) Button startUpdate;
     @BindView(R.id.dfu_select_device_btn2) Button dfuSelectDeviceBtn;
 
-    // Defined as a string for overriding.
-    String fileName(){
-        return "movesense_dfu";
-    }
-
     private static final int PERMISSION_REQ = 25;
     private static final int ENABLE_BT_REQ = 0;
 
@@ -119,12 +114,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     boolean wasConnected = false;
 
     // Bootloaderfiles are automatically tried.
-    String[] listFiles = {"movesense_dfu","movesense_dfu_s", "movesense_dfu_bootloader",  "movesense_dfu_s_bootloader"};
-    int bootPadding = listFiles.length/2;
-    String[] listExplanations = {"Bailu2000 with seasonal configuration", "Bailu2000 with autoactivation"};
+    String[] listFiles;
+    int bootPadding;
+    String[] listExplanations;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        listFiles= getResources().getStringArray(R.array.dfu_files);
+        listExplanations= getResources().getStringArray(R.array.dfu_file_titles);
+        bootPadding= listFiles.length/2;
         knownMac = null;
         setContentView(R.layout.activity_sensor_update);
         ButterKnife.bind(this);
@@ -721,7 +720,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.title_location_permission)
                         .setMessage(R.string.text_location_permission)
-                        .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 //Prompt the user once explanation has been shown

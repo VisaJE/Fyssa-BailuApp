@@ -542,13 +542,11 @@ void BailuService::listenDoubleTaps()
     wb::Result result = getResource("/System/States/3", resId);
     if (!wb::RETURN_OKC(result))
     {
-        timesTapped = 404;
         return;
     }
     result = asyncSubscribe(resId, AsyncRequestOptions::Empty);
     if (result == whiteboard::HTTP_CODE_OK) {
       DEBUGLOG("Listening to taps");
-      timesTapped = 200;
     }
     else DEBUGLOG("Error listening to taps. Code %u", (uint8_t) result);
 
@@ -557,7 +555,6 @@ void BailuService::listenDoubleTaps()
 void BailuService::onDoubleTap()
 {
     DEBUGLOG("onDoubleTap");
-    timesTapped += 1;
     // Make PUT request to trigger led blink
     asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
     timerCounter = 0;

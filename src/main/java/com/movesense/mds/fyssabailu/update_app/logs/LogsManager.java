@@ -95,7 +95,7 @@ public class LogsManager {
                 new AlertDialog.Builder(activity)
                         .setTitle(R.string.write_external_storage_permission_title)
                         .setMessage(R.string.write_external_storage_permission_text)
-                        .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 //Prompt the user once explanation has been shown

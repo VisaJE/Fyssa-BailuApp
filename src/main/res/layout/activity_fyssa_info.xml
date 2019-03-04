@@ -12,14 +12,14 @@
         android:id="@+id/fyssa_info_nameET"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:hint="Nimimerkki"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:hint="@string/name_view_hint"
+        android:inputType="text" />
 
     <Button
         android:id="@+id/fyssa_info_doneBT"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Valmis"/>
+        android:text="@string/btn_name_ready" />
 </LinearLayout>

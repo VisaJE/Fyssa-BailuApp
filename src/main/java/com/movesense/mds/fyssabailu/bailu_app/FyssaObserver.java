@@ -74,7 +74,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         app = (FyssaApp) getApplication();
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Fyssasensori");
+            getSupportActionBar().setTitle(R.string.app_name);
         }
         // Ask For Bluetooth
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -151,7 +151,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.title_location_permission)
                             .setMessage(R.string.text_location_permission)
-                            .setPositiveButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 @RequiresApi(api = Build.VERSION_CODES.M)
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {

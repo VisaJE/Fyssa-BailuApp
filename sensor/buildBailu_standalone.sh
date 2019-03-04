@@ -8,6 +8,8 @@ cp Movesense_dfu.zip ../movesense_dfu_s.zip
 cp Movesense_dfu_w_bootloader.zip ../movesense_dfu_s_bootloader.zip
 cd ..
 rm -r buildSfolder
+rm ../src/main/res/raw/movesense_dfu_s.zip
+rm ../src/main/res/raw/movesense_dfu_s_bootloader.zip
 echo "Copying to ../src/main/res/raw"
-cp movesense_dfu_s.zip ../src/main/res/raw/
-cp movesense_dfu_s_bootloader.zip ../src/main/res/raw/
+mv movesense_dfu_s.zip ../src/main/res/raw/
+mv movesense_dfu_s_bootloader.zip ../src/main/res/raw/

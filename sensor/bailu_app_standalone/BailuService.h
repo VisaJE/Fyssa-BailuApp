@@ -114,7 +114,6 @@ protected:
 
 private:
     void listenDoubleTaps();
-    uint16_t timesTapped = 0;
     void onDoubleTap();
 
     void startAcc(whiteboard::RequestId& remoteRequestId);

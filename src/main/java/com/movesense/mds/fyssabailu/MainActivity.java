@@ -2,6 +2,7 @@ package com.movesense.mds.fyssabailu;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
@@ -40,33 +41,38 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = (FyssaApp) getApplication();
-        String version = BuildConfig.VERSION_NAME;
-        getSupportActionBar().setTitle("Bailumittari "+ version);
+        getSupportActionBar().setTitle(R.string.app_name);
         setContentView(R.layout.activity_select_test);
 
         subscriptions = new CompositeSubscription();
 
-        findViewById(R.id.start_button2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (app.getMemoryTools().getName().equals(MemoryTools.DEFAULT_STRING)) {
-                    startActivity(new Intent(MainActivity.this, FyssaInfoActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                    Log.d(TAG, "No name yet");
-                } else {
-                    startActivity(new Intent(MainActivity.this, MainScanActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                }
-
-            }
-        });
-        findViewById(R.id.start_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, FyssaObserver.class)
+        findViewById(R.id.start_button2).setOnClickListener(v -> {
+            if (app.getMemoryTools().getName().equals(MemoryTools.DEFAULT_STRING)) {
+                startActivity(new Intent(MainActivity.this, FyssaInfoActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                Log.d(TAG, "No name yet");
+            } else {
+                startActivity(new Intent(MainActivity.this, MainScanActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             }
+
         });
+        findViewById(R.id.start_button).setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, FyssaObserver.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)));
+
+        findViewById(R.id.help_button).setOnClickListener(v ->
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.title_help)
+                        .setMessage(R.string.help_text)
+                        .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                }
+                        )
+                        .create().show());
 
         alertDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.close_app)
