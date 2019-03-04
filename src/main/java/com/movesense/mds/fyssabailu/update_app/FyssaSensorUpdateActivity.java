@@ -107,6 +107,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     ArrayList<Integer> signalStrengths;
     String knownMac;
 
+    ScannerFragment scannerFragment;
+
     int selectedFile = -1;
     boolean tryWithBootloader = false;
     boolean wasConnected = false;
@@ -451,7 +453,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
 
     private void showDeviceScanningDialog() {
-
+        scannerFragment = new ScannerFragment();
+        scannerFragment.show(getSupportFragmentManager(), ScannerFragment.class.getName());
     }
 
 
@@ -474,7 +477,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                             signalStrengths.add(rxBleScanResult.getRssi());
                             new Handler().postDelayed(() -> {
                                 startUpdate.setEnabled(true);
-                            }, 1000);
+                            }, 500);
 
                         }
                     }
@@ -492,9 +495,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             }
 
         new Handler().postDelayed(() -> {
-            onTransferCompleted();
-            final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            manager.cancel(DfuService.NOTIFICATION_ID);
+            startUpdate.setEnabled(true);
         }, 500);
 
 
