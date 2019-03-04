@@ -91,8 +91,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private static final String DFU_MAC_ADDRESS = "Info";
 
-    private ScannerFragment scannerFragment;
-
     private boolean mStatusOk;
     private RxBleDevice selectedDevice = null;
     private boolean mDfuCompleted;
@@ -127,12 +125,13 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         knownMac = null;
         setContentView(R.layout.activity_sensor_update);
         ButterKnife.bind(this);
+        startUpdate.setEnabled(false);
+        dfuSelectDeviceBtn.setEnabled(false);
         Log.d(LOG_TAG, "onCreate");
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.e(LOG_TAG, "Location services unavailable!");
-            startUpdate.setEnabled(false);
-            dfuSelectDeviceBtn.setEnabled(false);
+
             new AlertDialog.Builder(this)
                     .setTitle(R.string.title_location_on)
                     .setMessage(R.string.text_location_on)
@@ -167,7 +166,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             if (savedInstanceState != null) {
                 selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
                 mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
-                startUpdate.setEnabled(selectedDevice != null && mStatusOk);
+
+                new Handler().postDelayed(() -> {
+                    startUpdate.setEnabled(selectedDevice != null && mStatusOk);
+                }, 700);
                 mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
                 mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
             }
@@ -193,6 +195,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         .setMessage(R.string.connect_for_update)
                         .setCancelable(false)
                         .setPositiveButton(R.string.yes, (dialog, which) -> {
+                            dfuSelectDeviceBtn.setEnabled(true);
                             setupUpdate();
                         })
                         .setNegativeButton(R.string.no, (dialog, which) -> {
@@ -206,8 +209,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         Log.d(LOG_TAG, "onActivityResult");
         setContentView(R.layout.activity_sensor_update);
+        startUpdate.setEnabled(false);
+        dfuSelectDeviceBtn.setEnabled(false);
         ButterKnife.bind(this);
         if(resultCode == RESULT_OK){
             Log.d(LOG_TAG, "onActivityResult: Starting update procedure.");
@@ -445,8 +451,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
 
     private void showDeviceScanningDialog() {
-        scannerFragment = new ScannerFragment();
-        scannerFragment.show(getSupportFragmentManager(), ScannerFragment.class.getName());
+
     }
 
 
@@ -467,7 +472,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                             Log.d(LOG_TAG, "Found device!");
                             devices.add(rxBleScanResult.getBleDevice());
                             signalStrengths.add(rxBleScanResult.getRssi());
-                            startUpdate.setEnabled(true);
+                            new Handler().postDelayed(() -> {
+                                startUpdate.setEnabled(true);
+                            }, 1000);
+
                         }
                     }
                 },  new ThrowableToastingAction(null)));
@@ -478,12 +486,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     public void onDeviceSelected(RxBleDevice device) {
         Log.d(LOG_TAG, "onDeviceSelected()");
             selectedDevice = device;
-            scannerFragment.dismiss();
             if (subscribed) {
                 subscribed = false;
                 cSubscriptions.unsubscribe();
             }
-            startUpdate.setEnabled(true);
+
+        new Handler().postDelayed(() -> {
+            onTransferCompleted();
+            final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.cancel(DfuService.NOTIFICATION_ID);
+        }, 500);
 
 
     }
@@ -651,7 +663,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     private void clearUI() {
         dfuUploadingPercentTv.setVisibility(View.INVISIBLE);
         dfuUploadingTv.setVisibility(View.INVISIBLE);
-        dfuSelectDeviceBtn.setEnabled(true);
+        dfuSelectDeviceBtn.setEnabled(false);
         startUpdate.setEnabled(false);
         mStatusOk = false;
     }

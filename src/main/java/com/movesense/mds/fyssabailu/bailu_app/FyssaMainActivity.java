@@ -56,6 +56,8 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     @BindView(R.id.nimi_tv) TextView nimiTv;
     @BindView(R.id.do_button) Button doButton;
+    @BindView(R.id.battery_button) Button batteryButton;
+    @BindView(R.id.stop) Button stopButton;
 
     private final String TAG = FyssaMainActivity.class.getSimpleName();
 
@@ -164,9 +166,6 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void enableButtons() {
         findViewById(R.id.do_button).setEnabled(true);
         findViewById(R.id.stop).setEnabled(true);
-        /*findViewById(R.id.get_button).setEnabled(true);
-        findViewById(R.id.start_service_button).setEnabled(true);
-        findViewById(R.id.stop_service_button).setEnabled(true);*/
         findViewById(R.id.battery_button).setEnabled(true);
     }
     private void checkSensorSoftware() {
@@ -277,19 +276,13 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 final int mHour = c.get(Calendar.HOUR_OF_DAY);
                 final int mMinute = c.get(Calendar.MINUTE);
                 TimePickerDialog timePickerDialog = new TimePickerDialog(this,
-                        new TimePickerDialog.OnTimeSetListener() {
-
-                            @Override
-                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                int nHour = c.get(Calendar.HOUR_OF_DAY);
-                                int nMinute = c.get(Calendar.MINUTE);
-                                int time = (hourOfDay-nHour)*60 + (minute-nMinute);
-                                if (time > 0) startService(time);
-                                else  if (time < 0) startService(24*60+time);
-                                else toast("Invalid time.");
-
-                            }
-
+                        (view1, hourOfDay, minute) -> {
+                            int nHour = c.get(Calendar.HOUR_OF_DAY);
+                            int nMinute = c.get(Calendar.MINUTE);
+                            int time = (hourOfDay-nHour)*60 + (minute-nMinute);
+                            if (time > 0) startService(time);
+                            else  if (time < 0) startService(24*60+time);
+                            else toast("Invalid time.");
 
                         }, mHour, mMinute, true);
                 timePickerDialog.show();
@@ -334,6 +327,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 });
     }
     private void deleteService() {
+        stopButton.setEnabled(false);
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH + "/Stop",
                 null, new MdsResponseListener() {
@@ -342,10 +336,12 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         Log.d(TAG, "Stopped party metering at: " + MdsRx.SCHEME_PREFIX +
                                 MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH);
                         Log.d(TAG, "deleteService: Got response" + s);
+                        stopButton.setEnabled(true);
                     }
 
                     @Override
                     public void onError(MdsException e) {
+                        stopButton.setEnabled(true);
                         Log.e(TAG, "onError: ", e);
                     }
                 });
@@ -370,7 +366,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void getBatteryLevel() {
-
+        batteryButton.setEnabled(false);
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BATTERY_PATH,
                 null, new MdsResponseListener() {
@@ -378,10 +374,12 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     public void onSuccess(String s) {
                         EnergyGet e = new Gson().fromJson(s, EnergyGet.class);
                         toast("Battery percentage: " + e.getPercentage() + ", mV: " + e.getVoltage());
+                        batteryButton.setEnabled(true);
                     }
 
                     @Override
                     public void onError(MdsException e) {
+                        batteryButton.setEnabled(false);
                         Log.e(TAG, "onError: ", e);
                     }
                 });

@@ -113,8 +113,8 @@ protected:
     virtual void onTimer(whiteboard::TimerId timerId) OVERRIDE;
 
 private:
-    void listenDoubleTaps();
-    void onDoubleTap();
+    void listenRefreshes();
+    void onRefresh();
 
     void startAcc(whiteboard::RequestId& remoteRequestId);
     void stopAcc();
@@ -152,6 +152,7 @@ private:
     double minuteAccAvr;
     double halfHourAccAvr;
     uint16_t msCounter;
+    uint16_t score = 0;
 
     whiteboard::TimerId mTimer;
 

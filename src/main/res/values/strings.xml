@@ -142,11 +142,13 @@
         scanning parties the sensor turns off after few minutes.
         The sensors do NOT turn off if their tabs remain connected. The overall pad keeps the sensor
         on.\n\nBailu2000B is primarily meant for usage without Bailu app. It automatically turns starts seeking
-    parties when turned on, and refreshes the one hour timer when shaken (or double tapped). The led blinks
-        when this happens.\n\nBailu2000A is only controlled with the setup tool in Bailu app. Scanning for parties uses more
-        battery than idling! This also allows for continuous party metering for up to 24 hours. This version
-        can also use online settings configured for the season.\n\nThe battery life has been tested to be around 70 h.
-        This is bound to be inaccurate.</string>
+        parties when turned on, and refreshes the one hour timer when the tabs are connected or disconnected.
+        The led blinks when this happens. High enough party score also refreshes the time.\n\nBailu2000A
+        is only controlled with the setup tool in Bailu app, which helps save battery.
+        This also allows for continuous party metering for up to 24 hours without touching the sensor. Bailu2000A
+        can also use online settings configured for the season.\n\nThe battery life is probably around 60 h when scanning.\n\nIf
+        your device fails to find your movesense, try "forget device" from the side menu.
+        </string>
     <string name="btn_name_ready">Submit</string>
     <string name="name_view_hint">Username</string>
 </resources>

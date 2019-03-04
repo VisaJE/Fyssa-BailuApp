@@ -19,13 +19,17 @@
 
 // Also the led blinking period
 #define TEMP_CHECK_TIME 10000
-// Shut down after this 
+// Shut down after this
 #define SHUTDOWN_TIME 30000
 
 #define DEFAULT_RUNNING_TIME 60 // In minutes
 #define MIN_ACC_SQUARED 2
 
 #define PARTY_THRESHOLD 50
+#define STAY_ON_SCORE 100
+
+#define REFRESH_STATE_ID 2
+#define REFRESH_PATH "/System/States/2"
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -38,8 +42,8 @@ int find(std::vector<Device> v, const char* s)
 
 const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 
-uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device 
-    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. 
+uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device
+    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload.
     };                  //Last byte determines the sensor to be advertising for this service when set 0xEA
 const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5; // Points to second last byte
 
@@ -102,11 +106,11 @@ bool BailuService::startModule()
 {
     mModuleState = WB_RES::ModuleStateValues::STARTED;
     mTimer = whiteboard::ResourceProvider::startTimer((size_t) TEMP_CHECK_TIME, true);
-    listenDoubleTaps();
+    listenRefreshes();
     return true;
 }
 
-void BailuService::stopModule() 
+void BailuService::stopModule()
 {
     whiteboard::ResourceProvider::stopTimer(mTimer);
     mModuleState = WB_RES::ModuleStateValues::STOPPED;
@@ -271,7 +275,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
             minuteAccAvr = minuteAccAvr*59/60 + secondAccAvr/60;
         }
         else ++msCounter;
-        
+
     }
 }
 
@@ -297,7 +301,7 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
             if (res.dataPacket[11] == 0xEA) // Checking that the movesense sensor is indeed running this service.
             {
                 int i = find(foundDevices, res.address);
-                if (i == -1) 
+                if (i == -1)
                 {
                     Device d;
                     d.address = res.address;
@@ -315,8 +319,12 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
     case WB_RES::LOCAL::SYSTEM_STATES_STATEID::ID:
     {
         auto res = value.convertTo<WB_RES::StateChange>();
-        WB_RES::State newState = res.newState;
-        if (newState == 1) onDoubleTap();
+        if (res.stateId == REFRESH_STATE_ID)
+        {
+            WB_RES::State newState = res.newState;
+            if (newState == 1) onRefresh();
+        }
+        break;
     }
     }
 }
@@ -388,7 +396,7 @@ void BailuService::startScanning()
       isScanning = true;
       DEBUGLOG("Scanning");
     }
-    else 
+    else
     {
         DEBUGLOG("Failure in subscribing to scan");
     }
@@ -421,10 +429,10 @@ void BailuService::checkPartyStatus()
 
 void BailuService::advPartyScore()
 {
-    
-    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+0.5*halfHourAccAvr);
-    if (score < PARTY_THRESHOLD) score = 0;
-    if (!isPartying) 
+
+    uint16_t tempScore = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+0.5*halfHourAccAvr);
+    if (tempScore < PARTY_THRESHOLD) score = 0;
+    if (!isPartying)
     {
       score = 0;
     }
@@ -472,7 +480,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
 {
     if (timerId == mTimer)
     {
-        if (!isRunning) 
+        if (!isRunning)
         {
             timerCounter += TEMP_CHECK_TIME;
             if (timerCounter >= SHUTDOWN_TIME)
@@ -480,7 +488,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
                 shutDown();
             }
         }
-        else if (timerCounter >= runningTime*60000) 
+        else if (timerCounter >= runningTime*60000)
         {
             stopAcc();
             timerCounter = 0;
@@ -493,12 +501,15 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
                 minuteAccAvr = 0;
                 timePartying = 0;
                 halfHourAccAvr = 0;
-            } else timePartying += TEMP_CHECK_TIME/1000;
+            } else {
+                if (score > STAY_ON_SCORE) timerCounter = 0;
+                timePartying += TEMP_CHECK_TIME/1000;
+            }
             // Make PUT request to trigger led blink
             asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
             timerCounter += TEMP_CHECK_TIME;
             checkPartyStatus();
-            
+
         }
 
     }
@@ -535,11 +546,10 @@ void BailuService::onRemoteWhiteboardDisconnected(whiteboard::WhiteboardId white
 }
 
 
-void BailuService::listenDoubleTaps()
+void BailuService::listenRefreshes()
 {
-    DEBUGLOG("listenDoubleTaps()");
     whiteboard::ResourceId resId;
-    wb::Result result = getResource("/System/States/3", resId);
+    wb::Result result = getResource(REFRESH_PATH, resId);
     if (!wb::RETURN_OKC(result))
     {
         return;
@@ -549,12 +559,10 @@ void BailuService::listenDoubleTaps()
       DEBUGLOG("Listening to taps");
     }
     else DEBUGLOG("Error listening to taps. Code %u", (uint8_t) result);
-
 }
 
-void BailuService::onDoubleTap()
+void BailuService::onRefresh()
 {
-    DEBUGLOG("onDoubleTap");
     // Make PUT request to trigger led blink
     asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
     timerCounter = 0;
