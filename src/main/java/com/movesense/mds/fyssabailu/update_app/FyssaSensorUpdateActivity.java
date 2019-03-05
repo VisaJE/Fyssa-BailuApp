@@ -44,6 +44,7 @@ import com.movesense.mds.fyssabailu.RxBle;
 
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
@@ -54,7 +55,6 @@ import com.polidea.rxandroidble.RxBleScanResult;
 
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,8 +63,6 @@ import no.nordicsemi.android.dfu.DfuProgressListener;
 import no.nordicsemi.android.dfu.DfuServiceInitiator;
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
 
-import rx.Subscription;
-import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -118,18 +116,21 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     int bootPadding;
     String[] listExplanations;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
-
+        Log.d(LOG_TAG, "onCreate");
         listFiles= getResources().getStringArray(R.array.dfu_files);
         listExplanations= getResources().getStringArray(R.array.dfu_file_titles);
         bootPadding= listFiles.length/2;
         knownMac = null;
+
         setContentView(R.layout.activity_sensor_update);
         ButterKnife.bind(this);
         startUpdate.setEnabled(false);
         dfuSelectDeviceBtn.setEnabled(false);
-        Log.d(LOG_TAG, "onCreate");
+
+        BleManager.INSTANCE.addBleConnectionMonitorListener(this);
+
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.e(LOG_TAG, "Location services unavailable!");
@@ -156,7 +157,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     .create().show();
             return;
         }
-        if (!checkLocationPermission()) {
+        else if (!checkLocationPermission()) {
             Log.d(LOG_TAG, "No permission!");
             startUpdate.setEnabled(false);
         } else {
@@ -214,9 +215,9 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         Log.d(LOG_TAG, "onActivityResult");
         setContentView(R.layout.activity_sensor_update);
+        ButterKnife.bind(this);
         startUpdate.setEnabled(false);
         dfuSelectDeviceBtn.setEnabled(false);
-        ButterKnife.bind(this);
         if(resultCode == RESULT_OK){
             Log.d(LOG_TAG, "onActivityResult: Starting update procedure.");
             setupUpdate();
@@ -227,7 +228,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private void setupUpdate(){
         DfuServiceListenerHelper.registerProgressListener(this, dfuProgressListener);
-        BleManager.INSTANCE.addBleConnectionMonitorListener(this);
+
         checkDFUMac();
     }
 
@@ -489,6 +490,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     public void onDeviceSelected(RxBleDevice device) {
         Log.d(LOG_TAG, "onDeviceSelected()");
             selectedDevice = device;
+            scannerFragment.dismiss();
             if (subscribed) {
                 subscribed = false;
                 cSubscriptions.unsubscribe();
@@ -634,20 +636,21 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private void onTransferCompleted() {
         clearUI();
-        dfuUploadingTv.setVisibility(View.VISIBLE);
-        dfuUploadingTv.setText("Reconnecting to the device...");
 
         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
 
         isDfuEnable = false;
 
         if (wasConnected) {
+            dfuUploadingTv.setVisibility(View.VISIBLE);
+            dfuUploadingTv.setText("Reconnecting to the device...");
             // Reconnect to last connected device
             try {
                 MdsRx.Instance.reconnect(this);
             } catch (Exception e) {
                 BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-                finish();
+                startActivity(new Intent(FyssaSensorUpdateActivity.this,
+                        MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
             }
         } else {
             finish();
@@ -708,7 +711,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             public void run() {
                 Toast.makeText(FyssaSensorUpdateActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                 if (mDfuCompleted) {
-                    finish();
+                    startActivity(new Intent(FyssaSensorUpdateActivity.this,
+                            FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }
             }
         });
