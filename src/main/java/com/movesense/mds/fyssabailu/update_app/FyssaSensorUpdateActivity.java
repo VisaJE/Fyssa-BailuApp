@@ -35,6 +35,7 @@ import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.fyssabailu.BleManager;
+import com.movesense.mds.fyssabailu.BuildConfig;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
@@ -194,20 +195,24 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 setupUpdate();
             }
             else {
-                new AlertDialog.Builder(this)
-                        .setMessage(R.string.connect_for_update)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.yes, (dialog, which) -> {
-                            dfuSelectDeviceBtn.setEnabled(true);
-                            setupUpdate();
-                        })
-                        .setNegativeButton(R.string.no, (dialog, which) -> {
-                            startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1);
-                        })
-                        .create().show();
+                showConnectDialog();
             }
 
         }
+    }
+
+    private void showConnectDialog() {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.connect_for_update)
+                .setCancelable(false)
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    dfuSelectDeviceBtn.setEnabled(true);
+                    setupUpdate();
+                })
+                .setNegativeButton(R.string.no, (dialog, which) -> {
+                    startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1);
+                })
+                .create().show();
     }
 
     @Override
@@ -280,11 +285,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             Log.e(LOG_TAG, "DFU TOTALLY FAILED");
             showErrorMessage(mDfuError);
             }
-        if (mDfuCompleted || mDfuError != null) {
+        if (mDfuCompleted && mDfuError != null) {
             // if this activity is still open and upload process was completed, cancel the notification
             final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             manager.cancel(DfuService.NOTIFICATION_ID);
-            mDfuCompleted = false;
             mDfuError = null;
         }
     }
@@ -496,9 +500,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 cSubscriptions.unsubscribe();
             }
 
-        new Handler().postDelayed(() -> {
-            startUpdate.setEnabled(true);
-        }, 500);
+        new Handler().postDelayed(() -> startUpdate.setEnabled(true), 500);
 
 
     }
@@ -556,6 +558,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             dfuUploadingPercentTv.setText(R.string.dfu_status_completed);
             tryWithBootloader = false;
             selectedFile = -1;
+            mDfuCompleted = true;
             if (mResumed) {
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
                 new Handler().postDelayed(new Runnable() {
@@ -568,9 +571,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         manager.cancel(DfuService.NOTIFICATION_ID);
                     }
                 }, 200);
-            } else {
-                //  Save that the DFU process has finished
-                mDfuCompleted = true;
             }
         }
 
@@ -634,7 +634,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     }
 
+    boolean transferCompleted = false;
     private void onTransferCompleted() {
+        if (transferCompleted) return;
+        else transferCompleted = true;
         clearUI();
 
         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
@@ -702,21 +705,26 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     @Override
     public void onConnect(RxBleDevice rxBleDevice) {
-        Log.e(LOG_TAG, "onConnect: " + rxBleDevice.getMacAddress());
+        Log.d(LOG_TAG, "onConnect: " + rxBleDevice.getMacAddress());
 
         mIsDeviceReconnected = true;
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(FyssaSensorUpdateActivity.this, "Connected", Toast.LENGTH_SHORT).show();
-                if (mDfuCompleted) {
+        assert(MovesenseConnectedDevices.getConnectedDevices().size() == 1);
+        runOnUiThread(() -> {
+            Toast.makeText(FyssaSensorUpdateActivity.this, "Connected.", Toast.LENGTH_SHORT).show();
+            if (mDfuCompleted) {
+                new Handler().postDelayed(() -> {
+                    Log.d(LOG_TAG, "Starting fyssamain.");
                     BleManager.INSTANCE.removeBleConnectionMonitorListener(FyssaSensorUpdateActivity.this);
+
                     startActivity(new Intent(FyssaSensorUpdateActivity.this,
                             FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                }
+                }, 3000);
             }
+            else Log.e(LOG_TAG, "Reconnected without dfu completion.");
         });
+
+
     }
     private boolean exists(ArrayList<RxBleDevice> listed, RxBleDevice device) {
         boolean res = false;

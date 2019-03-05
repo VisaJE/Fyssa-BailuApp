@@ -173,6 +173,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
     private void checkSensorSoftware(int iteration) {
         if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) {
+            Log.d(TAG, "SENSOR  WASNT CONNECTED");
             startMainActivity();
             return;
         }
@@ -216,7 +217,9 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         Log.e(TAG, "Info onError: ", e);
                         if (iteration < 2) {
                             try {
+                                Log.d(TAG, "Sleeping before retry.");
                                 Thread.sleep(2000);
+                                Log.d(TAG, "Done sleeping");
                                 if (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() <= 0) {
                                     toast("Connection failed");
                                     startMainActivity();
@@ -227,6 +230,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                             checkSensorSoftware(iteration+1);
                         }
                         else {
+                            removeAndDisconnectFromDevices();
                             startMainActivity();
                         }
 
