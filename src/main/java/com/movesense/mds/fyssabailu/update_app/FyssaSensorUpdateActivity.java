@@ -640,11 +640,12 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         else transferCompleted = true;
         clearUI();
 
-        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
+
 
         isDfuEnable = false;
 
         if (wasConnected) {
+            BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
             dfuUploadingTv.setVisibility(View.VISIBLE);
             dfuUploadingTv.setText("Reconnecting to the device...");
             // Reconnect to last connected device
@@ -662,6 +663,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     }
 
+    public static void removeAndDisconnectFromDevices(){
+        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+        while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+            MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
+        }
+        while (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() > 0) {
+            BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
+            MovesenseConnectedDevices.removeRxConnectedDevice(MovesenseConnectedDevices.getConnectedRxDevice(0));
+        }
+    }
     public void onUploadCanceled() {
         clearUI();
         Toast.makeText(this, "Dfu Aborted", Toast.LENGTH_SHORT).show();
