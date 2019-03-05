@@ -711,6 +711,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             public void run() {
                 Toast.makeText(FyssaSensorUpdateActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                 if (mDfuCompleted) {
+                    BleManager.INSTANCE.removeBleConnectionMonitorListener(FyssaSensorUpdateActivity.this);
                     startActivity(new Intent(FyssaSensorUpdateActivity.this,
                             FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }
