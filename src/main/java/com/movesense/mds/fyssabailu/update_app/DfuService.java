@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu.update_app.dfu;
+package com.movesense.mds.fyssabailu.update_app;
 
 import android.app.Activity;
 import android.util.Log;
@@ -6,7 +6,7 @@ import android.util.Log;
 import no.nordicsemi.android.dfu.DfuBaseService;
 
 /**
- *
+ * DfuService used with Nordic Library for flashing dfu.zip files
  */
 
 public class DfuService extends DfuBaseService {
@@ -16,7 +16,7 @@ public class DfuService extends DfuBaseService {
     @Override
     protected Class<? extends Activity> getNotificationTarget() {
         Log.d(LOG_TAG, "getNotificationTarget() ");
-        return NotificationActivity.class;
+        return com.movesense.mds.fyssabailu.update_app.NotificationActivity.class;
     }
 
     @Override

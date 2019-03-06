@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.internal.connectivity.BleManager;
 import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
 
@@ -23,7 +24,7 @@ public enum  ConnectionLostDialog {
                     .setTitle("Connection Lost")
                     .setMessage("Appliaction will connect automatically with Movesense device" +
                             " when it will be available.")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Connect with other Movesense", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;

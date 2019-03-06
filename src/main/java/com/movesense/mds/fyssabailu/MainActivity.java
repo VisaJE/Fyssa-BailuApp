@@ -24,9 +24,6 @@ import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.update_app.MainScanActivity;
-import com.movesense.mds.fyssabailu.update_app.ScanActivity;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseDevice;
 
 import rx.subscriptions.CompositeSubscription;
 

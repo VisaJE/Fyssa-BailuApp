@@ -12,7 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
+import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
 
 import java.io.File;
 import java.io.IOException;

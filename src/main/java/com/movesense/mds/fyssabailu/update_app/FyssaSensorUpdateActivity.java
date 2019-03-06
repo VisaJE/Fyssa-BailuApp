@@ -1,7 +1,6 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 import android.Manifest;
-import android.app.ActivityManager;
 
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
@@ -19,7 +18,6 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import android.provider.Settings;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -34,25 +32,21 @@ import com.google.gson.Gson;
 import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsResponseListener;
-import com.movesense.mds.fyssabailu.BleManager;
-import com.movesense.mds.fyssabailu.BuildConfig;
+import com.movesense.mds.internal.connectivity.BleManager;
 import com.movesense.mds.fyssabailu.MainActivity;
-import com.movesense.mds.fyssabailu.MdsRx;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 
 
-import com.movesense.mds.fyssabailu.RxBle;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
-import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
-import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
+import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleScanResult;
 
 
 import java.util.ArrayList;
@@ -650,7 +644,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             dfuUploadingTv.setText("Reconnecting to the device...");
             // Reconnect to last connected device
             try {
-                MdsRx.Instance.reconnect(this);
+                MdsRx.Instance.reconnect();
             } catch (Exception e) {
                 BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
                 startActivity(new Intent(FyssaSensorUpdateActivity.this,
@@ -708,8 +702,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
     @Override
-    public void onDisconnect(RxBleDevice rxBleDevice) {
-        Log.e(LOG_TAG, "onDisconnect: " + rxBleDevice.getMacAddress());
+    public void onDisconnect(String asd ) {
+        Log.e(LOG_TAG, "onDisconnect: " + asd);
 
         mIsDeviceReconnected = false;
     }
@@ -736,6 +730,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         });
 
 
+    }
+    @Override
+    public void onConnectError(String var1, Throwable var2) {
+        startActivity(new Intent(FyssaSensorUpdateActivity.this, FyssaMainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
+        Log.e(LOG_TAG, "onConnectError", var2);
     }
     private boolean exists(ArrayList<RxBleDevice> listed, RxBleDevice device) {
         boolean res = false;

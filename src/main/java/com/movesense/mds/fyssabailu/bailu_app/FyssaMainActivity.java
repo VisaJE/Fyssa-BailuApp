@@ -25,23 +25,22 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
-import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.ConnectionLostDialog;
 import com.movesense.mds.fyssabailu.DataSender;
 import com.movesense.mds.fyssabailu.DataUser;
 import com.movesense.mds.fyssabailu.MainActivity;
-import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaBailuGson;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.update_app.model.DebugResponse;
 
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
-import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.update_app.model.InfoAppResponse;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
+import com.movesense.mds.internal.connectivity.BleManager;
+import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
 
 import java.util.Calendar;
 
@@ -223,7 +222,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                                 if (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() <= 0) {
                                     toast("Connection failed");
                                     startMainActivity();
-                                } else MdsRx.Instance.reconnect(FyssaMainActivity.this);
+                                } else MdsRx.Instance.reconnect();
                             } catch (InterruptedException e1) {
                                 toast(e.toString());
                             }

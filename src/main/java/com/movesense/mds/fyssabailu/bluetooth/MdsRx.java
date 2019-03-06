@@ -1,7 +1,8 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -18,8 +19,9 @@ import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
 import com.movesense.mds.fyssabailu.model.MdsResponse;
 import com.movesense.mds.fyssabailu.model.MdsUri;
+import com.movesense.mds.internal.connectivity.BleManager;
+import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleDevice;
-
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
@@ -49,11 +51,9 @@ public enum MdsRx {
     private final Charset utf8Charset;
     private final Gson gson;
 
-
-    private BleManager bleManager;
-
     private RxBleDevice rxBleDevice;
     private Activity activity;
+    private BleManager bleManager;
     private Mds mMds;
 
     MdsRx() {
@@ -74,12 +74,15 @@ public enum MdsRx {
     public void connect(RxBleDevice bleDevice, Activity activity) {
         this.rxBleDevice = bleDevice;
         this.activity = activity;
-        bleManager.connect(bleDevice, activity);
+        bleManager.connect(bleDevice.getMacAddress(), activity);
     }
 
-    public void reconnect(Activity activity) {
+    public void reconnect() {
         Log.e(TAG, "reconnect() : " + rxBleDevice.getMacAddress());
-        bleManager.reconnect(activity);
+        RxBleDevice here = MovesenseConnectedDevices.getConnectedRxDevice(0);
+        bleManager.disconnect(here);
+
+        new Handler().postDelayed(() -> connect(here, activity), 2000);
     }
 
     public Single<String> get(String uri) {
@@ -91,22 +94,22 @@ public enum MdsRx {
     }
 
     public Single<String> get(final String uri, final String contract) {
-       return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
-           @Override
-           public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
-               mMds.get(uri, contract, new MdsResponseListener() {
-                   @Override
-                   public void onSuccess(String s) {
-                       mdsCallbackSingleEmitter.onSuccess(s);
-                   }
+        return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
+            @Override
+            public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
+                mMds.get(uri, contract, new MdsResponseListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        mdsCallbackSingleEmitter.onSuccess(s);
+                    }
 
-                   @Override
-                   public void onError(MdsException e) {
+                    @Override
+                    public void onError(MdsException e) {
                         mdsCallbackSingleEmitter.onError(e);
-                   }
-               });
-           }
-       });
+                    }
+                });
+            }
+        });
     }
 
     public Single<String> post(final String uri, final String contract) {
@@ -129,9 +132,9 @@ public enum MdsRx {
     }
 
     public Single<String> delete(final String uri, final String contract) {
-       return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
-           @Override
-           public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
+        return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
+            @Override
+            public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
                 mMds.delete(uri, contract, new MdsResponseListener() {
                     @Override
                     public void onSuccess(String s) {
@@ -143,8 +146,8 @@ public enum MdsRx {
                         mdsCallbackSingleEmitter.onError(e);
                     }
                 });
-           }
-       });
+            }
+        });
     }
 
     public Observable<MdsConnectedDevice> connectedDeviceObservable() {
@@ -152,13 +155,22 @@ public enum MdsRx {
                 .map(new Func1<String, MdsConnectedDevice>() {
                     @Override
                     public MdsConnectedDevice call(String s) {
+                        Log.e(TAG, "connectedDeviceObservable(): " + s );
                         try {
-                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>>>() {}.getType();
+                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>>>() {
+                            }.getType();
                             MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>> response = gson.fromJson(s, type);
+                            Log.e(TAG, "=== RETURN: NEW");
+
+                            if (response.getBody().getDeviceInfo().getAddressInfoNew() == null) {
+                                throw new Exception("Null address info.");
+                            }
                             return response.getBody();
                         } catch (Exception e) {
-                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>>>() {}.getType();
+                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>>>() {
+                            }.getType();
                             MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>> response = gson.fromJson(s, type);
+                            Log.e(TAG, "=== RETURN: OLD");
                             return response.getBody();
                         }
                     }
@@ -172,6 +184,7 @@ public enum MdsRx {
     }
 
     public Observable<String> subscribe(final String uri) {
+        Log.e(TAG, "subscribe: " + uri );
         return Observable.create(new Action1<Emitter<String>>() {
             @Override
             public void call(final Emitter<String> stringEmitter) {

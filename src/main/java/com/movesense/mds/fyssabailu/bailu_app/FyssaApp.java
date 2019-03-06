@@ -3,10 +3,10 @@ package com.movesense.mds.fyssabailu.bailu_app;
 import android.app.Application;
 import android.content.Context;
 
-import com.movesense.mds.fyssabailu.MdsRx;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.RxBle;
-import com.movesense.mds.fyssabailu.Util;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
+import com.movesense.mds.fyssabailu.utils.Util;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 
 import java.io.FileOutputStream;

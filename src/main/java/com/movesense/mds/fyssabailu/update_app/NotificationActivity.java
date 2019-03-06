@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu.update_app.dfu;
+package com.movesense.mds.fyssabailu.update_app;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.movesense.mds.fyssabailu.MainActivity;
-import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
+import com.movesense.mds.fyssabailu.update_app.DfuService;
 
 /**
- *
+ * Class responsible for handling clicks on notifications
  */
 
 public class NotificationActivity extends Activity {
@@ -25,13 +25,8 @@ public class NotificationActivity extends Activity {
         if (isTaskRoot()) {
             Log.e(TAG, "isTaskRoot()");
             // Start the app before finishing
-            // Start the app before finishing
-            final Intent parentIntent = new Intent(this, MainActivity.class);
-            parentIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            final Intent startAppIntent = new Intent(this, FyssaSensorUpdateActivity.class);
-            startAppIntent.putExtras(getIntent().getExtras());
-            Log.d(TAG, "Starting parent!");
-            startActivities(new Intent[] { parentIntent, startAppIntent });
+            startActivity(new Intent(this, MainActivity.class));
+
         } else {
             Log.e(TAG, "NOT isTaskRoot()");
         }

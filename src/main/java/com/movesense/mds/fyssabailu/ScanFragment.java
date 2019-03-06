@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;

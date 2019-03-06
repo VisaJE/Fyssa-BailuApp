@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu.update_app;
+package com.movesense.mds.fyssabailu.utils;
 
 
 import com.movesense.mds.fyssabailu.bluetooth.MdsRx;

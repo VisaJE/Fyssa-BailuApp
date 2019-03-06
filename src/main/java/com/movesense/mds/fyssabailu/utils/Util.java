@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.utils;
 
 import android.app.Activity;
 import android.content.Context;

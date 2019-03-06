@@ -72,13 +72,10 @@
 
 
 
-        <service
-            android:name="com.movesense.mds.fyssabailu.update_app.dfu.DfuService"
-            android:exported="true">
-        </service>
+
 
         <receiver
-            android:name="com.movesense.mds.fyssabailu.update_app.adb.AdbBridge"
+            android:name="com.movesense.mds.fyssabailu.adb.AdbBridge"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

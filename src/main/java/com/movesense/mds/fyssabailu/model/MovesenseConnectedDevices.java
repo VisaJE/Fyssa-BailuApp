@@ -1,6 +1,7 @@
-package com.movesense.mds.fyssabailu.update_app.model;
+package com.movesense.mds.fyssabailu.model;
 
 
+import com.movesense.mds.internal.connectivity.MovesenseDevice;
 import com.polidea.rxandroidble.RxBleDevice;
 
 import java.util.ArrayList;
@@ -9,10 +10,10 @@ import java.util.List;
 public final class MovesenseConnectedDevices {
 
     private static final String LOG_TAG = MovesenseConnectedDevices.class.getSimpleName();
-    private static final List<MovesenseDevice> movesenseDevices = new ArrayList<>();
+    private static final List<com.movesense.mds.internal.connectivity.MovesenseDevice> movesenseDevices = new ArrayList<>();
     private static final List<RxBleDevice> rxMovesenseConnectedDevices = new ArrayList<>();
 
-    public static void addConnectedDevice(MovesenseDevice movesenseDevice) {
+    public static void addConnectedDevice(com.movesense.mds.internal.connectivity.MovesenseDevice movesenseDevice) {
         if (!movesenseDevices.contains(movesenseDevice))
             movesenseDevices.add(movesenseDevice);
     }
