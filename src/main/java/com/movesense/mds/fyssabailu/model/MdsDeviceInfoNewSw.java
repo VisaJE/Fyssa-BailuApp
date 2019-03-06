@@ -4,6 +4,8 @@ package com.movesense.mds.fyssabailu.model;
 import com.google.gson.JsonArray;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 
 public class MdsDeviceInfoNewSw {
 
@@ -18,6 +20,13 @@ public class MdsDeviceInfoNewSw {
 
     @SerializedName("SwVersion")
     private String swVersion;
+
+    @SerializedName("DeviceInfo")
+    private MdsDeviceInfoNewSw deviceInfo;
+
+    @SerializedName("addressInfo")
+    private List<MdsAddressModel> addressInfoNew;
+
 
     private String productName;
 
@@ -37,7 +46,6 @@ public class MdsDeviceInfoNewSw {
 
     private String manufacturerName;
 
-    private JsonArray addressInfoNew;
 
     public String getName() {
         return name;
@@ -91,7 +99,7 @@ public class MdsDeviceInfoNewSw {
         return manufacturerName;
     }
 
-    public JsonArray getAddressInfoNew() {
+    public List<MdsAddressModel> getAddressInfoNew() {
         return addressInfoNew;
     }
 }

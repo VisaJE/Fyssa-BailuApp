@@ -12,15 +12,16 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
-import com.movesense.mds.internal.connectivity.BleManager;
-import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
-import com.movesense.mds.internal.connectivity.MovesenseDevice;
 import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.bluetooth.RxBle;
-import com.movesense.mds.fyssabailu.utils.FormatHelper;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
+import com.movesense.mds.fyssabailu.update_app.FormatHelper;
+import com.movesense.mds.internal.connectivity.BleManager;
+import com.movesense.mds.internal.connectivity.MovesenseConnectedDevices;
+import com.movesense.mds.internal.connectivity.MovesenseDevice;
+
 import com.polidea.rxandroidble.RxBleScanResult;
 
 import java.io.File;
@@ -233,6 +234,163 @@ public class AdbBridge extends BroadcastReceiver {
                         }
                     });
 
+        } else if (type.equals("connect")) {
+            try {
+                mScanningCompositeSubscription.add(RxBle.Instance.getClient().scanBleDevices()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action1<RxBleScanResult>() {
+                            @Override
+                            public void call(RxBleScanResult scanResult) {
+                                Log.d(LOG_TAG, "scanResult: " + scanResult.getBleDevice().getName() + " : " +
+                                        scanResult.getBleDevice().getMacAddress());
+                                if (!isConnecting && movesense_mac_address.equals(scanResult.getBleDevice().getMacAddress())) {
+                                    Log.e(LOG_TAG, "scanResult: FOUND DEVICE FROM INTENT Connecting..." + scanResult.getBleDevice().getName() + " : " +
+                                            scanResult.getBleDevice().getMacAddress());
+                                    isConnecting = true;
+                                    Mds.builder().build(mContext).connect(scanResult.getBleDevice().getMacAddress(), null);
+                                }
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Log.e(LOG_TAG, "BEFORE CONNECT YOU NEED GRANT LOCATION PERMISSION !!!");
+                                Log.e(LOG_TAG, "Connect Error: ", throwable);
+                            }
+                        }));
+
+                mCompositeSubscription.add(MdsRx.Instance.connectedDeviceObservable()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action1<MdsConnectedDevice>() {
+                            @Override
+                            public void call(MdsConnectedDevice mdsConnectedDevice) {
+                                if (mdsConnectedDevice.getConnection() != null) {
+
+                                    mScanningCompositeSubscription.clear();
+
+                                    if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoNewSw) {
+                                        MdsDeviceInfoNewSw mdsDeviceInfoNewSw = (MdsDeviceInfoNewSw) mdsConnectedDevice.getDeviceInfo();
+                                        MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
+                                                mdsDeviceInfoNewSw.getAddressInfoNew().get(0).getAddress(),
+                                                mdsDeviceInfoNewSw.getDescription(),
+                                                mdsDeviceInfoNewSw.getSerial(),
+                                                mdsDeviceInfoNewSw.getSw()));
+
+                                        mDevice_name = mdsDeviceInfoNewSw.getDescription();
+
+                                        Log.d(LOG_TAG, CONNECTED_WITH + mdsDeviceInfoNewSw.getSerial() + " : " + movesense_mac_address);
+
+                                    } else if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoOldSw) {
+                                        MdsDeviceInfoOldSw mdsDeviceInfoOldSw = (MdsDeviceInfoOldSw) mdsConnectedDevice.getDeviceInfo();
+                                        MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
+                                                mdsDeviceInfoOldSw.getAddressInfoOld(),
+                                                mdsDeviceInfoOldSw.getDescription(),
+                                                mdsDeviceInfoOldSw.getSerial(),
+                                                mdsDeviceInfoOldSw.getSw()));
+
+                                        mDevice_name = mdsDeviceInfoOldSw.getDescription();
+
+                                        Log.d(LOG_TAG, CONNECTED_WITH + mdsDeviceInfoOldSw.getSerial() + " : " + movesense_mac_address);
+                                    }
+                                } else {
+
+                                    if (file_path == null || file_path.isEmpty()) {
+                                        Log.e(LOG_TAG, "File path error");
+                                        return;
+                                    }
+
+                                    File dir = Environment.getExternalStorageDirectory();
+                                    File yourFile = new File(dir, file_path);
+
+                                    Log.e(LOG_TAG, "DFU: dir: " + dir);
+                                    Log.e(LOG_TAG, "DFU: file: " + yourFile);
+                                    Log.e(LOG_TAG, "DFU: file: " + yourFile.exists());
+                                    Log.e(LOG_TAG, "DFU: path: " + yourFile.getPath());
+
+                                    if (!yourFile.exists()) {
+                                        Log.e(LOG_TAG, "File not exists - path: " + yourFile.getPath());
+                                        return;
+                                    }
+                                    // Käytetään suoraan dfuservicea, ei tässä mitään utilia tarvita.
+                                    //DfuUtil.runDfuServiceUpdate(context, DfuUtil.incrementMacAddress(movesense_mac_address), mDevice_name,
+                                      //      Uri.parse("file://" + yourFile.getPath()), null);
+
+                                    if (MovesenseConnectedDevices.getConnectedDevices().size() == 1) {
+                                        MovesenseConnectedDevices.getConnectedDevices().remove(0);
+                                    } else {
+                                        Log.e(LOG_TAG, "ERROR: Wrong MovesenseConnectedDevices list size");
+                                    }
+
+                                }
+                            }
+                        }));
+
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "BEFORE CONNECT YOU NEED GRANT LOCATION PERMISSION AND TURN ON BLUETOOTH !!!");
+            }
+
+        } else if (type.equals("disconnect")) {
+            if (MovesenseConnectedDevices.getConnectedDevices().size() > 0
+                    && movesense_mac_address != null && !movesense_mac_address.isEmpty()) {
+
+                if (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() > 0) {
+                    BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
+                }
+            }
+        } else if (type.equals("dfu_update")) {
+
+            if (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+                Log.e(LOG_TAG, "EI NÄITÄ PITÄIS TULLA");
+
+            } else {
+
+                mScanningCompositeSubscription.clear();
+
+                mScanningCompositeSubscription.add(RxBle.Instance.getClient().scanBleDevices()
+                        .timeout(60, TimeUnit.SECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action1<RxBleScanResult>() {
+                            @Override
+                            public void call(RxBleScanResult scanResult) {
+                                Log.d(LOG_TAG, "scanResult: " + scanResult.getBleDevice().getName() + " : " +
+                                        scanResult.getBleDevice().getMacAddress());
+                                if (!isConnecting && (scanResult.getBleDevice().getMacAddress().equals(dfu_mac_address))) {
+                                    Log.e(LOG_TAG, "scanResult: FOUND DFU DEVICE FROM INTENT Connecting..." + scanResult.getBleDevice().getName() + " : " +
+                                            scanResult.getBleDevice().getMacAddress());
+                                    isConnecting = true;
+                                    mDevice_name = scanResult.getBleDevice().getName();
+
+                                    if (file_path == null || file_path.isEmpty()) {
+                                        Log.e(LOG_TAG, "File path error");
+                                        return;
+                                    }
+
+                                    File dir = Environment.getExternalStorageDirectory();
+                                    File yourFile = new File(dir, file_path);
+
+                                    Log.e(LOG_TAG, "DFU: dir: " + dir);
+                                    Log.e(LOG_TAG, "DFU: file: " + yourFile);
+                                    Log.e(LOG_TAG, "DFU: file: " + yourFile.exists());
+                                    Log.e(LOG_TAG, "DFU: path: " + yourFile.getPath());
+
+                                    if (!yourFile.exists()) {
+                                        Log.e(LOG_TAG, "File not exists - path: " + yourFile.getPath());
+                                        return;
+                                    }
+/*
+                                    DfuUtil.runDfuServiceUpdate(context, dfu_mac_address, mDevice_name,
+                                            Uri.parse("file://" + yourFile.getPath()), null);
+*/
+                                    mScanningCompositeSubscription.clear();
+                                }
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Log.e(LOG_TAG, "BEFORE CONNECT YOU NEED GRANT LOCATION PERMISSION !!!");
+                                Log.e(LOG_TAG, "Connect Error: ", throwable);
+                            }
+                        }));
+            }
         }
     }
 }

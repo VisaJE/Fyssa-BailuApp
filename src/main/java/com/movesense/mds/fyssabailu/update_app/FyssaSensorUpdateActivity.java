@@ -55,7 +55,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import no.nordicsemi.android.dfu.DfuProgressListener;
-import no.nordicsemi.android.dfu.DfuServiceInitiator;
+import com.movesense.mds.fyssabailu.update_app.DfuServiceInitiator;
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
 
 import rx.subscriptions.CompositeSubscription;
@@ -403,7 +403,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
 
         int i = tryWithBootloader?  selectedFile+bootPadding : selectedFile;
-        Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()) + " into" +
+                selectedDevice.getBluetoothDevice().getAddress());
         serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
         serviceInitiator.start(this, DfuService.class);
 

@@ -71,18 +71,6 @@
         </activity>
 
 
-
-
-
-        <receiver
-            android:name="com.movesense.mds.fyssabailu.adb.AdbBridge"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MOVESENSE"/>
-            </intent-filter>
-        </receiver>
-
         <!-- Mqtt Service -->
         <service android:name="org.eclipse.paho.android.service.MqttService">
         </service>
