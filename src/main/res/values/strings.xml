@@ -95,7 +95,7 @@
     <string name="connection_error_message">Something went wrong. Please Try again</string>
     <string name="remove_device">Disconnect</string>
     <string name="dfu_file_type_title">Select file type</string>
-    <string name="uploading">Uploading....</string>
+    <string name="uploading">Uploading. Do not close the application.</string>
     <string name="update">Update</string>
     <string name="_0percent">0%</string>
     <string name="dfu_status">Dfu Status:</string>

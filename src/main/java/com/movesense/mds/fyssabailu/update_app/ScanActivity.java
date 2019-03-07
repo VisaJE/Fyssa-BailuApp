@@ -58,41 +58,40 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
         // Monitor for connected devices
         subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<MdsConnectedDevice>() {
-                    @Override
-                    public void call(MdsConnectedDevice mdsConnectedDevice) {
-                        // Stop refreshing
-                        if (mdsConnectedDevice.getConnection() != null) {
-                            ConnectingDialog.INSTANCE.dismissDialog();
-                            // Add connected device
-                            // Fixme: this should be deleted after 1.0 SW release
+                .subscribe(mdsConnectedDevice -> {
+                    // Stop refreshing
+                    if (mdsConnectedDevice.getConnection() != null) {
+                        Log.d(TAG, "onDeviceSelected found a connected device");
+                        ConnectingDialog.INSTANCE.dismissDialog();
+                        // Add connected device
+                        // Fixme: this should be deleted after 1.0 SW release
 
-                            if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoNewSw) {
-                                MdsDeviceInfoNewSw mdsDeviceInfoNewSw = (MdsDeviceInfoNewSw) mdsConnectedDevice.getDeviceInfo();
-                                MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
-                                        device.getMacAddress(),
-                                        mdsDeviceInfoNewSw.getDescription(),
-                                        mdsDeviceInfoNewSw.getSerial(),
-                                        mdsDeviceInfoNewSw.getSw()));
-                            } else if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoOldSw) {
-                                MdsDeviceInfoOldSw mdsDeviceInfoOldSw = (MdsDeviceInfoOldSw) mdsConnectedDevice.getDeviceInfo();
-                                MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
-                                        device.getMacAddress(),
-                                        mdsDeviceInfoOldSw.getDescription(),
-                                        mdsDeviceInfoOldSw.getSerial(),
-                                        mdsDeviceInfoOldSw.getSw()));
-                            }
-                            // We have a new SdsDevice
-                            subscriptions.unsubscribe();
-                            subscriptions.clear();
-                            continueToActivity();
+                        if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoNewSw) {
+                            MdsDeviceInfoNewSw mdsDeviceInfoNewSw = (MdsDeviceInfoNewSw) mdsConnectedDevice.getDeviceInfo();
+                            MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
+                                    device.getMacAddress(),
+                                    mdsDeviceInfoNewSw.getDescription(),
+                                    mdsDeviceInfoNewSw.getSerial(),
+                                    mdsDeviceInfoNewSw.getSw()));
+                        } else if (mdsConnectedDevice.getDeviceInfo() instanceof MdsDeviceInfoOldSw) {
+                            MdsDeviceInfoOldSw mdsDeviceInfoOldSw = (MdsDeviceInfoOldSw) mdsConnectedDevice.getDeviceInfo();
+                            MovesenseConnectedDevices.addConnectedDevice(new MovesenseDevice(
+                                    device.getMacAddress(),
+                                    mdsDeviceInfoOldSw.getDescription(),
+                                    mdsDeviceInfoOldSw.getSerial(),
+                                    mdsDeviceInfoOldSw.getSw()));
                         }
+                        // We have a new SdsDevice
+                        subscriptions.unsubscribe();
+                        subscriptions.clear();
+                        continueToActivity();
                     }
                 }, new ThrowableToastingAction(this)));
     }
     @Override
     public void onBackPressed() {
         subscriptions.clear();
+        ConnectingDialog.INSTANCE.dismissDialog();
         startActivity(new Intent(ScanActivity.this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }

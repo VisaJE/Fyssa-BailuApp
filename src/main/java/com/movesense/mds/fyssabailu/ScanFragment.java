@@ -120,12 +120,7 @@ public class ScanFragment extends Fragment {
 
         // Listen for device selection
         Subscription selectionSubscription = scannedDevicesAdapter.deviceSelectionObservable()
-                .subscribe(new Action1<RxBleDevice>() {
-                    @Override
-                    public void call(RxBleDevice rxBleDevice) {
-                        deviceSelectionListener.onDeviceSelected(rxBleDevice);
-                    }
-                }, new ThrowableToastingAction(getContext()));
+                .subscribe(rxBleDevice -> deviceSelectionListener.onDeviceSelected(rxBleDevice), new ThrowableToastingAction(getContext()));
         subscriptions.add(selectionSubscription);
 
         // Start scanning immediately

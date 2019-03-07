@@ -19,7 +19,7 @@ public enum ConnectingDialog {
                 .setTitle(R.string.connecting)
                 .setMessage(R.string.please_wait_connecting);
 
-        alertDialog = alertDialogBuilder.show();
+         alertDialog = alertDialogBuilder.show();
     }
 
     public void dismissDialog() {

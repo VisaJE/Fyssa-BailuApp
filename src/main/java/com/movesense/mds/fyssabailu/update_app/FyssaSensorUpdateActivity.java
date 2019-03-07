@@ -498,7 +498,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
                         }
                     }
-                },  new ThrowableToastingAction(null)));
+                },  new ThrowableToastingAction(this)));
 
     }
 
