@@ -552,7 +552,7 @@ public class DfuServiceInitiator {
 			// On Android Oreo and above the service must be started as a foreground service to make it accessible from
 			// a killed application.
             Log.d("DfuServiceController", "Foreground");
-			//context.startForegroundService(intent);
+			context.startForegroundService(intent);
 
 		} else {
             Log.d("DfuServiceController", "Background");
