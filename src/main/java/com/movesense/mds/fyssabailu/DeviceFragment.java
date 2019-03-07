@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 
 import rx.Observable;
@@ -45,7 +46,7 @@ public class DeviceFragment extends Fragment {
         final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) view;
         swipeRefreshLayout.setRefreshing(true);
 
-        final TextView serialTextView = (TextView) view.findViewById(R.id.serialTextView);
+        final TextView serialTextView = view.findViewById(R.id.serialTextView);
 
         // Monitor for connected devices
         subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
@@ -63,9 +64,9 @@ public class DeviceFragment extends Fragment {
                     }
                 }, new ThrowableToastingAction(getContext())));
 
-        final EditText pathEditText = (EditText) view.findViewById(R.id.pathEditText);
-        final EditText contractEditText = (EditText) view.findViewById(R.id.contractEditText);
-        final TextView resultTextView = (TextView) view.findViewById(R.id.resultTextView);
+        final EditText pathEditText = view.findViewById(R.id.pathEditText);
+        final EditText contractEditText = view.findViewById(R.id.contractEditText);
+        final TextView resultTextView = view.findViewById(R.id.resultTextView);
 
         Action1<String> toResultAction = new Action1<String>() {
             @Override

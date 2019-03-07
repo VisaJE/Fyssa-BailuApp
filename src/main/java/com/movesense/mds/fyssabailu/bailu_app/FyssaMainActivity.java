@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -25,23 +24,20 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
-import com.movesense.mds.fyssabailu.BleManager;
 import com.movesense.mds.fyssabailu.ConnectionLostDialog;
-import com.movesense.mds.fyssabailu.DataSender;
-import com.movesense.mds.fyssabailu.DataUser;
 import com.movesense.mds.fyssabailu.MainActivity;
-import com.movesense.mds.fyssabailu.RxBle;
+import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bluetooth.BleManager;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaBailuGson;
+import com.movesense.mds.fyssabailu.online.DataSender;
+import com.movesense.mds.fyssabailu.online.DataUser;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.update_app.model.DebugResponse;
-
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
-import com.movesense.mds.fyssabailu.MdsRx;
-import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.update_app.model.InfoAppResponse;
-import com.movesense.mds.fyssabailu.tool.MemoryTools;
+import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 
 import java.util.Calendar;
 
@@ -196,17 +192,14 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
 
-                            builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case DialogInterface.BUTTON_POSITIVE:
-                                            if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
-                                                updateSensorSoftware();
-                                            else
-                                                updateSensorSoftware(); // Useless now that everythin happens within the same update activity.
-                                            break;
-                                    }
+                            builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", (dialog, which) -> {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
+                                            updateSensorSoftware();
+                                        else
+                                            updateSensorSoftware(); // Useless now that everythin happens within the same update activity.
+                                        break;
                                 }
                             }).show();
                         } else enableButtons();

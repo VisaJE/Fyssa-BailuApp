@@ -1,7 +1,8 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.movesense.mds.fyssabailu.Util;
 import com.polidea.rxandroidble.RxBleDevice;
 
 import java.util.ArrayList;

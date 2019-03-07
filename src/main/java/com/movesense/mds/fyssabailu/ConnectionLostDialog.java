@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.movesense.mds.fyssabailu.bluetooth.BleManager;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 
 public enum  ConnectionLostDialog {

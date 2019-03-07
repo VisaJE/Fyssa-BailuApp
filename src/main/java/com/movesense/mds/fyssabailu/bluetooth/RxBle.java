@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 import android.content.Context;
 

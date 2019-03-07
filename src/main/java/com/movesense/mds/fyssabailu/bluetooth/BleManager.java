@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.movesense.mds.BLEDelegate;
 import com.movesense.mds.BLEWrapper;
+import com.movesense.mds.fyssabailu.Util;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleConnection;
 import com.polidea.rxandroidble.RxBleDevice;

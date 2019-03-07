@@ -32,7 +32,7 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         DeviceViewHolder(View itemView) {
             super(itemView);
 
-            textView = (TextView) itemView.findViewById(R.id.text);
+            textView = itemView.findViewById(R.id.text);
         }
     }
 

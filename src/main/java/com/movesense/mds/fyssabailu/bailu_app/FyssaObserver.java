@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -19,25 +17,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
-import com.movesense.mds.fyssabailu.DataSender;
-import com.movesense.mds.fyssabailu.DataUser;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
+import com.movesense.mds.fyssabailu.online.DataSender;
+import com.movesense.mds.fyssabailu.online.DataUser;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
-
-import java.util.AbstractQueue;
-import java.util.Queue;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -98,7 +90,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     protected void createView() {
         // Set up list and adapter for scanned devices
         deviceView = new FyssaDeviceView();
-        RecyclerView deviceList = (RecyclerView) findViewById(R.id.partiers_view);
+        RecyclerView deviceList = findViewById(R.id.partiers_view);
         deviceList.setLayoutManager(new LinearLayoutManager(this));
         deviceList.setAdapter(deviceView);
         //deviceList.setItemAnimator(null);

@@ -3,44 +3,40 @@ package com.movesense.mds.fyssabailu.bailu_app;
 import android.app.Application;
 import android.content.Context;
 
-import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.Util;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  * Application for making all initializations
  */
 public class FyssaApp extends Application {
 
-    private MemoryTools memoryTools;
+    public static final String SERVER_THRESHOLD_URL = "http://82.130.33.5:5000/bailu/threshold";
+    public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
+    public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";
     // Accepted versions
-    private static final String deviceVersions[] = {"0.1.1.BA","0.1.1.BS"} ;
+    private static final String deviceVersions[] = {"0.1.1.BA", "0.1.1.BS"};
+    private MemoryTools memoryTools;
+
     public static final Boolean isSupported(String deviceVersion) {
         for (String i : deviceVersions) {
             if (i.equals(deviceVersion)) return true;
         }
         return false;
     }
-    public static final Boolean hasBootloader(String deviceVersion) {
-        if (deviceVersion.charAt(2) == '1' &&
-                (deviceVersion.contains("BA") || deviceVersion.contains("BS") ||
-                        deviceVersion.contains("HW") || deviceVersion.contains("IMU"))) {
-            return true;
-        }
-        return false;
-    }
-    public static final String SERVER_THRESHOLD_URL = "http://82.130.33.5:5000/bailu/threshold";
-    public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
-    public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";
 
+    public static final Boolean hasBootloader(String deviceVersion) {
+        return deviceVersion.charAt(2) == '1' &&
+                (deviceVersion.contains("BA") || deviceVersion.contains("BS") ||
+                        deviceVersion.contains("HW") || deviceVersion.contains("IMU"));
+    }
 
     @Override
     public void onCreate() {
@@ -68,7 +64,6 @@ public class FyssaApp extends Application {
     public MemoryTools getMemoryTools() {
         return memoryTools;
     }
-
 
 
     /**

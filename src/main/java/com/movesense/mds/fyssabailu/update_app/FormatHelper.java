@@ -1,7 +1,7 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 
-import com.movesense.mds.fyssabailu.MdsRx;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 
 /**
  * Helper class for formatting Contract and Path

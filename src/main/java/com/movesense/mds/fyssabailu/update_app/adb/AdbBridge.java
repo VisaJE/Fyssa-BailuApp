@@ -10,7 +10,7 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
-import com.movesense.mds.fyssabailu.MdsRx;
+import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.update_app.FormatHelper;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 

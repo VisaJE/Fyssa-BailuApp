@@ -18,8 +18,7 @@ public final class MovesenseConnectedDevices {
     }
 
     public static void removeConnectedDevice(MovesenseDevice movesenseDevice) {
-        if (movesenseDevices.contains(movesenseDevice))
-            movesenseDevices.remove(movesenseDevice);
+        movesenseDevices.remove(movesenseDevice);
     }
 
     public static List<MovesenseDevice> getConnectedDevices() {
@@ -37,9 +36,7 @@ public final class MovesenseConnectedDevices {
     }
 
     public static void removeRxConnectedDevice(RxBleDevice rxBleDevice) {
-        if (rxMovesenseConnectedDevices.contains(rxBleDevice)) {
-            rxMovesenseConnectedDevices.remove(rxBleDevice);
-        }
+        rxMovesenseConnectedDevices.remove(rxBleDevice);
     }
 
     public static List<RxBleDevice> getRxMovesenseConnectedDevices() {

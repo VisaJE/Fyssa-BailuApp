@@ -1,6 +1,5 @@
 package com.movesense.mds.fyssabailu.bailu_app;
 
-import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,20 +9,12 @@ import android.widget.TextView;
 
 import com.movesense.mds.fyssabailu.R;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleScanResult;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.*;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.concurrent.Semaphore;
-
-import rx.Observable;
-import rx.subjects.PublishSubject;
 
 
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -38,7 +29,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         DeviceViewHolder(View itemView) {
             super(itemView);
 
-            textView = (TextView) itemView.findViewById(R.id.text);
+            textView = itemView.findViewById(R.id.text);
         }
     }
 

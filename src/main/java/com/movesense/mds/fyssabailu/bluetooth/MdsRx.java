@@ -1,4 +1,4 @@
-package com.movesense.mds.fyssabailu;
+package com.movesense.mds.fyssabailu.bluetooth;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +13,7 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
+import com.movesense.mds.fyssabailu.bluetooth.BleManager;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
@@ -26,8 +27,6 @@ import java.nio.charset.Charset;
 import rx.Emitter;
 import rx.Observable;
 import rx.Single;
-import rx.SingleEmitter;
-import rx.functions.Action1;
 import rx.functions.Cancellable;
 import rx.functions.Func1;
 
@@ -165,7 +164,7 @@ public enum MdsRx {
 
             stringEmitter.setCancellation(new Cancellable() {
                 @Override
-                public void cancel() throws Exception {
+                public void cancel() {
                     subscription.unsubscribe();
                 }
             });

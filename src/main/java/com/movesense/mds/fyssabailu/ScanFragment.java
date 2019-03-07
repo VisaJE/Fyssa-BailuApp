@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.MemoryFile;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
+import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
@@ -113,7 +113,7 @@ public class ScanFragment extends Fragment {
         String mac = ((FyssaApp) getActivity().getApplication()).getMemoryTools().getSerial();
         if (mac.equals(MemoryTools.DEFAULT_STRING)) mac = "";
         scannedDevicesAdapter = new ScannedDevicesAdapter(true, mac);
-        RecyclerView deviceList = (RecyclerView) view.findViewById(R.id.device_list);
+        RecyclerView deviceList = view.findViewById(R.id.device_list);
         deviceList.setLayoutManager(new LinearLayoutManager(getContext()));
         deviceList.setAdapter(scannedDevicesAdapter);
         deviceList.setItemAnimator(null);
