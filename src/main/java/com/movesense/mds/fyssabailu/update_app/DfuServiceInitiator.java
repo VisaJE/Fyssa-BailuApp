@@ -534,9 +534,7 @@ public class DfuServiceInitiator {
 			// If the setPacketsReceiptNotificationsEnabled(boolean) has not been called, the PRN state and value are taken from
 			// SharedPreferences the way they were read in DFU Library in 1.0.3 and before, or set to default values.
 			// Default values: PRNs enabled on Android 4.3 - 5.1 and disabled starting from Android 6.0. Default PRN value is 12.
-            Log.e("Initiator", "Tätä legacy paskaa ei vissii oo händälätty");
 		}
-        Log.d("DfuServiceController", "Katotaa legacy shittii");
 		if (legacyDfuUuids != null)
 			intent.putExtra(DfuBaseService.EXTRA_CUSTOM_UUIDS_FOR_LEGACY_DFU, legacyDfuUuids);
 		if (secureDfuUuids != null)
