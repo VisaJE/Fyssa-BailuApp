@@ -91,110 +91,84 @@ public enum MdsRx {
     }
 
     public Single<String> get(final String uri, final String contract) {
-       return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
+       return Single.fromEmitter(mdsCallbackSingleEmitter -> mMds.get(uri, contract, new MdsResponseListener() {
            @Override
-           public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
-               mMds.get(uri, contract, new MdsResponseListener() {
-                   @Override
-                   public void onSuccess(String s) {
-                       mdsCallbackSingleEmitter.onSuccess(s);
-                   }
-
-                   @Override
-                   public void onError(MdsException e) {
-                        mdsCallbackSingleEmitter.onError(e);
-                   }
-               });
+           public void onSuccess(String s) {
+               mdsCallbackSingleEmitter.onSuccess(s);
            }
-       });
+
+           @Override
+           public void onError(MdsException e) {
+                mdsCallbackSingleEmitter.onError(e);
+           }
+       }));
     }
 
     public Single<String> post(final String uri, final String contract) {
-        return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
+        return Single.fromEmitter(mdsCallbackSingleEmitter -> mMds.post(uri, contract, new MdsResponseListener() {
             @Override
-            public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
-                mMds.post(uri, contract, new MdsResponseListener() {
-                    @Override
-                    public void onSuccess(String s) {
-                        mdsCallbackSingleEmitter.onSuccess(s);
-                    }
-
-                    @Override
-                    public void onError(MdsException e) {
-                        mdsCallbackSingleEmitter.onError(e);
-                    }
-                });
+            public void onSuccess(String s) {
+                mdsCallbackSingleEmitter.onSuccess(s);
             }
-        });
+
+            @Override
+            public void onError(MdsException e) {
+                mdsCallbackSingleEmitter.onError(e);
+            }
+        }));
     }
 
     public Single<String> delete(final String uri, final String contract) {
-       return Single.fromEmitter(new Action1<SingleEmitter<String>>() {
+       return Single.fromEmitter(mdsCallbackSingleEmitter -> mMds.delete(uri, contract, new MdsResponseListener() {
            @Override
-           public void call(final SingleEmitter<String> mdsCallbackSingleEmitter) {
-                mMds.delete(uri, contract, new MdsResponseListener() {
-                    @Override
-                    public void onSuccess(String s) {
-                        mdsCallbackSingleEmitter.onSuccess(s);
-                    }
-
-                    @Override
-                    public void onError(MdsException e) {
-                        mdsCallbackSingleEmitter.onError(e);
-                    }
-                });
+           public void onSuccess(String s) {
+               mdsCallbackSingleEmitter.onSuccess(s);
            }
-       });
+
+           @Override
+           public void onError(MdsException e) {
+               mdsCallbackSingleEmitter.onError(e);
+           }
+       }));
     }
 
     public Observable<MdsConnectedDevice> connectedDeviceObservable() {
         return subscribe(URI_CONNECTEDDEVICES)
-                .map(new Func1<String, MdsConnectedDevice>() {
-                    @Override
-                    public MdsConnectedDevice call(String s) {
-                        try {
-                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>>>() {}.getType();
-                            MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>> response = gson.fromJson(s, type);
-                            return response.getBody();
-                        } catch (Exception e) {
-                            Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>>>() {}.getType();
-                            MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>> response = gson.fromJson(s, type);
-                            return response.getBody();
-                        }
+                .map((Func1<String, MdsConnectedDevice>) s -> {
+                    try {
+                        Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>>>() {}.getType();
+                        MdsResponse<MdsConnectedDevice<MdsDeviceInfoNewSw>> response = gson.fromJson(s, type);
+                        return response.getBody();
+                    } catch (Exception e) {
+                        Type type = new TypeToken<MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>>>() {}.getType();
+                        MdsResponse<MdsConnectedDevice<MdsDeviceInfoOldSw>> response = gson.fromJson(s, type);
+                        return response.getBody();
                     }
                 })
-                .filter(new Func1<MdsConnectedDevice, Boolean>() {
-                    @Override
-                    public Boolean call(MdsConnectedDevice mdsConnectedDevice) {
-                        return mdsConnectedDevice != null;
-                    }
-                });
+                .filter(mdsConnectedDevice -> mdsConnectedDevice != null);
     }
 
     public Observable<String> subscribe(final String uri) {
-        return Observable.create(new Action1<Emitter<String>>() {
-            @Override
-            public void call(final Emitter<String> stringEmitter) {
-                final MdsSubscription subscription = mMds.subscribe(URI_EVENTLISTENER, gson.toJson(new MdsUri(uri)),
-                        new MdsNotificationListener() {
-                            @Override
-                            public void onNotification(String s) {
-                                stringEmitter.onNext(s);
-                            }
+        return Observable.create(stringEmitter -> {
+            final MdsSubscription subscription = mMds.subscribe(URI_EVENTLISTENER, gson.toJson(new MdsUri(uri)),
+                    new MdsNotificationListener() {
+                        @Override
+                        public void onNotification(String s) {
+                            stringEmitter.onNext(s);
+                        }
 
-                            @Override
-                            public void onError(MdsException e) {
-                                stringEmitter.onError(e);
-                            }
-                        });
+                        @Override
+                        public void onError(MdsException e) {
+                            stringEmitter.onError(e);
+                        }
+                    });
 
-                stringEmitter.setCancellation(new Cancellable() {
-                    @Override
-                    public void cancel() throws Exception {
-                        subscription.unsubscribe();
-                    }
-                });
-            }
+            stringEmitter.setCancellation(new Cancellable() {
+                @Override
+                public void cancel() throws Exception {
+                    subscription.unsubscribe();
+                }
+            });
         }, Emitter.BackpressureMode.BUFFER);
     }
 }

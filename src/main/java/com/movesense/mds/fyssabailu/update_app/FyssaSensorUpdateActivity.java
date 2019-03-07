@@ -1,7 +1,6 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 import android.Manifest;
-import android.app.ActivityManager;
 
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
@@ -19,7 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import android.provider.Settings;
-import android.support.annotation.RequiresApi;
+
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -33,9 +32,9 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.movesense.mds.Mds;
 import com.movesense.mds.MdsException;
+import com.movesense.mds.MdsHeader;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.fyssabailu.BleManager;
-import com.movesense.mds.fyssabailu.BuildConfig;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.MdsRx;
 import com.movesense.mds.fyssabailu.R;
@@ -46,13 +45,11 @@ import com.movesense.mds.fyssabailu.RxBle;
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
-import com.movesense.mds.fyssabailu.model.EnergyGet;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
-import com.polidea.rxandroidble.RxBleScanResult;
 
 
 import java.util.ArrayList;
@@ -410,7 +407,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
         int i = tryWithBootloader?  selectedFile+bootPadding : selectedFile;
         Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+
         serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+
+        Log.e(LOG_TAG, "DEBUG INFO:" +
+                this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName())+ ", "+
+                MovesenseConnectedDevices.getConnectedDevices().size() + ", "
+                + MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() + ", "
+                + selectedDevice.getBluetoothDevice().getAddress() + ", "
+                + selectedDevice.getMacAddress() + ", " +  BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable + "!");
+
         serviceInitiator.start(this, DfuService.class);
 
     }
@@ -431,6 +437,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         Log.e(LOG_TAG, "onSuccess(): " + data);
                         isDfuEnable = true;
                         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+                        removeAndDisconnectFromDevices();
                     }
 
                     @Override

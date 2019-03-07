@@ -83,6 +83,7 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
                                         mdsDeviceInfoOldSw.getSw()));
                             }
                             // We have a new SdsDevice
+                            subscriptions.unsubscribe();
                             subscriptions.clear();
                             continueToActivity();
                         }
