@@ -12,7 +12,9 @@ import android.content.Intent;
 
 import android.content.pm.PackageManager;
 
+import android.content.res.AssetManager;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +46,7 @@ import com.movesense.mds.fyssabailu.RxBle;
 
 import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
@@ -52,6 +55,7 @@ import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 
 
+import java.io.File;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -69,6 +73,7 @@ import rx.subscriptions.CompositeSubscription;
 
 public class FyssaSensorUpdateActivity extends AppCompatActivity implements ScannerFragment.DeviceSelectionListener, BleManager.IBleConnectionMonitor {
 
+    FyssaApp app;
 
     @BindView(R.id.start_update) Button startUpdate;
     @BindView(R.id.dfu_select_device_btn2) Button dfuSelectDeviceBtn;
@@ -117,9 +122,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     protected void onCreate(Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
+        app = (FyssaApp)getApplication();
         listFiles= getResources().getStringArray(R.array.dfu_files);
         listExplanations= getResources().getStringArray(R.array.dfu_file_titles);
         bootPadding= listFiles.length/2;
+
         knownMac = null;
 
         setContentView(R.layout.activity_sensor_update);
@@ -128,6 +135,17 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         dfuSelectDeviceBtn.setEnabled(false);
 
         BleManager.INSTANCE.addBleConnectionMonitorListener(this);
+
+        if (savedInstanceState != null) {
+            selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
+            mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
+
+            new Handler().postDelayed(() -> {
+                startUpdate.setEnabled(selectedDevice != null && mStatusOk);
+            }, 700);
+            mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
+            mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
+        }
 
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -156,46 +174,45 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             return;
         }
         else if (!checkLocationPermission()) {
-            Log.d(LOG_TAG, "No permission!");
+            Log.d(LOG_TAG, "Insufficient permissions!");
             startUpdate.setEnabled(false);
+            dfuSelectDeviceBtn.setEnabled(false);
+        } else if (!checkStorageAccess()) {
+            Log.d(LOG_TAG, "Not right storage permissions");
+            startUpdate.setEnabled(false);
+            dfuSelectDeviceBtn.setEnabled(false);
         } else {
-            isBLESupported();
-            if (!isBLEEnabled()) {
-                showBLEDialog();
-            }
-
-            if (savedInstanceState != null) {
-                selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
-                mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
-
-                new Handler().postDelayed(() -> {
-                    startUpdate.setEnabled(selectedDevice != null && mStatusOk);
-                }, 700);
-                mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
-                mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
-            }
-
-            // Ask For Bluetooth
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (!bluetoothAdapter.isEnabled()) {
-                // Bluetooth is not enable so run
-                bluetoothAdapter.enable();
-            }
-
-
-            startUpdate.setEnabled(false);
-            devices = new ArrayList();
-            signalStrengths = new ArrayList<>();
-            if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
-                Log.d(LOG_TAG, "Already connected to " + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
-                wasConnected = true;
-                setupUpdate();
-            }
-            else {
-                showConnectDialog();
-            }
-
+            continueCreation();
         }
+    }
+
+
+    private void continueCreation() {
+        isBLESupported();
+        if (!isBLEEnabled()) {
+            showBLEDialog();
+        }
+
+        // Ask For Bluetooth
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!bluetoothAdapter.isEnabled()) {
+            // Bluetooth is not enable so run
+            bluetoothAdapter.enable();
+        }
+
+
+        devices = new ArrayList();
+        signalStrengths = new ArrayList<>();
+
+        if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+            Log.d(LOG_TAG, "Already connected to " + MovesenseConnectedDevices.getConnectedDevices().size() + " devices.");
+            wasConnected = true;
+            setupUpdate();
+        }
+        else {
+            showConnectDialog();
+        }
+
     }
 
     private void showConnectDialog() {
@@ -317,24 +334,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         Log.e(LOG_TAG, "onDestroy");
     }
 
-    private int findMySense() {
-        if (knownMac != null) {
-            for (RxBleDevice i : devices) {
-                if (i.getMacAddress().equals(knownMac)) return devices.indexOf(i);
-            }
-        }
-        Integer highest = 0;
-        Integer secondHighest = -1;
-        for (Integer i : signalStrengths) {
-            if (highest < i) {
-                secondHighest = highest;
-                highest = i;
-            } else if (secondHighest < i) secondHighest = i;
-        }
-        // Requiring 2/3rds higher strength to filter the right one.
-        if (secondHighest*5/3 < highest) return signalStrengths.indexOf(highest);
-        return -1;
-    }
 
     @OnClick({R.id.dfu_select_device_btn2, R.id.start_update})
     public void onViewClicked(View view) {
@@ -395,6 +394,14 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     }
 
+    private File updateFile;
+    private void loadUpdateFile(String filename) {
+        com.movesense.mds.fyssabailu.tool.MemoryTools myMemory = app.getMemoryTools();
+        AssetManager as = getAssets();
+        updateFile = myMemory.getAssetsFile(as, filename + ".zip");
+        Log.d(LOG_TAG, "!!Update file length " + updateFile.length() + " exists: " + updateFile.exists());
+    }
+
     private void startUpdate() {
 
         DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(selectedDevice.getBluetoothDevice().getAddress())
@@ -406,12 +413,16 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
 
         int i = tryWithBootloader?  selectedFile+bootPadding : selectedFile;
-        Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
 
-        serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
 
-        Log.e(LOG_TAG, "DEBUG INFO:" +
-                this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName())+ ", "+
+        //Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        //serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+
+        loadUpdateFile(listFiles[i]);
+        serviceInitiator.setZip(Uri.fromFile(updateFile), updateFile.getPath());
+        Log.d(LOG_TAG, "Starting update with asset file " + updateFile.getName());
+
+        Log.d(LOG_TAG, "DEBUG INFO:" +
                 MovesenseConnectedDevices.getConnectedDevices().size() + ", "
                 + MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() + ", "
                 + selectedDevice.getBluetoothDevice().getAddress() + ", "
@@ -456,12 +467,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         Toast.makeText(this, "Upload failed: " + message, Toast.LENGTH_SHORT).show();
     }
 
-
-    private boolean isBLEEnabled() {
-        BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        BluetoothAdapter adapter = manager.getAdapter();
-        return adapter != null && adapter.isEnabled();
-    }
 
 
     private void showDeviceScanningDialog() {
@@ -629,6 +634,14 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     };
 
+
+    private boolean isBLEEnabled() {
+        BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        BluetoothAdapter adapter = manager.getAdapter();
+        return adapter != null && adapter.isEnabled();
+    }
+
+
     private void showBLEDialog() {
         final Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(enableIntent, ENABLE_BT_REQ);
@@ -695,8 +708,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
 
 
-
-
     @Override
     public void onBackPressed() {
         if (isDfuEnable) {
@@ -753,6 +764,37 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (!checkStorageAccess()) {
+                        Log.d(LOG_TAG, "Not right storage permissions");
+                        startUpdate.setEnabled(false);
+                        dfuSelectDeviceBtn.setEnabled(false);
+                    }
+                } else {
+                    Toast.makeText(this, R.string.text_location_on, Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            case STORAGE_PERMISSIONS_REQUEST_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    continueCreation();
+                } else {
+                    Toast.makeText(this, R.string.text_storage_permission, Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+
+
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
     private boolean checkLocationPermission() {
@@ -764,13 +806,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.title_location_permission)
                         .setMessage(R.string.text_location_permission)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION);
-                            }
+                        .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                            //Prompt the user once explanation has been shown
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                    MY_PERMISSIONS_REQUEST_LOCATION);
                         })
                         .create()
                         .show();
@@ -785,5 +824,58 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             return true;
         }
     }
+
+    private static final int STORAGE_PERMISSIONS_REQUEST_LOCATION = 98;
+
+
+    private boolean checkStorageAccess() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.title_storage_permission)
+                        .setMessage(R.string.text_storage_permission)
+                        .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                            //Prompt the user once explanation has been shown
+                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    STORAGE_PERMISSIONS_REQUEST_LOCATION);
+                        })
+                        .create()
+                        .show();
+
+            } else {
+                // No explanation needed, we can request the permission.
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        STORAGE_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    private int findMySense() {
+        if (knownMac != null) {
+            for (RxBleDevice i : devices) {
+                if (i.getMacAddress().equals(knownMac)) return devices.indexOf(i);
+            }
+        }
+        Integer highest = 0;
+        Integer secondHighest = -1;
+        for (Integer i : signalStrengths) {
+            if (highest < i) {
+                secondHighest = highest;
+                highest = i;
+            } else if (secondHighest < i) secondHighest = i;
+        }
+        // Requiring 2/3rds higher strength to filter the right one.
+        if (secondHighest*5/3 < highest) return signalStrengths.indexOf(highest);
+        return -1;
+    }
 }
+
+
 

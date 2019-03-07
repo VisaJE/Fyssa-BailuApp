@@ -20,6 +20,8 @@
 
     <string name="title_location_permission">Location permission</string>
     <string name="text_location_permission">Bluetooth LE scanning requires location permission</string>
+    <string name="title_storage_permission">Storage permission</string>
+    <string name="text_storage_permission">The app requires storage access for accessing the sensor software.</string>
     <string name="text_location_on">Location services have to be turned on for the app to work. Go to settings?</string>
     <string name="title_location_on">Enable location services</string>
     <string name="ok">Ok</string>
