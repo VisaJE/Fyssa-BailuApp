@@ -60,7 +60,7 @@ android {
     defaultConfig {
         applicationId "com.movesense.mds.fyssabailu"
         minSdkVersion 23
-        targetSdkVersion 27
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 
@@ -88,8 +88,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     // RxAndroidBle
-    implementation 'com.polidea.rxandroidble:rxandroidble:1.4.3'
-    implementation 'io.reactivex:rxandroid:1.2.1'
+    api 'com.polidea.rxandroidble:rxandroidble:1.4.3'
+    api 'io.reactivex:rxandroid:1.2.1'
     // GSON
     implementation 'com.google.code.gson:gson:2.8.2'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -99,7 +99,7 @@ dependencies {
     })
     testImplementation 'junit:junit:4.12'
     // Movesense .aar lib
-    implementation(name: 'mdslib', version: '1.3.1', ext: 'aar')
+    api (name: 'mdslib', version: '1.3.1', ext: 'aar')
     // ButterKnife
     implementation 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
@@ -116,10 +116,10 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'pub.devrel:easypermissions:0.2.1'
     //DFU Library
-    implementation 'no.nordicsemi.android:dfu:1.6.0'
+    api 'no.nordicsemi.android:dfu:1.6.0'
     // Constraint Layout
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation(project(':org.eclipse.paho.android.service')) {
+    api(project(':org.eclipse.paho.android.service')) {
         //exclude module: "org.eclipse.paho.client.mqttv3"
         transitive = true
     }

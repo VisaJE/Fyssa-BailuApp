@@ -177,7 +177,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             Log.d(LOG_TAG, "Insufficient permissions!");
             startUpdate.setEnabled(false);
             dfuSelectDeviceBtn.setEnabled(false);
-        } else if (!checkStorageAccess()) {
+        } else if (false /*!checkStorageAccess()*/) {
             Log.d(LOG_TAG, "Not right storage permissions");
             startUpdate.setEnabled(false);
             dfuSelectDeviceBtn.setEnabled(false);
@@ -415,10 +415,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         int i = tryWithBootloader?  selectedFile+bootPadding : selectedFile;
 
 
-        //Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
-        //serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
+        serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
 
-        loadUpdateFile(listFiles[i]);
+        /*loadUpdateFile(listFiles[i]);
         serviceInitiator.setZip(Uri.fromFile(updateFile), updateFile.getPath());
         Log.d(LOG_TAG, "Starting update with asset file " + updateFile.getName());
 
@@ -426,7 +426,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 MovesenseConnectedDevices.getConnectedDevices().size() + ", "
                 + MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() + ", "
                 + selectedDevice.getBluetoothDevice().getAddress() + ", "
-                + selectedDevice.getMacAddress() + ", " +  BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable + "!");
+                + selectedDevice.getMacAddress() + ", " +  BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable + "!");*/
 
         serviceInitiator.start(this, DfuService.class);
 
@@ -772,11 +772,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (!checkStorageAccess()) {
+                    /*if (!checkStorageAccess()) {
                         Log.d(LOG_TAG, "Not right storage permissions");
                         startUpdate.setEnabled(false);
                         dfuSelectDeviceBtn.setEnabled(false);
-                    }
+                    }*/
                 } else {
                     Toast.makeText(this, R.string.text_location_on, Toast.LENGTH_SHORT).show();
                 }
