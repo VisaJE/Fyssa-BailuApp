@@ -152,6 +152,6 @@
         your device fails to find your movesense, try "forget device" from the side menu.
         </string>
     <string name="btn_name_ready">Submit</string>
-    <string name="name_view_hint">Username</string>
+    <string name="name_view_hint">Username (max 20 char)</string>
     <string name="select_dfu">Select dfu device</string>
 </resources>

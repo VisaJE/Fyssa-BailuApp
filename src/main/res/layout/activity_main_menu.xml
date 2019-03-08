@@ -3,17 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="match_parent"
     android:layout_marginTop="0dp"
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
 
     <android.support.constraint.ConstraintLayout
-        android:layout_width="425dp"
-        android:layout_height="326dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:background="@color/colorBackground">
+        android:background="@color/colorBackground"
+        android:minHeight="0dp">
 
         <ImageButton
             android:id="@+id/help_button"
@@ -24,12 +25,13 @@
             android:contentDescription="Opens @string/title_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@mipmap/help_button_smaller" />
     </android.support.constraint.ConstraintLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="471dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="@color/colorBackground"
         tools:background="@color/colorBackground">
@@ -54,10 +56,18 @@
 
     </RelativeLayout>
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_weight="1"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="@color/colorBackground">
 
@@ -80,5 +90,12 @@
             android:textSize="15sp" />
 
     </RelativeLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </LinearLayout>

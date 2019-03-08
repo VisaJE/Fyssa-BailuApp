@@ -49,15 +49,17 @@ public class FyssaInfoActivity extends AppCompatActivity {
 
 
     private void setupListeners() {
-        doneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (nameText.getText().length() == 0) {
+        doneButton.setOnClickListener(view -> {
+            if (nameText.getText().length() == 0) {
 
+            } else {
+                if (nameText.getText().length()> 20) {
+                    app.getMemoryTools().saveName(nameText.getText().toString().substring(0,19));
                 } else {
                     app.getMemoryTools().saveName(nameText.getText().toString());
-                    startMainActivity();
                 }
+
+                startMainActivity();
             }
         });
     }

@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/colorBackground"
     android:orientation="vertical"
     tools:context="com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity">
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="17dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1" />
 
     <TextView
@@ -18,28 +18,31 @@
         android:layout_width="match_parent"
         android:layout_height="57dp"
         android:layout_weight="1"
+        android:background="@color/colorBackground"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
         android:typeface="serif"
-        tools:text="Partyukko: Pekka" />
+        tools:text="Scanning" />
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:layout_marginBottom="0dp">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/partiers_view"
-            android:layout_width="352dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:background="@color/colorBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 
 
 </LinearLayout>
