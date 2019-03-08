@@ -28,7 +28,6 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.ScannerFragment;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
@@ -36,6 +35,7 @@ import com.movesense.mds.fyssabailu.bluetooth.BleManager;
 import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
+import com.movesense.mds.fyssabailu.scanner.ScannerFragment;
 import com.movesense.mds.fyssabailu.scanner.UpdateScanActivity;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
@@ -438,7 +438,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         Log.e(LOG_TAG, "onSuccess(): " + data);
                         isDfuEnable = true;
                         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-                        disconnectFromDevices();
+                        //disconnectFromDevices();
                     }
 
                     @Override
@@ -567,18 +567,24 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         isDfuEnable = false;
 
         if (wasConnected) {
+            Log.d(LOG_TAG, "Was connected, reconnecting.");
             BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
             dfuUploadingTv.setVisibility(View.VISIBLE);
             dfuUploadingTv.setText("Reconnecting to the device...");
             // Reconnect to last connected device
             try {
-                MdsRx.Instance.reconnect(FyssaSensorUpdateActivity.this);
+                new Handler().postDelayed(() -> {
+                    MdsRx.Instance.reconnect(FyssaSensorUpdateActivity.this);
+                }, 2000);
+
             } catch (Exception e) {
+                Log.e(LOG_TAG, "Was connected, reconnecting failed.", e);
                 BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
                 startActivity(new Intent(FyssaSensorUpdateActivity.this,
                         MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
             }
         } else {
+            Log.d(LOG_TAG, "Wasnt connected, finishing.");
             finish();
         }
     }

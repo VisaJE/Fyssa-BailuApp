@@ -62,11 +62,11 @@
         </activity>
 
         <activity
-        android:name="com.movesense.mds.fyssabailu.update_app.MainScanActivity"
+        android:name="com.movesense.mds.fyssabailu.scanner.MainScanActivity"
         android:screenOrientation="portrait">
     </activity>
         <activity
-            android:name="com.movesense.mds.fyssabailu.update_app.UpdateScanActivity"
+            android:name="com.movesense.mds.fyssabailu.scanner.UpdateScanActivity"
             android:screenOrientation="portrait">
         </activity>
 

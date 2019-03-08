@@ -243,8 +243,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void updateSensorSoftware() {
         //removeAndDisconnectFromDevice();
         subscriptions.unsubscribe();
-        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class));
     }
 
 
@@ -435,6 +434,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         switch (item.getItemId()) {
 
             case R.id.update:
+                subscriptions.unsubscribe();
                 startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class));
                 return true;
 
