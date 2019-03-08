@@ -45,7 +45,7 @@
             android:layout_marginTop="66dp"
             android:background="@color/colorBackground"
             android:contentDescription="@string/setup_sensor_desc"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/sensego" />
 
         <TextView
             android:layout_width="wrap_content"
