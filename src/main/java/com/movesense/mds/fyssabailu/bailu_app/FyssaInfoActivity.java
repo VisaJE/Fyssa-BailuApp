@@ -10,7 +10,7 @@ import android.widget.EditText;
 
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
-import com.movesense.mds.fyssabailu.update_app.MainScanActivity;
+import com.movesense.mds.fyssabailu.scanner.MainScanActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

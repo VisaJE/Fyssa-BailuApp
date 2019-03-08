@@ -36,6 +36,7 @@ import com.movesense.mds.fyssabailu.bluetooth.BleManager;
 import com.movesense.mds.fyssabailu.bluetooth.MdsRx;
 import com.movesense.mds.fyssabailu.bluetooth.RxBle;
 import com.movesense.mds.fyssabailu.model.FyssaDeviceInfo;
+import com.movesense.mds.fyssabailu.scanner.UpdateScanActivity;
 import com.movesense.mds.fyssabailu.update_app.dfu.DfuService;
 import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
 import com.polidea.rxandroidble.RxBleClient;
@@ -437,7 +438,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         Log.e(LOG_TAG, "onSuccess(): " + data);
                         isDfuEnable = true;
                         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-                        removeAndDisconnectFromDevices();
+                        disconnectFromDevices();
                     }
 
                     @Override
@@ -647,8 +648,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     }
 
-    public static void removeAndDisconnectFromDevices(){
-        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+    public static void disconnectFromDevices(){
         while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
             MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
         }

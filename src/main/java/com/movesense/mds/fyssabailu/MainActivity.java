@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
@@ -23,10 +21,7 @@ import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
-import com.movesense.mds.fyssabailu.update_app.MainScanActivity;
-import com.movesense.mds.fyssabailu.update_app.ScanActivity;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseConnectedDevices;
-import com.movesense.mds.fyssabailu.update_app.model.MovesenseDevice;
+import com.movesense.mds.fyssabailu.scanner.MainScanActivity;
 
 import rx.subscriptions.CompositeSubscription;
 

@@ -50,30 +50,37 @@ import rx.subscriptions.CompositeSubscription;
 public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
 
-    @BindView(R.id.nimi_tv) TextView nimiTv;
-    @BindView(R.id.do_button) Button doButton;
-    @BindView(R.id.battery_button) Button batteryButton;
-    @BindView(R.id.stop) Button stopButton;
-
-    private final String TAG = FyssaMainActivity.class.getSimpleName();
-
-    private CompositeSubscription subscriptions;
-    private FyssaApp app;
-
-
     public static final String URI_EVENTLISTENER = "suunto://MDS/EventListener";
     public static final String BAILU_PATH = "/Fyssa/Bailu";
     public static final String BATTERY_PATH = "/System/Energy";
-
+    private static Integer temp_threshold;
+    private final String TAG = FyssaMainActivity.class.getSimpleName();
+    @BindView(R.id.nimi_tv)
+    TextView nimiTv;
+    @BindView(R.id.do_button)
+    Button doButton;
+    @BindView(R.id.battery_button)
+    Button batteryButton;
+    @BindView(R.id.stop)
+    Button stopButton;
+    DataSender sender;
+    private CompositeSubscription subscriptions;
+    private FyssaApp app;
     private MdsSubscription mdsSubscription;
-
-
     private boolean closeApp = false;
     private boolean disconnect = false;
 
-    private static Integer temp_threshold;
+    public static void removeAndDisconnectFromDevices() {
+        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
+        while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
+            MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
+        }
+        while (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() > 0) {
+            BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
+            MovesenseConnectedDevices.removeRxConnectedDevice(MovesenseConnectedDevices.getConnectedRxDevice(0));
+        }
+    }
 
-    DataSender sender;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,10 +89,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
         app = (FyssaApp) getApplication();
 
-
         subscriptions = new CompositeSubscription();
-
-
 
         setContentView(R.layout.activity_fyssa_main);
         ButterKnife.bind(this);
@@ -102,28 +106,30 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     @Override
     public void onGetSuccess(String response) {
-         temp_threshold = Integer.parseInt(response);
-         Log.d(TAG, "Threshold is now " + temp_threshold + ". Now sending the current name");
-         sender.post(FyssaApp.SERVER_INSERT_URL + "?name=" + app.getMemoryTools().getName() + "&mac=" + MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
+        temp_threshold = Integer.parseInt(response);
+        Log.d(TAG, "Threshold is now " + temp_threshold + ". Now sending the current name");
+        sender.post(FyssaApp.SERVER_INSERT_URL + "?name=" + app.getMemoryTools().getName() + "&mac=" + MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
 
     }
+
     @Override
     public void onGetError(VolleyError error) {
         toast("Connection to the server failed");
         onBackPressed();
     }
+
     @Override
     public void onPostSuccess(String response) {
         Log.d(TAG, response);
         app.getMemoryTools().saveSerial(MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
         checkSensorSoftware();
     }
+
     @Override
     public void onPostError(VolleyError error) {
         toast("Connection to the server failed");
         onBackPressed();
     }
-
 
     private void addConnectionSubscription() {
         subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
@@ -151,6 +157,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     }
                 }, new ThrowableToastingAction(this)));
     }
+
     private void disableButtons() {
         findViewById(R.id.do_button).setEnabled(false);
         findViewById(R.id.stop).setEnabled(false);
@@ -159,14 +166,17 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         findViewById(R.id.stop_service_button).setEnabled(false);*/
         findViewById(R.id.battery_button).setEnabled(false);
     }
+
     private void enableButtons() {
         findViewById(R.id.do_button).setEnabled(true);
         findViewById(R.id.stop).setEnabled(true);
         findViewById(R.id.battery_button).setEnabled(true);
     }
+
     private void checkSensorSoftware() {
         checkSensorSoftware(0);
     }
+
     private void checkSensorSoftware(int iteration) {
         if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) {
             Log.d(TAG, "SENSOR  WASNT CONNECTED");
@@ -220,26 +230,14 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                             } catch (InterruptedException e1) {
                                 toast(e.toString());
                             }
-                            checkSensorSoftware(iteration+1);
-                        }
-                        else {
+                            checkSensorSoftware(iteration + 1);
+                        } else {
                             removeAndDisconnectFromDevices();
                             startMainActivity();
                         }
 
                     }
                 });
-    }
-
-    public static void removeAndDisconnectFromDevices(){
-        BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-        while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
-            MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
-        }
-        while (MovesenseConnectedDevices.getRxMovesenseConnectedDevices().size() > 0) {
-            BleManager.INSTANCE.disconnect(MovesenseConnectedDevices.getConnectedRxDevice(0));
-            MovesenseConnectedDevices.removeRxConnectedDevice(MovesenseConnectedDevices.getConnectedRxDevice(0));
-        }
     }
 
     private void updateSensorSoftware() {
@@ -264,9 +262,9 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         checkSensorSoftware();
     }
 
-    @OnClick({/*R.id.start_service_button, R.id.stop_service_button,  R.id.get_button, */R.id.do_button,R.id.stop, R.id.battery_button})
+    @OnClick({/*R.id.start_service_button, R.id.stop_service_button,  R.id.get_button, */R.id.do_button, R.id.stop, R.id.battery_button})
     public void onViewClicked(View view) {
-        switch(view.getId()) {
+        switch (view.getId()) {
 
             case R.id.do_button:
                 final Calendar c = Calendar.getInstance();
@@ -276,9 +274,9 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         (view1, hourOfDay, minute) -> {
                             int nHour = c.get(Calendar.HOUR_OF_DAY);
                             int nMinute = c.get(Calendar.MINUTE);
-                            int time = (hourOfDay-nHour)*60 + (minute-nMinute);
+                            int time = (hourOfDay - nHour) * 60 + (minute - nMinute);
                             if (time > 0) startService(time);
-                            else  if (time < 0) startService(24*60+time);
+                            else if (time < 0) startService(24 * 60 + time);
                             else toast("Invalid time.");
 
                         }, mHour, mMinute, true);
@@ -306,7 +304,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void startService(int minutes) {
 
         FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(minutes, temp_threshold));
-        Log.d(TAG, "startService()->" + new Gson().toJson(fbc) + ", for " + minutes + "minutes" );
+        Log.d(TAG, "startService()->" + new Gson().toJson(fbc) + ", for " + minutes + "minutes");
         Mds.builder().build(this).put(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH,
                 new Gson().toJson(fbc), new MdsResponseListener() {
@@ -323,6 +321,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     }
                 });
     }
+
     private void deleteService() {
         stopButton.setEnabled(false);
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
@@ -343,6 +342,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     }
                 });
     }
+
     private void getInfo() {
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH,
@@ -403,7 +403,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 });
         mdsSubscription = Mds.builder().build(this).subscribe(URI_EVENTLISTENER, "{\"Uri\": \"" +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + "/System/Debug/4\"}",
-                        new MdsNotificationListener() {
+                new MdsNotificationListener() {
                     @Override
                     public void onNotification(String s) {
                         DebugResponse resp = new Gson().fromJson(s, DebugResponse.class);
@@ -421,7 +421,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void unsubscribeDebug() {
         if (mdsSubscription != null) mdsSubscription.unsubscribe();
 
-        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -462,6 +462,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         disconnect = true;
 
     }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -474,8 +475,9 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         startActivity(new Intent(FyssaMainActivity.this, FyssaInfoActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
+
     private void startMainActivity() {
         startActivity(new Intent(FyssaMainActivity.this, MainActivity.class)
-            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 }
