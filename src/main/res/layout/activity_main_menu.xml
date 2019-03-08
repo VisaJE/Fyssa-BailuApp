@@ -22,11 +22,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:background="@color/colorBackground"
-            android:contentDescription="Opens @string/title_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@mipmap/help_button_smaller" />
+            app:srcCompat="@mipmap/help_button_smaller"
+            tools:ignore="ContentDescription"/>
     </android.support.constraint.ConstraintLayout>
 
     <RelativeLayout
@@ -44,6 +44,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
             android:background="@color/colorBackground"
+            android:contentDescription="@string/setup_sensor_desc"
             android:src="@mipmap/ic_launcher" />
 
         <TextView
@@ -51,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/start_button2"
             android:layout_centerHorizontal="true"
-            android:text="Setup sensor"
+            android:text="@string/setup_sensor"
             android:textSize="15sp" />
 
     </RelativeLayout>
@@ -59,8 +60,6 @@
     <Space
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
         android:layout_weight="1"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -79,6 +78,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="66dp"
             android:background="@color/colorBackground"
+            android:contentDescription="@string/scanner_button_desc"
             android:src="@mipmap/classify_small" />
 
         <TextView
@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/start_button"
             android:layout_centerHorizontal="true"
-            android:text="Scan partiers"
+            android:text="@string/scan_partiers"
             android:textSize="15sp" />
 
     </RelativeLayout>

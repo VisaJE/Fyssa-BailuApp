@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="@string/name_view_hint"
-        android:inputType="text" />
+        android:importantForAutofill="no"
+        android:inputType="text" tools:targetApi="o"/>
 
     <Button
         android:id="@+id/fyssa_info_doneBT"

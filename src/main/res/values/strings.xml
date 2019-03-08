@@ -24,7 +24,7 @@
     <string name="text_storage_permission">The app requires storage access for accessing the sensor software.</string>
     <string name="text_location_on">Location services have to be turned on for the app to work. Go to settings?</string>
     <string name="title_location_on">Enable location services</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
 
     <string name="connect_for_update">Is DFU mode already on?</string>
 
@@ -48,10 +48,10 @@
     <string name="do_you_want_to_close_application">Do You want to close application?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="please_wait">Please Wait...</string>
-    <string name="please_wait_connecting">Connecting may take 10-30s \nPlease Wait...</string>
+    <string name="please_wait">Please Wait…</string>
+    <string name="please_wait_connecting">Connecting may take 10–30s \nPlease Wait…</string>
     <string name="connecting">Connecting</string>
-    <string name="loading_information">Loading information...</string>
+    <string name="loading_information">Loading information…</string>
     <string name="temporary_disabled">Temporary disabled</string>
     <string name="kelvin">kelvin:</string>
     <string name="celsius">celsius:</string>
@@ -154,4 +154,10 @@
     <string name="btn_name_ready">Submit</string>
     <string name="name_view_hint">Username (max 20 char)</string>
     <string name="select_dfu">Select dfu device</string>
+    <string name="setup_sensor">Setup sensor</string>
+    <string name="setup_sensor_desc">Connect and name a sensor. Turn on the party service.</string>
+    <string name="scanner_button_desc">Scan nearby parties.</string>
+    <string name="scan_partiers">Scan partiers</string>
+    <string name="update_text">Update</string>
+    <string name="start_update_text">Start</string>
 </resources>
