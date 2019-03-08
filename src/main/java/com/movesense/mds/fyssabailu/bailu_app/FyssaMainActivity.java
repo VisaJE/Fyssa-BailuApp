@@ -179,7 +179,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     private void checkSensorSoftware(int iteration) {
         if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) {
-            Log.d(TAG, "SENSOR  WASNT CONNECTED");
+            Log.d(TAG, "SENSOR WASNT CONNECTED");
             startMainActivity();
             return;
         }

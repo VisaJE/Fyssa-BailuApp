@@ -691,11 +691,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             Toast.makeText(FyssaSensorUpdateActivity.this, "Connected.", Toast.LENGTH_SHORT).show();
             if (mDfuCompleted) {
                 new Handler().postDelayed(() -> {
-                    Log.d(LOG_TAG, "Starting fyssamain.");
+                    Log.d(LOG_TAG, "Reconnected, finishing.");
                     BleManager.INSTANCE.removeBleConnectionMonitorListener(FyssaSensorUpdateActivity.this);
-
-                    startActivity(new Intent(FyssaSensorUpdateActivity.this,
-                            FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    finish();
+                    //startActivity(new Intent(FyssaSensorUpdateActivity.this,
+                      //      FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }, 3000);
             }
             else Log.e(LOG_TAG, "Reconnected without dfu completion.");
