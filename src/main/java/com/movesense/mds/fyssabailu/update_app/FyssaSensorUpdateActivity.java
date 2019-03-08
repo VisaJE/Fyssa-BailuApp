@@ -438,7 +438,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         Log.e(LOG_TAG, "onSuccess(): " + data);
                         isDfuEnable = true;
                         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
-                        //disconnectFromDevices();
+                        if (!wasConnected) disconnectFromDevices();
                     }
 
                     @Override

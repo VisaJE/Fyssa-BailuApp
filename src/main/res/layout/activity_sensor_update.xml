@@ -45,9 +45,9 @@
     <Button
         android:id="@+id/dfu_select_device_btn2"
         style="@style/TextAppearance.AppCompat.Button"
-        android:layout_width="143dp"
-        android:layout_height="43dp"
-        android:text="Connect"
+        android:layout_width="164dp"
+        android:layout_height="42dp"
+        android:text="@string/select_dfu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"

@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         app = (FyssaApp) getApplication();
         getSupportActionBar().setTitle(R.string.app_name);
-        setContentView(R.layout.activity_select_test);
+        setContentView(R.layout.activity_main_menu);
 
         subscriptions = new CompositeSubscription();
 
