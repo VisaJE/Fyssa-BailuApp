@@ -24,7 +24,7 @@
 #define RECOVERY_TIME 2
 #define MIN_ACC_SQUARED 2
 
-#define PARTY_THRESHOLD 50
+#define PARTY_THRESHOLD 20
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -438,8 +438,9 @@ void BailuService::checkPartyStatus()
 
 void BailuService::advPartyScore()
 {
-    
-    uint16_t score = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
+    float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    if (tempMult < 0) tempMult = 0;
+    uint16_t score = (uint16_t) tempMult*(10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
     if (score < PARTY_THRESHOLD) score = 0;
     if (!isPartying) 
     {

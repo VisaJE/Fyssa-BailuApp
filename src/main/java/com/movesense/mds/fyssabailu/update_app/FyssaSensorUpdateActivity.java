@@ -77,7 +77,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     private static final String DATA_DFU_COMPLETED = "dfu_completed";
     private static final String DATA_DFU_ERROR = "dfu_error";
 
-    private static final String DFU_MAC_ADDRESS = "Info";
+    private static final String DFU_MAC_ADDRESS = "/Info";
 
     private boolean mStatusOk;
     private RxBleDevice selectedDevice = null;
@@ -334,7 +334,9 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
     private void checkDFUMac() {
-        Log.d(LOG_TAG, "checkDFUMac: Looking for known mac.");
+        Log.d(LOG_TAG, "checkDFUMac: Looking for known mac from " + MdsRx.SCHEME_PREFIX +
+                MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
+                DFU_MAC_ADDRESS);
         if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
@@ -693,7 +695,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     finish();
                     //startActivity(new Intent(FyssaSensorUpdateActivity.this,
                       //      FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                }, longerWait ? 13000:8000);
+                }, longerWait ? 13000:10000);
             }
             else Log.e(LOG_TAG, "Reconnected without dfu completion.");
         });

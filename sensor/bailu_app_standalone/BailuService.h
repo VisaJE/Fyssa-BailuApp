@@ -150,7 +150,7 @@ private:
 
     double secondAccAvr;
     double minuteAccAvr;
-    double halfHourAccAvr;
+    double hourAccAvr;
     uint16_t msCounter;
     uint16_t score = 0;
 

@@ -25,7 +25,7 @@
 #define DEFAULT_RUNNING_TIME 60 // In minutes
 #define MIN_ACC_SQUARED 2
 
-#define PARTY_THRESHOLD 50
+#define PARTY_THRESHOLD 20
 #define STAY_ON_SCORE 100
 
 #define REFRESH_STATE_ID 2
@@ -63,10 +63,10 @@ BailuService::BailuService()
       isRunning(true),
       secondAccAvr(0.0),
       minuteAccAvr(0.0),
-      halfHourAccAvr(0.0),
+      hourAccAvr(0.0),
       msCounter(0),
       currentTemp(0.0),
-      tempThreshold(25),
+      tempThreshold(18),
       runningTime(DEFAULT_RUNNING_TIME),
       isPartying(false),
       prepareRun(false),
@@ -429,9 +429,10 @@ void BailuService::checkPartyStatus()
 
 void BailuService::advPartyScore()
 {
-
-    uint16_t tempScore = (uint16_t) ((currentTemp-tempThreshold)*10*minuteAccAvr*(foundDevices.size()+1))*(0.5+0.5*halfHourAccAvr);
-    if (tempScore < PARTY_THRESHOLD) score = 0;
+    float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    if (tempMult < 0) tempMult = 0;
+    uint16_t score = (uint16_t) tempMult*(10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
+    if (score < PARTY_THRESHOLD) score = 0;
     if (!isPartying)
     {
       score = 0;
@@ -499,8 +500,8 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
         {
             if (!isPartying) {
                 minuteAccAvr = 0;
+                hourAccAvr = 0;
                 timePartying = 0;
-                halfHourAccAvr = 0;
             } else {
                 if (score > STAY_ON_SCORE) timerCounter = 0;
                 timePartying += TEMP_CHECK_TIME/1000;

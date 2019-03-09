@@ -25,6 +25,8 @@ import com.movesense.mds.fyssabailu.scanner.MainScanActivity;
 
 import rx.subscriptions.CompositeSubscription;
 
+import static com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity.removeAndDisconnectFromDevices;
+
 public class MainActivity extends AppCompatActivity  {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity  {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 Log.d(TAG, "No name yet");
             } else {
+                removeAndDisconnectFromDevices();
                 startActivity(new Intent(MainActivity.this, MainScanActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
             }
@@ -125,7 +128,7 @@ public class MainActivity extends AppCompatActivity  {
 
             case R.id.reset_serial:
                 app.getMemoryTools().saveSerial(MemoryTools.DEFAULT_STRING);
-                FyssaMainActivity.removeAndDisconnectFromDevices();
+                removeAndDisconnectFromDevices();
 
                 return true;
             case R.id.update_sensor:
