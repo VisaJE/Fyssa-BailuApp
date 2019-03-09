@@ -70,6 +70,8 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private boolean closeApp = false;
     private boolean disconnect = false;
 
+    AlertDialog updateAlert;
+
     public static void removeAndDisconnectFromDevices() {
         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
         while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
@@ -192,6 +194,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
                     @Override
                     public void onSuccess(String s) {
+                        if (updateAlert != null) updateAlert.dismiss();
                         addConnectionSubscription();
                         Log.d(TAG, "/Info/App onSuccess: " + s);
                         InfoAppResponse infoAppResponse = new Gson().fromJson(s, InfoAppResponse.class);
@@ -204,7 +207,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
                             disableButtons();
-                            builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", (dialog, which) -> {
+                            updateAlert = builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", (dialog, which) -> {
                                 switch (which) {
                                     case DialogInterface.BUTTON_POSITIVE:
                                         if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
@@ -244,6 +247,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     private void updateSensorSoftware() {
         //removeAndDisconnectFromDevice();
+        if (updateAlert != null) updateAlert.dismiss();
         subscriptions.clear();
         startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP ));
     }
