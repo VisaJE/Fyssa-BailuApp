@@ -693,7 +693,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     finish();
                     //startActivity(new Intent(FyssaSensorUpdateActivity.this,
                       //      FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                }, longerWait ? 10000:3000);
+                }, longerWait ? 10000:5000);
             }
             else Log.e(LOG_TAG, "Reconnected without dfu completion.");
         });
