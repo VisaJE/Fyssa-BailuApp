@@ -1,5 +1,3 @@
-# This file defines Suunto Whiteboard API for Movesense Hackathon 2016 sample
-#
 swagger: '2.0'
 
 # Document metadata
@@ -47,7 +45,26 @@ paths:
          schema:
             $ref: '#/definitions/FyssaBailuResponse'
         204:
-          description: Source unavailable.
+          description: Unavailable
+  /Fyssa/Debug/Subscription:
+    post:
+      description: Get all kinds of debugging data.
+      responses:
+        200:
+          description: Succeeded.
+        x-std-errors:
+          description: See common error codes http://developer.suunto.com/api/std-errors#subscribe
+        x-notification:
+          schema:
+            description: Debug values
+            $ref: '#/definitions/DebugStuff'
+    delete:
+      description: Unsubscribe
+      responses:
+        200:
+          description: Operation completed successfully
+        x-std-errors:
+          description: See common error codes http://developer.suunto.com/api/std-errors#unsubscribe
 definitions:
   FyssaBailuConfig:
     type: object
@@ -89,3 +106,31 @@ definitions:
         description: Most scanned devices partying
         type: integer
         format: uint16    
+  DebugStuff:
+    description: Describes debug stuff.
+    required:
+      - temperature
+      - isPartying
+      - minuteAccAvr
+      - hourAccAvr
+      - runningTime
+      - partyScore
+    properties:
+      temperature:
+        type: number
+        format: float
+      isPartying:
+        type: boolean
+      minuteAccAvr:
+        type: number
+        format: float
+      hourAccAvr:
+        type: number
+        format: float
+      runningTime:
+        type: integer
+        format: uint32
+      partyScore:
+        type: integer
+        format: uint32 
+

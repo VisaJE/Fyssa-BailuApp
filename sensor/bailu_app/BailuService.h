@@ -82,7 +82,13 @@ private:
     virtual void onPutResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData);
     
 
-/**
+    bool debugSubscribed;
+    virtual void onSubscribe(const whiteboard::Request& request,
+                             const whiteboard::ParameterList& parameters) OVERRIDE;
+
+    virtual void onUnsubscribe(const whiteboard::Request& request,
+                               const whiteboard::ParameterList& parameters) OVERRIDE;
+    /**
     * Local client 'disconnect' notification handler.
     *
     *  This can be used for example to cleanup possible subscription related information of the client.
@@ -129,6 +135,7 @@ private:
                                           const whiteboard::ParameterList& parameters);
 
     void checkPartyStatus();
+    uint32_t calculateScore();
     bool isPartying;
     float currentTemp;
 

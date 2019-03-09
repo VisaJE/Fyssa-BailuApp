@@ -64,3 +64,4 @@ sensor/buildfolder
 sensor/_build
 
 src/main/res/raw/*.zip
+.ycm*

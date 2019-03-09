@@ -18,7 +18,7 @@
 
 // Also the led blinking period
 #define TEMP_CHECK_TIME 10000
-// Shut down after this 
+// Shut down after this
 #define SHUTDOWN_TIME 220000
 
 #define RECOVERY_TIME 2
@@ -37,8 +37,8 @@ int find(std::vector<Device> v, const char* s)
 
 const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 
-uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device 
-    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload. 
+uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device
+    0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload.
     };                  //Last byte determines the sensor to be advertising for this service when set 0xEA
 const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5;
 
@@ -55,6 +55,7 @@ BailuService::BailuService()
     : ResourceClient(WBDEBUG_NAME(__FUNCTION__), sExecutionContextId),
       ResourceProvider(WBDEBUG_NAME(__FUNCTION__), sExecutionContextId),
       LaunchableModule(LAUNCHABLE_NAME, sExecutionContextId),
+      debugSubscribed(false),
       isRunning(false),
       secondAccAvr(0.0),
       minuteAccAvr(0.0),
@@ -105,7 +106,7 @@ bool BailuService::startModule()
     return true;
 }
 
-void BailuService::stopModule() 
+void BailuService::stopModule()
 {
     whiteboard::ResourceProvider::stopTimer(mTimer);
     mModuleState = WB_RES::ModuleStateValues::STOPPED;
@@ -124,7 +125,7 @@ void BailuService::setBonding()
     WB_RES::BondingSettings bSettings;
     bSettings.policy = WB_RES::BondingPolicyValues::BONDINGONCE;
     bSettings.recoveryTime = RECOVERY_TIME;
-    
+
     asyncPut(WB_RES::LOCAL::COMM_BLE_SECURITY_SETTINGS(), AsyncRequestOptions::Empty, bSettings);
 }
 
@@ -175,7 +176,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         break;
     }
 
-  default:
+    default:
         // Return error
         return returnResult(request, whiteboard::HTTP_CODE_NOT_IMPLEMENTED);
     }
@@ -205,13 +206,50 @@ void BailuService::onPutRequest(const whiteboard::Request& request,
         returnResult(request, whiteboard::HTTP_CODE_OK);
         break;
     }
-  default:
+    default:
         // Return error
         return returnResult(request, whiteboard::HTTP_CODE_NOT_IMPLEMENTED);
     }
 }
 
 
+void BailuService::onSubscribe(const whiteboard::Request& request,
+                             const whiteboard::ParameterList& parameters)
+{
+    if (mModuleState != WB_RES::ModuleStateValues::STARTED)
+    {
+        return returnResult(request, wb::HTTP_CODE_SERVICE_UNAVAILABLE);
+    }
+
+    switch (request.getResourceConstId())
+    {
+    case WB_RES::LOCAL::FYSSA_DEBUG::ID:
+    {
+        debugSubscribed = true;
+        returnResult(request, whiteboard::HTTP_CODE_OK);
+        break;
+    }
+    }
+}
+
+void BailuService::onUnsubscribe(const whiteboard::Request& request,
+                               const whiteboard::ParameterList& parameters)
+{
+    if (mModuleState != WB_RES::ModuleStateValues::STARTED)
+    {
+        return returnResult(request, wb::HTTP_CODE_SERVICE_UNAVAILABLE);
+    }
+
+    switch (request.getResourceConstId())
+    {
+    case WB_RES::LOCAL::FYSSA_DEBUG::ID:
+    {
+        debugSubscribed = false;
+        returnResult(request, whiteboard::HTTP_CODE_OK);
+        break;
+    }
+    }
+}
 
 void BailuService::startAcc(whiteboard::RequestId& remoteRequestId)
 {
@@ -284,7 +322,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
             hourAccAvr = hourAccAvr*59/60 + minuteAccAvr/60;
         }
         else ++msCounter;
-        
+
     }
 }
 
@@ -310,7 +348,7 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
             if (res.dataPacket[11] == 0xEA) // Checking that the movesense sensor is indeed running this service.
             {
                 int i = find(foundDevices, res.address);
-                if (i == -1) 
+                if (i == -1)
                 {
                     Device d;
                     d.address = res.address;
@@ -405,7 +443,7 @@ void BailuService::startScanning()
       isScanning = true;
       DEBUGLOG("Scanning");
     }
-    else 
+    else
     {
         DEBUGLOG("Failure in subscribing to scan");
     }
@@ -436,13 +474,21 @@ void BailuService::checkPartyStatus()
 }
 
 
-void BailuService::advPartyScore()
+uint32_t BailuService::calculateScore()
 {
     float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
     if (tempMult < 0) tempMult = 0;
     uint16_t score = (uint16_t) tempMult*(10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
     if (score < PARTY_THRESHOLD) score = 0;
-    if (!isPartying) 
+    return score;
+}
+
+
+
+void BailuService::advPartyScore()
+{
+    auto score = calculateScore();
+    if (!isPartying)
     {
       score = 0;
     }
@@ -488,7 +534,19 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
 {
     if (timerId == mTimer)
     {
-        if (!isRunning) 
+        if (debugSubscribed)
+        {
+            WB_RES::DebugStuff res;
+            res.temperature = currentTemp;
+            res.isPartying = isPartying;
+            res.minuteAccAvr = minuteAccAvr;
+            res.hourAccAvr = hourAccAvr;
+            res.runningTime = timerCounter;
+            res.partyScore = calculateScore();
+            updateResource(WB_RES::LOCAL::FYSSA_DEBUG(),
+                ResponseOptions::Empty, res);
+        }
+        if (!isRunning)
         {
             timerCounter += TEMP_CHECK_TIME;
             if (timerCounter >= SHUTDOWN_TIME)
@@ -496,7 +554,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
                 shutDown();
             }
         }
-        else if (timerCounter >= runningTime*60000) 
+        else if (timerCounter >= runningTime*60000)
         {
             stopAcc();
             timerCounter = 0;
@@ -514,7 +572,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             asyncPut(WB_RES::LOCAL::UI_IND_VISUAL::ID, AsyncRequestOptions::Empty,(uint16_t) 2);
             timerCounter += TEMP_CHECK_TIME;
             checkPartyStatus();
-            
+
         }
 
     }
