@@ -203,7 +203,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         }
                         if (!FyssaApp.isSupported(infoAppResponse.getContent().getVersion())) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(FyssaMainActivity.this);
-
+                            disableButtons();
                             builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", (dialog, which) -> {
                                 switch (which) {
                                     case DialogInterface.BUTTON_POSITIVE:
@@ -245,7 +245,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     private void updateSensorSoftware() {
         //removeAndDisconnectFromDevice();
         subscriptions.clear();
-        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class));
+        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
     }
 
 
