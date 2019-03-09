@@ -51,6 +51,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
 
     public static final String URI_EVENTLISTENER = "suunto://MDS/EventListener";
+    public static final String FYSSA_DEBUG_PATH = "/Fyssa/Debug";
     public static final String BAILU_PATH = "/Fyssa/Bailu";
     public static final String BATTERY_PATH = "/System/Energy";
     private static Integer temp_threshold;
@@ -392,6 +393,28 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
 
+    private void subscribeFyssaDebug() {
+        mdsSubscription = Mds.builder().build(this).subscribe(MovesenseConnectedDevices.getConnectedDevice(0).getSerial() +
+                FYSSA_DEBUG_PATH,null,
+                new MdsNotificationListener() {
+                    @Override
+                    public void onNotification(String s) {
+                        Log.d("D/FyssaDebug: ", s);
+                    }
+
+                    @Override
+                    public void onError(MdsException e) {
+                        Log.e(TAG, "Error on subscribing fyssadebug:", e);
+                    }
+                });
+    }
+
+
+    private void unsubscribeFyssaDebug() {
+        if (mdsSubscription != null) mdsSubscription.unsubscribe();
+
+    }
+
     private void subscribeDebug() {
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + "/System/Debug/Config",
@@ -447,6 +470,12 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
             case R.id.remove_device:
                 removeAndDisconnectFromDevices();
                 disconnect = true;
+                return true;
+            case R.id.fyssa_debug_start:
+                subscribeFyssaDebug();
+                return true;
+            case R.id.fyssa_debug_stop:
+                unsubscribeFyssaDebug();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
