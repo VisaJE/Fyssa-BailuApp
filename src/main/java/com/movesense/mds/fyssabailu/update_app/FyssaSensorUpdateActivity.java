@@ -1,6 +1,7 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -13,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -96,7 +98,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     ScannerFragment scannerFragment;
 
     int selectedFile = -1;
-    boolean tryWithBootloader = false;
+    boolean tryWithBootloader;
     boolean wasConnected = false;
 
     // Bootloaderfiles are automatically tried.
@@ -105,6 +107,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     String[] listExplanations;
     @Override
     protected void onCreate(Bundle savedInstanceState ) {
+        tryWithBootloader = false;
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
         app = (FyssaApp)getApplication();
@@ -125,14 +128,13 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             selectedDevice = savedInstanceState.getParcelable(DATA_DEVICE);
             mStatusOk = mStatusOk || savedInstanceState.getBoolean(DATA_STATUS);
 
-            new Handler().postDelayed(() -> {
-                startUpdate.setEnabled(selectedDevice != null && mStatusOk);
-            }, 700);
+            new Handler().postDelayed(() -> startUpdate.setEnabled(selectedDevice != null && mStatusOk), 700);
             mDfuCompleted = savedInstanceState.getBoolean(DATA_DFU_COMPLETED);
             mDfuError = savedInstanceState.getString(DATA_DFU_ERROR);
         }
 
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        assert manager != null;
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.e(LOG_TAG, "Location services unavailable!");
 
@@ -156,7 +158,6 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         }
                     })
                     .create().show();
-            return;
         }
         else if (!checkLocationPermission()) {
             Log.d(LOG_TAG, "Insufficient permissions!");
@@ -180,7 +181,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             // Bluetooth is not enable so run
             bluetoothAdapter.enable();
         }
-        devices = new ArrayList();
+        devices = new ArrayList<>();
         signalStrengths = new ArrayList<>();
 
         if (MovesenseConnectedDevices.getConnectedDevices() != null && MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
@@ -220,10 +221,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             Log.d(LOG_TAG, "DfuProgress onEnablingDfuMode");
         }
 
+        @SuppressLint("DefaultLocale")
         @Override
         public void onProgressChanged(String deviceAddress, int percent, float speed, float avgSpeed, int currentPart, int partsTotal) {
             Log.d(LOG_TAG, "DfuProgress onProgressChanged percent: " + percent);
-            dfuUploadingPercentTv.setText(percent + "%");
+            dfuUploadingPercentTv.setText(String.format("%d%%", percent));
         }
 
         @Override
@@ -245,20 +247,17 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         public void onDfuCompleted(String deviceAddress) {
             Log.d(LOG_TAG, "DfuProgress onDfuCompleted");
             dfuUploadingPercentTv.setText(R.string.dfu_status_completed);
-            tryWithBootloader = false;
             selectedFile = -1;
             mDfuCompleted = true;
             if (mResumed) {
                 // let's wait a bit until we cancel the notification. When canceled immediately it will be recreated by service again.
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        afterTransferCompleted();
+                new Handler().postDelayed(() -> {
+                    afterTransferCompleted();
 
-                        // if this activity is still open and upload process was completed, cancel the notification
-                        final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                        manager.cancel(DfuService.NOTIFICATION_ID);
-                    }
+                    // if this activity is still open and upload process was completed, cancel the notification
+                    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    assert manager != null;
+                    manager.cancel(DfuService.NOTIFICATION_ID);
                 }, 200);
             }
         }
@@ -275,6 +274,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
                 // if this activity is still open and upload process was completed, cancel the notification
                 final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                assert manager != null;
                 manager.cancel(DfuService.NOTIFICATION_ID);
             }, 200);
         }
@@ -288,6 +288,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 new Handler().postDelayed(() -> {
                     // if this activity is still open and upload process was completed, cancel the notification
                     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    assert manager != null;
                     manager.cancel(DfuService.NOTIFICATION_ID);
                     startUpdate();
                 }, 1000);
@@ -301,6 +302,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     new Handler().postDelayed(() -> {
                         // if this activity is still open and upload process was completed, cancel the notification
                         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        assert manager != null;
                         manager.cancel(DfuService.NOTIFICATION_ID);
                     }, 200);
                 } else {
@@ -474,9 +476,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                             Log.d(LOG_TAG, "Found device!");
                             devices.add(rxBleScanResult.getBleDevice());
                             signalStrengths.add(rxBleScanResult.getRssi());
-                            new Handler().postDelayed(() -> {
-                                startUpdate.setEnabled(true);
-                            }, 500);
+                            new Handler().postDelayed(() -> startUpdate.setEnabled(true), 500);
 
                         }
                     }
@@ -496,9 +496,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     }
                     showDeviceScanningDialog();
                 })
-                .setNegativeButton(R.string.no, (dialog, which) -> {
-                    startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1);
-                })
+                .setNegativeButton(R.string.no, (dialog, which) -> startActivityForResult(new Intent(FyssaSensorUpdateActivity.this, UpdateScanActivity.class), 1))
                 .create().show();
     }
 
@@ -516,6 +514,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
     private void startUpdate() {
+        if (tryWithBootloader) {
+            dfuUploadingTv.setText(R.string.uploading_bootloader);
+        } else {
+            dfuUploadingTv.setText(R.string.uploading);
+        }
         DfuServiceInitiator serviceInitiator = new DfuServiceInitiator(selectedDevice.getBluetoothDevice().getAddress())
                 .setDeviceName(selectedDevice.getBluetoothDevice().getName())
                 .setKeepBond(false)
@@ -554,6 +557,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         if (mDfuCompleted && mDfuError != null) {
             // if this activity is still open and upload process was completed, cancel the notification
             final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            assert manager != null;
             manager.cancel(DfuService.NOTIFICATION_ID);
             mDfuError = null;
         }
@@ -570,12 +574,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             Log.d(LOG_TAG, "Was connected, reconnecting.");
             BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = true;
             dfuUploadingTv.setVisibility(View.VISIBLE);
-            dfuUploadingTv.setText("Reconnecting to the device...");
+            dfuUploadingTv.setText(R.string.reconnecting_to);
             // Reconnect to last connected device
             try {
-                new Handler().postDelayed(() -> {
-                    MdsRx.Instance.reconnect(FyssaSensorUpdateActivity.this);
-                }, 2000);
+                new Handler().postDelayed(() -> MdsRx.Instance.reconnect(FyssaSensorUpdateActivity.this), 2000);
 
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Was connected, reconnecting failed.", e);
@@ -605,12 +607,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
             new AlertDialog.Builder(this)
                     .setTitle("Dfu Mode")
                     .setMessage("DFU operations are running. Please wait until process will be finished.")
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss()).show();
         } else {
             super.onBackPressed();
         }
@@ -637,6 +634,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     private boolean isBLEEnabled() {
         BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        assert manager != null;
         BluetoothAdapter adapter = manager.getAdapter();
         return adapter != null && adapter.isEnabled();
     }
@@ -682,21 +680,20 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     @Override
     public void onConnect(RxBleDevice rxBleDevice) {
-        Log.d(LOG_TAG, "onConnect: " + rxBleDevice.getMacAddress());
+        Log.d(LOG_TAG, "onConnect: " + rxBleDevice.getMacAddress() + "Installed bootloader: " + tryWithBootloader);
 
         mIsDeviceReconnected = true;
-
-        assert(MovesenseConnectedDevices.getConnectedDevices().size() == 1);
+        boolean longerWait = tryWithBootloader;
         runOnUiThread(() -> {
-            Toast.makeText(FyssaSensorUpdateActivity.this, "Connected.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(FyssaSensorUpdateActivity.this, longerWait? R.string.connected_after_bootloader : R.string.connected_after_update, Toast.LENGTH_SHORT).show();
             if (mDfuCompleted) {
-                new Handler().postDelayed(() -> {
-                    Log.d(LOG_TAG, "Reconnected, finishing.");
+                new Handler(getMainLooper()).postDelayed(() -> {
+                    Log.d(LOG_TAG, "Reconnected, finishing." + (longerWait?"Bootloader installed":"Not bootloaded"));
                     BleManager.INSTANCE.removeBleConnectionMonitorListener(FyssaSensorUpdateActivity.this);
                     finish();
                     //startActivity(new Intent(FyssaSensorUpdateActivity.this,
                       //      FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                }, 3000);
+                }, longerWait ? 10000:3000);
             }
             else Log.e(LOG_TAG, "Reconnected without dfu completion.");
         });
@@ -707,21 +704,21 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    /*if (!checkStorageAccess()) {
+                if (grantResults.length <= 0
+                        || grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, R.string.text_location_on, Toast.LENGTH_SHORT).show();
+
+                } /*else {
+                                        if (!checkStorageAccess()) {
                         Log.d(LOG_TAG, "Not right storage permissions");
                         startUpdate.setEnabled(false);
                         dfuSelectDeviceBtn.setEnabled(false);
-                    }*/
-                } else {
-                    Toast.makeText(this, R.string.text_location_on, Toast.LENGTH_SHORT).show();
-                }
-                return;
+                    }
+                }*/
             }
         }
     }

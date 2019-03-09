@@ -132,6 +132,8 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void addConnectionSubscription() {
+        Log.d(TAG, "Adding subscriptions");
+        subscriptions.clear();
         subscriptions.add(MdsRx.Instance.connectedDeviceObservable()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mdsConnectedDevice -> {
@@ -242,7 +244,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     private void updateSensorSoftware() {
         //removeAndDisconnectFromDevice();
-        subscriptions.unsubscribe();
+        subscriptions.clear();
         startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class));
     }
 
@@ -250,7 +252,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     @Override
     protected void onResume() {
         super.onResume();
-        addConnectionSubscription();
+        Log.d(TAG, "onResume()");
         try {
             toast("Serial: " + MovesenseConnectedDevices.getConnectedDevice(0).getSerial());
         } catch (Exception e) {
@@ -294,7 +296,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     private void startObserving() {
         removeAndDisconnectFromDevices();
-        subscriptions.unsubscribe();
+        subscriptions.clear();
         finish();
         startActivity(new Intent(FyssaMainActivity.this, FyssaObserver.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -434,7 +436,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         switch (item.getItemId()) {
 
             case R.id.update:
-                subscriptions.unsubscribe();
+                subscriptions.clear();
                 startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class));
                 return true;
 
@@ -451,7 +453,6 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     protected void onDestroy() {
 
         super.onDestroy();
-        subscriptions.unsubscribe();
         subscriptions.clear();
 
     }
@@ -460,14 +461,12 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     public void onBackPressed() {
         removeAndDisconnectFromDevices();
         disconnect = true;
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
-        subscriptions.unsubscribe();
+        subscriptions.clear();
     }
 
 
