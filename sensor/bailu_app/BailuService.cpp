@@ -22,9 +22,9 @@
 #define SHUTDOWN_TIME 220000
 
 #define RECOVERY_TIME 2
-#define MIN_ACC_SQUARED 2
+#define MIN_ACC 1.5
 
-#define PARTY_THRESHOLD 20
+#define PARTY_THRESHOLD 10
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -48,6 +48,7 @@ static const whiteboard::ExecutionContextId sExecutionContextId =
 static const whiteboard::LocalResourceId sProviderResources[] = {
     WB_RES::LOCAL::FYSSA_BAILU::LID,
     WB_RES::LOCAL::FYSSA_BAILU_STOP::LID,
+    WB_RES::LOCAL::FYSSA_DEBUG::LID,
 };
 
 
@@ -226,9 +227,13 @@ void BailuService::onSubscribe(const whiteboard::Request& request,
     case WB_RES::LOCAL::FYSSA_DEBUG::ID:
     {
         debugSubscribed = true;
-        returnResult(request, whiteboard::HTTP_CODE_OK);
-        break;
+        return returnResult(request, wb::HTTP_CODE_OK);
     }
+    default:
+        DEBUGLOG("D/SENSOR/Shouldn't happen!");
+        return returnResult(request, whiteboard::HTTP_CODE_BAD_REQUEST);
+        //return ResourceProvider::onSubscribe(request, parameters);
+        break;
     }
 }
 
@@ -313,13 +318,13 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
     {
         whiteboard::FloatVector3D accValue = arrayData[i];
         double acc = sqrt(accValue.mX*accValue.mX + accValue.mY*accValue.mY + accValue.mZ*accValue.mZ) - 9.81;
-        if (acc*acc < MIN_ACC_SQUARED) acc = 0;
+        if (acc < MIN_ACC) acc = 0;
         secondAccAvr = secondAccAvr*(ACC_SAMPLERATE-1)/ACC_SAMPLERATE + acc/ACC_SAMPLERATE;
         if (msCounter >= ACC_SAMPLERATE)
         {
             msCounter = 0;
-            minuteAccAvr = minuteAccAvr*59/60 + secondAccAvr/60;
-            hourAccAvr = hourAccAvr*59/60 + minuteAccAvr/60;
+            minuteAccAvr = (minuteAccAvr*59 + secondAccAvr)/60;
+            hourAccAvr = (hourAccAvr*59 + minuteAccAvr)/60;
         }
         else ++msCounter;
 
@@ -477,17 +482,21 @@ void BailuService::checkPartyStatus()
 uint32_t BailuService::calculateScore()
 {
     float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    float minuteCeil = max(minuteAccAvr, 2.0);
+    float hourCeil = max(hourAccAvr, 5.0);
+    float minuteMult = 10*(minuteCeil+1)*minuteCeil;
+    float hourMult = 1.0 + 3*hourCeil ;
     if (tempMult < 0) tempMult = 0;
-    uint16_t score = (uint16_t) tempMult*(10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
+    uint16_t score = (uint16_t) tempMult*minuteMult*(foundDevices.size()+1)*hourMult;
     if (score < PARTY_THRESHOLD) score = 0;
     return score;
-}
+} 
 
 
 
 void BailuService::advPartyScore()
 {
-    auto score = calculateScore();
+    uint32_t score = calculateScore();
     if (!isPartying)
     {
       score = 0;
@@ -539,8 +548,8 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             WB_RES::DebugStuff res;
             res.temperature = currentTemp;
             res.isPartying = isPartying;
-            res.minuteAccAvr = minuteAccAvr;
-            res.hourAccAvr = hourAccAvr;
+            res.minuteAccAvr = (float)minuteAccAvr;
+            res.hourAccAvr = (float)hourAccAvr;
             res.runningTime = timerCounter;
             res.partyScore = calculateScore();
             updateResource(WB_RES::LOCAL::FYSSA_DEBUG(),

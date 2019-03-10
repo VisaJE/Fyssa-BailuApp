@@ -334,10 +334,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     }
 
     private void checkDFUMac() {
+        if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
         Log.d(LOG_TAG, "checkDFUMac: Looking for known mac from " + MdsRx.SCHEME_PREFIX +
                 MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
                 DFU_MAC_ADDRESS);
-        if (MovesenseConnectedDevices.getConnectedDevices().size() <= 0) return;
         Mds.builder().build(this).get(MdsRx.SCHEME_PREFIX +
                         MovesenseConnectedDevices.getConnectedDevice(0).getSerial()+
                         DFU_MAC_ADDRESS,

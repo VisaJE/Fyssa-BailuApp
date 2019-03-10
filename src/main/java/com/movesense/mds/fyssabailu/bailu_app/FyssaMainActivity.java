@@ -394,8 +394,10 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
 
     private void subscribeFyssaDebug() {
-        mdsSubscription = Mds.builder().build(this).subscribe(MovesenseConnectedDevices.getConnectedDevice(0).getSerial() +
-                FYSSA_DEBUG_PATH,null,
+        Log.d(TAG, "Subscribing with" + "{\"Uri\": \"" +MovesenseConnectedDevices.getConnectedDevice(0).getSerial() +
+                FYSSA_DEBUG_PATH + "\"}");
+        mdsSubscription = Mds.builder().build(this).subscribe(URI_EVENTLISTENER, "{\"Uri\": \"" +MovesenseConnectedDevices.getConnectedDevice(0).getSerial() +
+                FYSSA_DEBUG_PATH + "\"}",
                 new MdsNotificationListener() {
                     @Override
                     public void onNotification(String s) {

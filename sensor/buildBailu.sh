@@ -7,7 +7,7 @@ ninja dfupkg
 cp Movesense_dfu.zip ../movesense_dfu.zip
 cp Movesense_dfu_w_bootloader.zip ../movesense_dfu_bootloader.zip
 cd ..
-rm -r buildfolder
+#rm -r buildfolder
 echo "Copying zip to ../src/main/res/raw"
 mv movesense_dfu.zip ../src/main/res/raw/
 mv movesense_dfu_bootloader.zip ../src/main/res/raw/
