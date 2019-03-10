@@ -135,7 +135,10 @@ private:
                                           const whiteboard::ParameterList& parameters);
 
     void checkPartyStatus();
+
+    float calculateScoreFloat();
     uint32_t calculateScore();
+
     bool isPartying;
     float currentTemp;
 

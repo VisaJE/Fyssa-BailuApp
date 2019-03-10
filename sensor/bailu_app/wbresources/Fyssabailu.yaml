@@ -115,6 +115,7 @@ definitions:
       - hourAccAvr
       - runningTime
       - partyScore
+      - partyFloat
     properties:
       temperature:
         type: number
@@ -133,4 +134,7 @@ definitions:
       partyScore:
         type: integer
         format: uint32 
+      partyFloat:
+        type: number
+        format: float
 

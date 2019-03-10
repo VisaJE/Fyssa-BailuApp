@@ -26,7 +26,7 @@
     <string name="title_location_on">Enable location services</string>
     <string name="ok">OK</string>
 
-    <string name="connect_for_update">Is DFU mode already on?</string>
+    <string name="connect_for_update">Is the red LED on?</string>
 
     <string name="serial">Serial</string>
     <string name="path">Path</string>

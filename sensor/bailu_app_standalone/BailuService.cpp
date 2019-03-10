@@ -25,7 +25,7 @@
 #define DEFAULT_RUNNING_TIME 60 // In minutes
 #define MIN_ACC_SQUARED 2
 
-#define PARTY_THRESHOLD 20
+#define PARTY_THRESHOLD 15
 #define STAY_ON_SCORE 100
 
 #define REFRESH_STATE_ID 2
@@ -273,6 +273,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
         {
             msCounter = 0;
             minuteAccAvr = minuteAccAvr*59/60 + secondAccAvr/60;
+            hourAccAvr = (hourAccAvr*179 + minuteAccAvr)/180; // Looks nice on matlab, not a true average.
         }
         else ++msCounter;
 
@@ -427,12 +428,33 @@ void BailuService::checkPartyStatus()
 }
 
 
-void BailuService::advPartyScore()
+float min(float a, float b)
+{
+    return (a < b) ? a : b;
+}
+
+float BailuService::calculateScoreFloat()
 {
     float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    float minuteCeil = min(minuteAccAvr, 2.0);
+    float hourCeil = min(hourAccAvr, 5.0);
+    float minuteMult = (minuteCeil+3.0)*minuteCeil;
+    float hourMult = 3*hourCeil;
     if (tempMult < 0) tempMult = 0;
-    uint16_t score = (uint16_t) tempMult*(10*minuteAccAvr*(foundDevices.size()+1))*(0.5+hourAccAvr);
+    return 10*sqrt(tempMult*minuteMult*(foundDevices.size()+1)*hourMult);
+}
+
+uint32_t BailuService::calculateScore()
+{
+    uint32_t score = (uint32_t) calculateScoreFloat();
     if (score < PARTY_THRESHOLD) score = 0;
+    return score;
+}
+
+
+void BailuService::advPartyScore()
+{
+    uint32_t score = calculateScore();
     if (!isPartying)
     {
       score = 0;

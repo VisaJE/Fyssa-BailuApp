@@ -22,9 +22,9 @@
 #define SHUTDOWN_TIME 220000
 
 #define RECOVERY_TIME 2
-#define MIN_ACC 1.5
+#define MIN_ACC 1.0
 
-#define PARTY_THRESHOLD 10
+#define PARTY_THRESHOLD 15
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -324,7 +324,7 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
         {
             msCounter = 0;
             minuteAccAvr = (minuteAccAvr*59 + secondAccAvr)/60;
-            hourAccAvr = (hourAccAvr*59 + minuteAccAvr)/60;
+            hourAccAvr = (hourAccAvr*179 + minuteAccAvr)/180; // Looks nice on matlab, not a true average.
         }
         else ++msCounter;
 
@@ -478,19 +478,28 @@ void BailuService::checkPartyStatus()
     asyncGet(WB_RES::LOCAL::MEAS_TEMP(), NULL);
 }
 
+float min(float a, float b)
+{
+    return (a < b) ? a : b;
+}
+
+float BailuService::calculateScoreFloat()
+{
+    float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    float minuteCeil = min(minuteAccAvr, 2.0);
+    float hourCeil = min(hourAccAvr, 5.0);
+    float minuteMult = (minuteCeil+3.0)*minuteCeil;
+    float hourMult = 3*hourCeil;
+    if (tempMult < 0) tempMult = 0;
+    return 10*sqrt(tempMult*minuteMult*(foundDevices.size()+1)*hourMult);
+}
 
 uint32_t BailuService::calculateScore()
 {
-    float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
-    float minuteCeil = max(minuteAccAvr, 2.0);
-    float hourCeil = max(hourAccAvr, 5.0);
-    float minuteMult = 10*(minuteCeil+1)*minuteCeil;
-    float hourMult = 1.0 + 3*hourCeil ;
-    if (tempMult < 0) tempMult = 0;
-    uint16_t score = (uint16_t) tempMult*minuteMult*(foundDevices.size()+1)*hourMult;
+    uint32_t score = (uint32_t) calculateScoreFloat();
     if (score < PARTY_THRESHOLD) score = 0;
     return score;
-} 
+}
 
 
 
@@ -552,6 +561,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             res.hourAccAvr = (float)hourAccAvr;
             res.runningTime = timerCounter;
             res.partyScore = calculateScore();
+            res.partyFloat = calculateScoreFloat();
             updateResource(WB_RES::LOCAL::FYSSA_DEBUG(),
                 ResponseOptions::Empty, res);
         }
