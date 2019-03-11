@@ -27,6 +27,7 @@ public class FyssaGeocoder implements LocationListener {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private boolean enabled = true;
+    private boolean isUpdated = false;
 
     @SuppressLint("MissingPermission")
     FyssaGeocoder(Context context, LocationManager logman) {
@@ -43,17 +44,18 @@ public class FyssaGeocoder implements LocationListener {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-           Log.e(TAG, "STILL NO PERMISSION");
+            Log.e(TAG, "STILL NO PERMISSION");
             return;
+
         }
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
+
 
 
     String getLocationInfo() {
 
-        if (!enabled) {
-            return "Not enabled.";
-        }
         String out = null;
         try {
 
@@ -63,7 +65,8 @@ public class FyssaGeocoder implements LocationListener {
                 out = "";
             } else {
                 if (addresses.size() > 0) {
-                    out = addresses.get(0).getFeatureName() + ", " + addresses.get(0).getLocality() + ", " + addresses.get(0).getAdminArea() + ", " + addresses.get(0).getCountryName();
+                    out = addresses.get(0).getThoroughfare() + "! " + addresses.get(0).getPostalCode() + ", locality " + addresses.get(0).getLocality() + ", " + addresses.get(0).getCountryName() + ", " +
+                            addresses.get(0).getAddressLine(0) + ".";
                 }
             }
         } catch (Exception e) {
@@ -76,11 +79,13 @@ public class FyssaGeocoder implements LocationListener {
     public boolean isEnabled(){
         return enabled;
     }
+
     @Override
     public void onLocationChanged(final Location location) {
         Log.d(TAG, "onLocationChanged " + location.toString());
         latitude = location.getLatitude();
         longitude = location.getLongitude();
+        isUpdated = true;
     }
 
     @Override
