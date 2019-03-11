@@ -17,8 +17,7 @@ import android.widget.Toast;
 
 import com.movesense.mds.fyssabailu.bailu_app.FyssaApp;
 import com.movesense.mds.fyssabailu.bailu_app.FyssaInfoActivity;
-import com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity;
-import com.movesense.mds.fyssabailu.bailu_app.FyssaObserver;
+import com.movesense.mds.fyssabailu.bailu_app.FyssaObserverActivity;
 import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.scanner.MainScanActivity;
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity  {
 
         });
         findViewById(R.id.start_button).setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, FyssaObserver.class)
+                startActivity(new Intent(MainActivity.this, FyssaObserverActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)));
 
         findViewById(R.id.help_button).setOnClickListener(v ->

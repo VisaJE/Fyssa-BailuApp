@@ -8,9 +8,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -38,7 +40,7 @@ import rx.subscriptions.CompositeSubscription;
 
 
 // Mostly copied from ScanFragment.java
-public class FyssaObserver extends AppCompatActivity implements DataUser {
+public class FyssaObserverActivity extends AppCompatActivity implements DataUser {
 
     public static Activity enclosingClass;
     private final String LOG_TAG = this.getClass().getCanonicalName();
@@ -48,7 +50,8 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
 
     private BluetoothAdapter bluetoothAdapter;
 
-    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private static final int COARSE_PERMISSIONS_REQUEST_LOCATION = 99;
+    private static final int FINE_PERMISSIONS_REQUEST_LOCATION = 97;
 
     private RxBleClient rxBleClient;
     private CompositeSubscription subscriptions;
@@ -56,8 +59,11 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     DataSender dataSender;
 
     private FyssaApp app;
+    private FyssaGeocoder geocoder = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fyssa_observe);
         ButterKnife.bind(this);
@@ -78,12 +84,18 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         // Capture instance of RxBleClient to make code look cleaner
         rxBleClient = RxBle.Instance.getClient();
 
+
         // Create one composite subscription to hold everything
         subscriptions = new CompositeSubscription();
+
         infoTv.setText("---Scanning for parties---");
         createView();
-        dataSender = new DataSender(FyssaObserver.this.getCacheDir(), this);
-        startScanning();
+        dataSender = new DataSender(FyssaObserverActivity.this.getCacheDir(), this);
+        if (checkLocationPermission()) {
+            geocoder = new FyssaGeocoder(this,(LocationManager) this.getSystemService(LOCATION_SERVICE));
+            if (checkCoarseLocationPermission()) startScanning();
+        }
+
     }
 
 
@@ -97,9 +109,10 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     }
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
+        for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
@@ -114,9 +127,9 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         //Log.d(LOG_TAG, bytesToHex(scanResult.getScanRecord()));
         if (device.getName() != null && device.getName().contains("Movesense")) {
             byte[] adv = scanResult.getScanRecord();
-            if (adv[11] == (byte)0xEA) {
+            if (adv[11] == (byte) 0xEA) {
                 Integer score = ((adv[7] & 0xFF) << 8) | (adv[8] & 0xFF);
-                Integer timePartying = ((adv[9]&0xFF) << 8) | (adv[10] & 0xFF);
+                Integer timePartying = ((adv[9] & 0xFF) << 8) | (adv[10] & 0xFF);
                 //Log.d(LOG_TAG, "Getting advertisement " + score + ", " + timePartying + " from device" + device.getMacAddress() + "\n");
                 //Log.d(LOG_TAG, "Full hex adv: " + bytesToHex(adv) + "\n");
                 handleScanResult(device, score, timePartying);
@@ -124,16 +137,20 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         }
 
     }
+
     private void handleScanResult(RxBleDevice rxBleScanResult, Integer score, Integer timePartying) {
-        if (deviceView.nameMap.containsKey(rxBleScanResult.getMacAddress())) deviceView.handle(rxBleScanResult, score, timePartying);
+        if (deviceView.nameMap.containsKey(rxBleScanResult.getMacAddress()))
+            deviceView.handle(rxBleScanResult, score, timePartying);
         else {
             Log.d(LOG_TAG, "No name was found for " + rxBleScanResult.getMacAddress()
             );
-            dataSender.get(FyssaApp.SERVER_GET_URL +rxBleScanResult.getMacAddress());
+            dataSender.get(FyssaApp.SERVER_GET_URL + rxBleScanResult.getMacAddress());
         }
+        // Testing for location info
+        if (geocoder.isEnabled()) Log.d(LOG_TAG, geocoder.getLocationInfo());
     }
 
-    private boolean checkLocationPermission() {
+    private boolean checkCoarseLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -143,22 +160,17 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.title_location_permission)
                             .setMessage(R.string.text_location_permission)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                @RequiresApi(api = Build.VERSION_CODES.M)
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    //Prompt the user once explanation has been shown
-                                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                                            MY_PERMISSIONS_REQUEST_LOCATION);
-                                }
+                            .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                                //Prompt the user once explanation has been shown
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                        COARSE_PERMISSIONS_REQUEST_LOCATION);
                             })
                             .create()
                             .show();
-
                 } else {
                     // No explanation needed, we can request the permission.
                     requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                            MY_PERMISSIONS_REQUEST_LOCATION);
+                            COARSE_PERMISSIONS_REQUEST_LOCATION);
                 }
             }
             return false;
@@ -167,62 +179,87 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
         }
     }
 
-    private void startScanning() {
-        // Make sure we have location permission
-        if (!checkLocationPermission()) {
-            return;
-        }
+    private boolean checkLocationPermission() {
+        if (true || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
 
-        Log.d(LOG_TAG, "START SCANNING !!!");
-        // Start scanning
-        subscriptions.add(rxBleClient.scanBleDevices()
-                .subscribe(new Action1<RxBleScanResult>() {
-                    @Override
-                    public void call(RxBleScanResult rxBleScanResult) {
-                        checkScanResult(rxBleScanResult);
+            // Should we show an explanation?
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.title_location_permission)
+                            .setMessage(R.string.text_fine_location_permission)
+                            .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                                //Prompt the user once explanation has been shown
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                        FINE_PERMISSIONS_REQUEST_LOCATION);
+                            })
+                            .create()
+                            .show();
+
+                } else {
+                    // No explanation needed, we can request the permission.
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            FINE_PERMISSIONS_REQUEST_LOCATION);
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case FINE_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(LOG_TAG, "Got fine location permissions!");
+
+                    LocationManager logMan = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
                     }
-                }, new ThrowableToastingAction(this)));
+                    if (geocoder == null) geocoder = new FyssaGeocoder(getApplicationContext(), logMan);
+                    startScanning();
+                }
+                else {
+                    checkCoarseLocationPermission();
+                }
+                return;
+            }
+            case COARSE_PERMISSIONS_REQUEST_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(LOG_TAG, "Got coarse location permissions!");
+                    startScanning();
+                }
+            }
+            default:
+                Log.d(LOG_TAG, "onRequestPermissionResult fall through" + requestCode);
+        }
     }
 
 
+    private void startScanning() {
 
-    private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
+        Log.d(LOG_TAG, "START SCANNING !!!");
+        // Start scanning
+        subscriptions.clear();
+        subscriptions.add(rxBleClient.scanBleDevices()
+                .subscribe(rxBleScanResult -> checkScanResult(rxBleScanResult), new ThrowableToastingAction(this)));
+    }
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-            String action = intent.getAction();
-
-            // It means the user has changed his bluetooth state.
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-
-                if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                    // The user bluetooth is ready to use.
-
-                    // start scanning again in case of ready Bluetooth
-                    startScanning();
-                    return;
-                }
-
-                if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_TURNING_OFF) {
-                    // The user bluetooth is turning off yet, but it is not disabled yet.
-                    return;
-                }
-
-                if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF) {
-                    // The user bluetooth is already disabled.
-                    return;
-                }
-
-            }
-        }
-    };
     @Override
     public void onBackPressed() {
         subscriptions.unsubscribe();
         subscriptions.clear();
         finish();
-        startActivity(new Intent(FyssaObserver.this, MainActivity.class)
+        startActivity(new Intent(FyssaObserverActivity.this, MainActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
 
     }
@@ -231,6 +268,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     public void onGetSuccess(String response) {
         Log.d(LOG_TAG, "onGetSucces:" +response);
         deviceView.nameMap.put(response.substring(0, 17), response.substring(17));
+
         /*for (String i : deviceView.nameMap.keySet()) {
             Log.d(LOG_TAG, "Found in nameMap:" + i + ">" + deviceView.nameMap.get(i));
         }*/
@@ -250,7 +288,7 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     public void onPostError(VolleyError error) {
 
     }
-    public void toast(String text) {
+    private void toast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 
@@ -267,5 +305,6 @@ public class FyssaObserver extends AppCompatActivity implements DataUser {
     protected void onPause() {
         super.onPause();
     }
+
 }
 

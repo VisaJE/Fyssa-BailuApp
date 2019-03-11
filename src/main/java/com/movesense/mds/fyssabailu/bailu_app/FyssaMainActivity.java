@@ -303,7 +303,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         removeAndDisconnectFromDevices();
         subscriptions.clear();
         finish();
-        startActivity(new Intent(FyssaMainActivity.this, FyssaObserver.class)
+        startActivity(new Intent(FyssaMainActivity.this, FyssaObserverActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
@@ -388,7 +388,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                 });
     }
 
-    public void toast(String text) {
+    private void toast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 

@@ -12,7 +12,7 @@
         <item>Bailu2000B with autoactivation</item>
     </string-array>
 
-    <string name="disclaimer">"Your name and sensor number will be sent to the server."</string>
+    <string name="disclaimer">"Your name and sensor number will be sent to the server"</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
     <string name="title_disclaimer">Disclaimer</string>
@@ -20,8 +20,12 @@
 
     <string name="title_location_permission">Location permission</string>
     <string name="text_location_permission">Bluetooth LE scanning requires location permission</string>
+
+    <string name="text_fine_location_permission">Localizing parties requires GPS permission.</string>
+
     <string name="title_storage_permission">Storage permission</string>
-    <string name="text_storage_permission">The app requires storage access for accessing the sensor software.</string>
+    <string name="text_storage_permission">The app requires storage access for accessing the sensor software</string>
+
     <string name="text_location_on">Location services have to be turned on for the app to work. Go to settings?</string>
     <string name="title_location_on">Enable location services</string>
     <string name="ok">OK</string>
@@ -165,4 +169,5 @@
     <string name="start_update_text">Start</string>
     <string name="connected_after_update">Connected.</string>
     <string name="connected_after_bootloader">Connected. Booting sensor.</string>
+
 </resources>

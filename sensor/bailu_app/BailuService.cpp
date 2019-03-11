@@ -320,10 +320,12 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
         double acc = sqrt(accValue.mX*accValue.mX + accValue.mY*accValue.mY + accValue.mZ*accValue.mZ) - 9.81;
         if (acc < MIN_ACC) acc = 0;
         secondAccAvr = secondAccAvr*(ACC_SAMPLERATE-1)/ACC_SAMPLERATE + acc/ACC_SAMPLERATE;
+        if (secondAccAvr > 10) secondAccAvr = 0;
         if (msCounter >= ACC_SAMPLERATE)
         {
             msCounter = 0;
             minuteAccAvr = (minuteAccAvr*59 + secondAccAvr)/60;
+            if (minuteAccAvr > 7.0) minuteAccAvr = 0;
             hourAccAvr = (hourAccAvr*179 + minuteAccAvr)/180; // Looks nice on matlab, not a true average.
         }
         else ++msCounter;
@@ -478,20 +480,21 @@ void BailuService::checkPartyStatus()
     asyncGet(WB_RES::LOCAL::MEAS_TEMP(), NULL);
 }
 
-float min(float a, float b)
+double min(double a, double b)
 {
     return (a < b) ? a : b;
 }
 
 float BailuService::calculateScoreFloat()
 {
-    float tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
-    float minuteCeil = min(minuteAccAvr, 2.0);
-    float hourCeil = min(hourAccAvr, 5.0);
-    float minuteMult = (minuteCeil+3.0)*minuteCeil;
-    float hourMult = 3*hourCeil;
+    double tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
+    double minuteCeil = min(minuteAccAvr, 2.0);
+    double hourCeil = min(hourAccAvr, 5.0);
+    double minuteMult = (minuteCeil+3.0)*minuteCeil;
+    double hourMult = 3*hourCeil;
+    double timePartyingMult = 1.0 + sqrt((double)timePartying/60000);
     if (tempMult < 0) tempMult = 0;
-    return 10*sqrt(tempMult*minuteMult*(foundDevices.size()+1)*hourMult);
+    return (float)10*sqrt(tempMult*minuteMult*(foundDevices.size()+1)*hourMult*timePartyingMult);
 }
 
 uint32_t BailuService::calculateScore()
@@ -557,6 +560,7 @@ void BailuService::onTimer(whiteboard::TimerId timerId)
             WB_RES::DebugStuff res;
             res.temperature = currentTemp;
             res.isPartying = isPartying;
+            res.secondAccAvr = (float)secondAccAvr;
             res.minuteAccAvr = (float)minuteAccAvr;
             res.hourAccAvr = (float)hourAccAvr;
             res.runningTime = timerCounter;

@@ -85,7 +85,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 addTimeMap.remove(i);
                                 devices.remove(i);
                                 infoMap.remove(i);
-                                FyssaObserver.enclosingClass.runOnUiThread(new Runnable() {
+                                FyssaObserverActivity.enclosingClass.runOnUiThread(new Runnable() {
                                     public void run() {
                                         notifyDataSetChanged();
                                     }
@@ -124,10 +124,24 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    private String scoreToString(int score) {
+        Log.d(LOG_TAG, "Current score " + score);
+        if (score == 0) return "Null";
+        if (score < 20) return Character.toString((char)0x03F5);
+        if (score < 50) return "Casual.";
+        if (score < 70) return "Fun.";
+        if (score < 100) return "Nice.";
+        if (score < 130) return "100!";
+        if (score < 150) return "Woohoo!";
+        if (score < 200) return "Amazing!!";
+        if (score >= 200) return "Over 9000!!!";
+        return "Ehh";
+    }
+
     private String getText(RxBleDevice device, int score, int timePartying) {
         String name = "Unknown player";
         if (nameMap.containsKey(device.getMacAddress())) name = nameMap.get(device.getMacAddress());
-        return name + "\nParty level: " + score + partyTime(timePartying);
+        return name + "\nParty level: " + scoreToString(score) + partyTime(timePartying);
     }
 
 
