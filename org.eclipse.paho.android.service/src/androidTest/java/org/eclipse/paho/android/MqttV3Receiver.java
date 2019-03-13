@@ -125,11 +125,10 @@ public class MqttV3Receiver implements MqttCallback{
      * @param expectedQos
      * @param sentBytes
      * @return flag
-     * @throws MqttException
      * @throws InterruptedException
      */
     public boolean validateReceipt(String sendTopic, int expectedQos,
-                                   byte[] sentBytes) throws MqttException, InterruptedException {
+                                   byte[] sentBytes) throws InterruptedException {
         final String methodName = "validateReceipt";
 
         long waitMilliseconds = 10000;
@@ -187,12 +186,11 @@ public class MqttV3Receiver implements MqttCallback{
      * @param sentBytes
      * @param expectOrdered
      * @return flag
-     * @throws MqttException
      * @throws InterruptedException
      */
     public boolean validateReceipt(List<String> sendTopics, List<Integer> expectedQosList,
                                    int expectedBatchNumber, int nPublishers, List<byte[]> sentBytes,
-                                   boolean expectOrdered) throws MqttException, InterruptedException {
+                                   boolean expectOrdered) throws InterruptedException {
         final String methodName = "validateReceipt";
 
         int expectedMessageNumbers[] = new int[nPublishers];
@@ -404,10 +402,8 @@ public class MqttV3Receiver implements MqttCallback{
     /**
      * @param topic
      * @param message
-     * @throws Exception
      */
-    public void messageArrived(String topic, MqttMessage message)
-            throws Exception {
+    public void messageArrived(String topic, MqttMessage message) {
         final String methodName = "messageArrived";
         Log.i(methodName, "messageArrived "+topic+ " = "+message.toString()+ " clientId = "+this.clientId);
         Log.i(methodName, "messageArrived "+new Date().toString());

@@ -909,10 +909,9 @@ public class AndroidServiceTest extends AndroidTestCase {
      * Tests that a client can be constructed and that it can connect to and
      * disconnect from the service via SSL
      *
-     * @throws Exception
      */
 
-    public void testSSLConnect() throws Exception {
+    public void testSSLConnect() {
 
         MqttAndroidClient mqttClient = null;
         try {

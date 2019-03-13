@@ -902,8 +902,7 @@ class MqttConnection implements MqttCallbackExtended {
 	 *            the message itself
 	 */
 	@Override
-	public void messageArrived(String topic, MqttMessage message)
-			throws Exception {
+	public void messageArrived(String topic, MqttMessage message) {
 
 		service.traceDebug(TAG,
 				"messageArrived(" + topic + ",{" + message.toString() + "})");

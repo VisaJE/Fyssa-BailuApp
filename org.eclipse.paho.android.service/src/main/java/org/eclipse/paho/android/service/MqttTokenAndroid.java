@@ -77,7 +77,7 @@ class MqttTokenAndroid implements IMqttToken {
    * @see org.eclipse.paho.client.mqttv3.IMqttToken#waitForCompletion()
    */
   @Override
-  public void waitForCompletion() throws MqttException, MqttSecurityException {
+  public void waitForCompletion() throws MqttException {
     synchronized (waitObject) {
       try {
         waitObject.wait();
@@ -95,8 +95,7 @@ class MqttTokenAndroid implements IMqttToken {
    * @see org.eclipse.paho.client.mqttv3.IMqttToken#waitForCompletion(long)
    */
   @Override
-  public void waitForCompletion(long timeout) throws MqttException,
-      MqttSecurityException {
+  public void waitForCompletion(long timeout) throws MqttException {
     synchronized (waitObject) {
       try {
         waitObject.wait(timeout);

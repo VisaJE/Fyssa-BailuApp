@@ -22,7 +22,7 @@ public class FyssaApp extends Application {
     public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
     public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";
     // Accepted versions
-    private static final String deviceVersions[] = {"1.1.1.BA", "1.1.1.BS"};
+    private static final String deviceVersions[] = {"1.1.1.BAR", "1.1.1.BSR"};
     private MemoryTools memoryTools;
 
     public static final Boolean isSupported(String deviceVersion) {
@@ -30,12 +30,6 @@ public class FyssaApp extends Application {
             if (i.equals(deviceVersion)) return true;
         }
         return false;
-    }
-
-    public static final Boolean hasBootloader(String deviceVersion) {
-        return deviceVersion.charAt(2) == '1' &&
-                (deviceVersion.contains("BA") || deviceVersion.contains("BS") ||
-                        deviceVersion.contains("HW") || deviceVersion.contains("IMU"));
     }
 
     @Override

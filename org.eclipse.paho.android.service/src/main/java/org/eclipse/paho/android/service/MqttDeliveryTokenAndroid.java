@@ -38,7 +38,7 @@ class MqttDeliveryTokenAndroid extends MqttTokenAndroid
 	 * @see org.eclipse.paho.client.mqttv3.IMqttDeliveryToken#getMessage()
 	 */
 	@Override
-	public MqttMessage getMessage() throws MqttException {
+	public MqttMessage getMessage() {
 		return message;
 	}
 

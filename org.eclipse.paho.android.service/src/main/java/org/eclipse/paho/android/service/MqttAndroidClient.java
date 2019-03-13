@@ -388,13 +388,11 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completes. Use null if not required.
 	 * @return token used to track and wait for the connect to complete. The
 	 *         token will be passed to any callback that has been set.
-	 * @throws MqttException
-	 *             for any connected problems, including communication errors
 	 */
 
 	@Override
 	public IMqttToken connect(MqttConnectOptions options, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback);
@@ -463,16 +461,8 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 		mqttService.setTraceCallbackId(clientHandle);
 		
 		String activityToken = storeToken(connectToken);
-		try {
-			mqttService.connect(clientHandle, connectOptions, null,
-					activityToken);
-		}
-		catch (MqttException e) {
-			IMqttActionListener listener = connectToken.getActionCallback();
-			if (listener != null) {
-				listener.onFailure(connectToken, e);
-			}
-		}
+		mqttService.connect(clientHandle, connectOptions, null,
+				activityToken);
 	}
 
 	/**
@@ -486,12 +476,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 * 
 	 * @return token used to track and wait for disconnect to complete. The
 	 *         token will be passed to any callback that has been set.
-	 * @throws MqttException
-	 *             for problems encountered while disconnecting
 	 * @see #disconnect(long, Object, IMqttActionListener)
 	 */
 	@Override
-	public IMqttToken disconnect() throws MqttException {
+	public IMqttToken disconnect() {
 		IMqttToken token = new MqttTokenAndroid(this, null,
 				null);
 		String activityToken = storeToken(token);
@@ -515,12 +503,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 * @return token used to track and wait for disconnect to complete. The
 	 *         token will be passed to the callback methods if a callback is
 	 *         set.
-	 * @throws MqttException
-	 *             for problems encountered while disconnecting
 	 * @see #disconnect(long, Object, IMqttActionListener)
 	 */
 	@Override
-	public IMqttToken disconnect(long quiesceTimeout) throws MqttException {
+	public IMqttToken disconnect(long quiesceTimeout) {
 		IMqttToken token = new MqttTokenAndroid(this, null,
 				null);
 		String activityToken = storeToken(token);
@@ -546,13 +532,11 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completes. Use null if not required.
 	 * @return token used to track and wait for the disconnect to complete. The
 	 *         token will be passed to any callback that has been set.
-	 * @throws MqttException
-	 *             for problems encountered while disconnecting
 	 * @see #disconnect(long, Object, IMqttActionListener)
 	 */
 	@Override
 	public IMqttToken disconnect(Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback);
 		String activityToken = storeToken(token);
@@ -600,12 +584,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completes. Use null if not required.
 	 * @return token used to track and wait for the disconnect to complete. The
 	 *         token will be passed to any callback that has been set.
-	 * @throws MqttException
-	 *             for problems encountered while disconnecting
 	 */
 	@Override
 	public IMqttToken disconnect(long quiesceTimeout, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback);
 		String activityToken = storeToken(token);
@@ -895,14 +877,11 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completed
 	 * @return token used to track and wait for the subscribe to complete. The
 	 *         token will be passed to callback methods if set.
-	 * @throws MqttException
-	 *             if there was an error when registering the subscription.
-	 * 
 	 * @see #subscribe(String[], int[], Object, IMqttActionListener)
 	 */
 	@Override
 	public IMqttToken subscribe(String topic, int qos, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback, new String[]{topic});
 		String activityToken = storeToken(token);
@@ -1035,14 +1014,12 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completed
 	 * @return token used to track and wait for the subscribe to complete. The
 	 *         token will be passed to callback methods if set.
-	 * @throws MqttException
-	 *             if there was an error registering the subscription.
 	 * @throws IllegalArgumentException
 	 *             if the two supplied arrays are not the same size.
 	 */
 	@Override
 	public IMqttToken subscribe(String[] topic, int[] qos, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback, topic);
 		String activityToken = storeToken(token);
@@ -1139,9 +1116,8 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 * @param messageListeners an array of callbacks to handle incoming messages
 	 * @return token used to track and wait for the subscribe to complete. The token
 	 * will be passed to callback methods if set.
-	 * @throws MqttException if there was an error registering the subscription.
 	 */
-	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback, IMqttMessageListener[] messageListeners) throws MqttException {
+	public IMqttToken subscribe(String[] topicFilters, int[] qos, Object userContext, IMqttActionListener callback, IMqttMessageListener[] messageListeners) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext, callback, topicFilters);
 		String activityToken = storeToken(token);
 		mqttService.subscribe(clientHandle, topicFilters, qos, null, activityToken, messageListeners);
@@ -1200,14 +1176,11 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completed
 	 * @return token used to track and wait for the unsubscribe to complete. The
 	 *         token will be passed to callback methods if set.
-	 * @throws MqttException
-	 *             if there was an error unregistering the subscription.
-	 * 
 	 * @see #unsubscribe(String[], Object, IMqttActionListener)
 	 */
 	@Override
 	public IMqttToken unsubscribe(String topic, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback);
 		String activityToken = storeToken(token);
@@ -1249,12 +1222,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            completed
 	 * @return token used to track and wait for the unsubscribe to complete. The
 	 *         token will be passed to callback methods if set.
-	 * @throws MqttException
-	 *             if there was an error unregistering the subscription.
 	 */
 	@Override
 	public IMqttToken unsubscribe(String[] topic, Object userContext,
-			IMqttActionListener callback) throws MqttException {
+			IMqttActionListener callback) {
 		IMqttToken token = new MqttTokenAndroid(this, userContext,
 				callback);
 		String activityToken = storeToken(token);
@@ -1419,7 +1390,7 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 
 	}
 	
-	public void messageArrivedComplete(int messageId, int qos) throws MqttException {
+	public void messageArrivedComplete(int messageId, int qos) {
 		throw new UnsupportedOperationException();	
 	}
 	
@@ -1710,18 +1681,17 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	}
 
 	@Override
-	public void disconnectForcibly() throws MqttException {
+	public void disconnectForcibly() {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	public void disconnectForcibly(long disconnectTimeout) throws MqttException {
+	public void disconnectForcibly(long disconnectTimeout) {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	public void disconnectForcibly(long quiesceTimeout, long disconnectTimeout)
-			throws MqttException {
+	public void disconnectForcibly(long quiesceTimeout, long disconnectTimeout) {
 		throw new UnsupportedOperationException();	
 	}
 	

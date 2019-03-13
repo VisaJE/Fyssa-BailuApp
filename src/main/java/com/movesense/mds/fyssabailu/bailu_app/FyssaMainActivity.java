@@ -211,10 +211,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                             updateAlert = builder.setMessage("Non compatible software detected. Update?").setPositiveButton("Yes", (dialog, which) -> {
                                 switch (which) {
                                     case DialogInterface.BUTTON_POSITIVE:
-                                        if (FyssaApp.hasBootloader(infoAppResponse.getContent().getVersion()))
                                             updateSensorSoftware();
-                                        else
-                                            updateSensorSoftware(); // Useless now that everythin happens within the same update activity.
                                         break;
                                 }
                             }).show();

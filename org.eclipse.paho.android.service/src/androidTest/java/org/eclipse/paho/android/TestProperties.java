@@ -68,9 +68,8 @@ class TestProperties {
     /**
      * @param fileName
      * @return stream
-     * @throws IOException
      */
-    private InputStream getPropertyFileAsStream(String fileName) throws IOException {
+    private InputStream getPropertyFileAsStream(String fileName) {
         InputStream stream = null;
         try {
 

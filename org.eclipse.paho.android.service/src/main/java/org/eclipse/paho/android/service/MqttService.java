@@ -319,12 +319,9 @@ public class MqttService extends Service implements MqttTraceHandler {
    *            arbitrary data to be passed back to the application
    * @param activityToken
    *            arbitrary identifier to be passed back to the Activity
-   * @throws MqttSecurityException thrown if there is a security exception
-   * @throws MqttException thrown for all other MqttExceptions
    */
   public void connect(String clientHandle, MqttConnectOptions connectOptions,
-      String invocationContext, String activityToken)
-      throws MqttSecurityException, MqttException {
+      String invocationContext, String activityToken) {
 	  	MqttConnection client = getConnection(clientHandle);
 	  	client.connect(connectOptions, null, activityToken);
 
@@ -431,14 +428,11 @@ public class MqttService extends Service implements MqttTraceHandler {
    *            arbitrary data to be passed back to the application
    * @param activityToken
    *            arbitrary identifier to be passed back to the Activity
-   * @throws MqttPersistenceException when a problem occurs storing the message
-   * @throws MqttException if there was an error publishing the message
    * @return token for tracking the operation
    */
   public IMqttDeliveryToken publish(String clientHandle, String topic,
       byte[] payload, int qos, boolean retained,
-      String invocationContext, String activityToken)
-      throws MqttPersistenceException, MqttException {
+      String invocationContext, String activityToken) {
     MqttConnection client = getConnection(clientHandle);
     return client.publish(topic, payload, qos, retained, invocationContext,
         activityToken);
@@ -457,13 +451,10 @@ public class MqttService extends Service implements MqttTraceHandler {
    *            arbitrary data to be passed back to the application
    * @param activityToken
    *            arbitrary identifier to be passed back to the Activity
-   * @throws MqttPersistenceException when a problem occurs storing the message
-   * @throws MqttException if there was an error publishing the message
    * @return token for tracking the operation
    */
   public IMqttDeliveryToken publish(String clientHandle, String topic,
-      MqttMessage message, String invocationContext, String activityToken)
-      throws MqttPersistenceException, MqttException {
+      MqttMessage message, String invocationContext, String activityToken) {
     MqttConnection client = getConnection(clientHandle);
     return client.publish(topic, message, invocationContext, activityToken);
   }
