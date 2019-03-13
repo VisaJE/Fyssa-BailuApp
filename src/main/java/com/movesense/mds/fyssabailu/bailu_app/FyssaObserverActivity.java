@@ -3,32 +3,34 @@ package com.movesense.mds.fyssabailu.bailu_app;
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
+
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.google.gson.Gson;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
 import com.movesense.mds.fyssabailu.bluetooth.RxBle;
+import com.movesense.mds.fyssabailu.model.FyssaPartyResponse;
 import com.movesense.mds.fyssabailu.online.DataSender;
 import com.movesense.mds.fyssabailu.online.DataUser;
 import com.polidea.rxandroidble.RxBleClient;
@@ -60,6 +62,8 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     private CompositeSubscription subscriptions;
     private FyssaDeviceView deviceView;
     DataSender dataSender;
+
+    private String m_Text = "";
 
 
     private FyssaApp app;
@@ -154,13 +158,44 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
         if (geocoder.isEnabled()) Log.d(LOG_TAG, geocoder.getLocationInfo());
     }
 
+    private void getDescriptionAndPost(String url) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Title");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        builder.setView(input);
+
+            // Set up the buttons
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            m_Text = input.getText().toString();
+            dataSender.post(url + "&description=" + m_Text);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
+    }
+
+
     private void sendParty() {
         Log.d(LOG_TAG, "Sending a party");
         if (deviceView.getItemCount() >= 2 || deviceView.getScore() > 10) {
-            dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
+            String url = FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
                     geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
-                    "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getItemCount() +
-                    "&score=" + deviceView.getScore());
+                    "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getPeopleCount() +
+                    "&score=" + deviceView.getScore();
+            new AlertDialog.Builder(FyssaObserverActivity.this)
+                    .setMessage("Add a description?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                            dialog.dismiss();
+                            getDescriptionAndPost(url);
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {dataSender.post(url);
+                    dialog.dismiss();}).show();
+
+
         }
         else toast(getString(R.string.dont_send));
 
@@ -300,10 +335,13 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
 
     @Override
     public void onGetSuccess(String response) {
-        Log.d(LOG_TAG, "onGetSucces:" +response);
+        Log.d(LOG_TAG, "onGetSucces");
         if (response.length() > 17 && response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':')
             deviceView.putDevice(response.substring(0, 17), response.substring(17));
-        else toast(response);
+        else {
+            FyssaPartyResponse.Party[] parties = new Gson().fromJson(response, FyssaPartyResponse.class).getParties();
+            deviceView.addParties(parties);
+        }
 
         /*for (String i : deviceView.nameMap.keySet()) {
             Log.d(LOG_TAG, "Found in nameMap:" + i + ">" + deviceView.nameMap.get(i));

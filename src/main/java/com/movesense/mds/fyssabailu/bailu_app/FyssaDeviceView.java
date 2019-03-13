@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.movesense.mds.fyssabailu.R;
+import com.movesense.mds.fyssabailu.model.FyssaPartyResponse;
 import com.polidea.rxandroidble.RxBleDevice;
 
 import java.util.HashMap;
@@ -38,6 +39,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private HashMap<String, String> nameMap;
     private HashMap<String, Integer> scoreMap;
     private HashMap<String, Long> addTimeMap;
+    private final Vector<String> partyTexts;
     TimerTask timerTask;
     Timer timer;
     Boolean isGoing = false;
@@ -72,6 +74,8 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         nameMap = new HashMap<>();
         addTimeMap = new HashMap<>();
         scoreMap = new HashMap<>();
+
+        partyTexts = new Vector<>();
         setHasStableIds(true);
         timer = new Timer();
         timerTask = new TimerTask() {
@@ -168,7 +172,11 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (score < 130) return "100!";
         if (score < 150) return "Woohoo!";
         if (score < 200) return "Amazing!!";
-        if (score >= 200) return "Over 9000!!!";
+        if (score < 300) return "Over 9000!!!";
+        if (score < 500) return "Next level shit.";
+        if (score < 600) return "Total mayhem.";
+        if (score < 700) return "Better than annihilation!";
+        if (score >= 700) return "This app is not prepared for these party levels.";
         return "Ehh";
     }
 
@@ -210,6 +218,21 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    private String getPartyText(FyssaPartyResponse.Party p){
+        return "Parties at " + p.place + "!\n" + "People present: " + p.population +
+                ". Party score: " + scoreToString(p.score) + "\n" + (
+                        p.description.equals("None") ? "" : p.description +"\n") + "Last seen " +
+                p.lastSeen.substring(0, p.lastSeen.length()-4) +".";
+    }
+
+    public void addParties(FyssaPartyResponse.Party[] parties) {
+        partyTexts.clear();
+        for (FyssaPartyResponse.Party p : parties) {
+            partyTexts.add(getPartyText(p));
+        }
+        notifyDataSetChanged();
+    }
+
     public Integer getScore() {
         Integer score = 0;
         try
@@ -224,6 +247,21 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         {
             Log.d(LOG_TAG, "Muted");
         }
+        finally
+        {
+            semaphore.release(1);
+        }
+        return score;
+    }
+
+    public Integer getPeopleCount() {
+        Integer score = 0;
+        try
+        {
+            semaphore.acquireUninterruptibly();
+            score = devices.size();
+        }
+        catch (Exception e) { Log.d(LOG_TAG, "Muted"); }
         finally
         {
             semaphore.release(1);
@@ -255,13 +293,16 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         try
         {
-            semaphore.acquire(1);
+            semaphore.acquireUninterruptibly(1);
             DeviceViewHolder deviceViewHolder = (DeviceViewHolder) holder;
-            String device = devices.get(position);
-            String text = infoMap.get(device);
-            Log.d(LOG_TAG, "onBind(): "+ text);
-            if (deviceViewHolder.textView != null) deviceViewHolder.textView.setText(text);
-
+            if (position < devices.size()) {
+                String device = devices.get(position);
+                String text = infoMap.get(device);
+                Log.d(LOG_TAG, "onBind(): "+ text);
+                if (deviceViewHolder.textView != null) deviceViewHolder.textView.setText(text);
+            } else {
+                if (deviceViewHolder.textView != null) deviceViewHolder.textView.setText(partyTexts.get(position-devices.size()));
+            }
         }
         catch (Exception e)
         {
@@ -276,11 +317,20 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     // NOT THREAD SAFE
     @Override
     public long getItemId(int position) {
-        return devices.get(position).hashCode();
+        int res;
+        try{
+            semaphore.acquireUninterruptibly();
+            if (position >= devices.size()) {
+                res = partyTexts.get(position-devices.size()).hashCode();
+            } else res = devices.get(position).hashCode();
+        } finally {
+             semaphore.release();
+        }
+        return res;
     }
 
     @Override
     public int getItemCount() {
-        return devices.size();
+        return devices.size() + partyTexts.size();
     }
 }
