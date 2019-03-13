@@ -156,15 +156,14 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
 
     private void sendParty() {
         Log.d(LOG_TAG, "Sending a party");
-    //    dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
-      //          geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
-        //        "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getItemCount() +
-          //      "&score=" + deviceView.getScore());
-    // TODO: DEBUG MODE, REMOVE
-        dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
-                         geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
-                        "&latitude=" + geocoder.getLatitude() + "&population=" + 3 +
-                        "&score=" + 100);
+        if (deviceView.getItemCount() >= 2 || deviceView.getScore() > 10) {
+            dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
+                    geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
+                    "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getItemCount() +
+                    "&score=" + deviceView.getScore());
+        }
+        else toast(getString(R.string.dont_send));
+
     }
 
     private void getParties() {
@@ -302,7 +301,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     @Override
     public void onGetSuccess(String response) {
         Log.d(LOG_TAG, "onGetSucces:" +response);
-        if (response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':')
+        if (response.length() > 17 && response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':')
             deviceView.putDevice(response.substring(0, 17), response.substring(17));
         else toast(response);
 
@@ -313,7 +312,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
 
     @Override
     public void onGetError(VolleyError error) {
-        toast("Error while getting a name");
+        Log.e(LOG_TAG, "Error while reaching server", error);
     }
 
     @Override
@@ -323,7 +322,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
 
     @Override
     public void onPostError(VolleyError error) {
-
+        Log.e(LOG_TAG, "Error while reaching server", error);
     }
     private void toast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
