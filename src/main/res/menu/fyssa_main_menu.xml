@@ -8,8 +8,10 @@
         android:title="@string/update" />
     <item
         android:id="@+id/fyssa_debug_start"
-        android:title="FyssaDebug" />
+        android:title="FyssaDebug"
+        android:visible="false" />
     <item
         android:id="@+id/fyssa_debug_stop"
-        android:title="Stop debug" />
+        android:title="Stop debug"
+        android:visible="false" />
 </menu>
