@@ -7,26 +7,34 @@ import com.google.gson.annotations.SerializedName;
 
 public class FyssaDeviceInfo {
 
-    @SerializedName("serial")
-    private String serial;
+    @SerializedName("Content")
+    private Content content;
 
-    @SerializedName("SwVersion")
-    private String swVersion;
+    protected class Content {
+        @SerializedName("serial")
+        private String serial;
 
-    @SerializedName("addressInfo")
-    private JsonArray addressInfo;
+        @SerializedName("SwVersion")
+        private String swVersion;
+
+        @SerializedName("addressInfo")
+        private JsonArray addressInfo;
+    }
+
+
 
     public String getSerial() {
-        return serial;
+        return content.serial;
     }
 
     public String getSwVersion() {
-        return swVersion;
+        return content.swVersion;
     }
 
-    public JsonArray getAddressInfo() {return addressInfo;}
+    public Content getContent() { return content;}
+    public JsonArray getAddressInfo() {return content.addressInfo;}
 
     public String getDfuAddress() {
-        return getAddressInfo().get(1).getAsJsonObject().get("address").getAsString();
+        return getAddressInfo().get(0).getAsJsonObject().get("address").getAsString();
     }
 }

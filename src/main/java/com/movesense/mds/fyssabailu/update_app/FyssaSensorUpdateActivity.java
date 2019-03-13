@@ -347,7 +347,8 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                         Log.d(LOG_TAG, "onSuccess: Found info" + s);
                         FyssaDeviceInfo info = new Gson().fromJson(s, FyssaDeviceInfo.class);
                         try{
-                            knownMac = info.getDfuAddress();
+                            knownMac = info.getDfuAddress().replace('-', ':');
+                            Log.d(LOG_TAG, info.getDfuAddress());
                         } catch (Exception e) {
                             Log.e(LOG_TAG, "Info wasn't suitable", e);
                             knownMac = null;

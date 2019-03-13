@@ -39,19 +39,13 @@ public class DataSender {
     public void post(String url) {
         // Formulate the request and handle the response.
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d(TAG, "Got response: " + response);
-                        context.onPostSuccess(response);
-                    }
+                response -> {
+                    Log.d(TAG, "Got response: " + response);
+                    context.onPostSuccess(response);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "Fail!", error);
-                        context.onPostError(error);
-                    }
+                error -> {
+                    Log.e(TAG, "Fail!", error);
+                    context.onPostError(error);
                 });
         // Add the request to the RequestQueue.
         mRequestQueue.add(stringRequest);
@@ -59,19 +53,13 @@ public class DataSender {
     public void get(String url) {
         // Formulate the request and handle the response.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d(TAG, "Got response: " +response);
-                        context.onGetSuccess(response);
-                    }
+                response -> {
+                    Log.d(TAG, "Got response: " +response);
+                    context.onGetSuccess(response);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e(TAG, "Fail!", error);
-                        context.onGetError(error);
-                    }
+                error -> {
+                    Log.e(TAG, "Fail!", error);
+                    context.onGetError(error);
                 });
         // Add the request to the RequestQueue.
         mRequestQueue.add(stringRequest);

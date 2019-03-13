@@ -35,7 +35,8 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final Vector<String> devices;
     private final HashMap<String, String> infoMap;
-    public HashMap<String, String> nameMap;
+    private HashMap<String, String> nameMap;
+    private HashMap<String, Integer> scoreMap;
     private HashMap<String, Long> addTimeMap;
     TimerTask timerTask;
     Timer timer;
@@ -70,6 +71,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         infoMap = new HashMap<>();
         nameMap = new HashMap<>();
         addTimeMap = new HashMap<>();
+        scoreMap = new HashMap<>();
         setHasStableIds(true);
         timer = new Timer();
         timerTask = new TimerTask() {
@@ -85,11 +87,8 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                 addTimeMap.remove(i);
                                 devices.remove(i);
                                 infoMap.remove(i);
-                                FyssaObserverActivity.enclosingClass.runOnUiThread(new Runnable() {
-                                    public void run() {
-                                        notifyDataSetChanged();
-                                    }
-                                });
+                                scoreMap.remove(i);
+                                FyssaObserverActivity.enclosingClass.runOnUiThread(() -> notifyDataSetChanged());
                             }
                         }
                     }
@@ -104,6 +103,41 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         };
         schedule();
+    }
+
+    public void putDevice(String mac, String name) {
+        try
+        {
+            semaphore.acquireUninterruptibly();
+            nameMap.put(mac, name);
+            notifyDataSetChanged();
+        }
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Muted");
+        }
+        finally
+        {
+            semaphore.release(1);
+        }
+    }
+
+    public boolean knowsDevice(String mac) {
+        boolean res = false;
+        try
+        {
+            semaphore.acquireUninterruptibly();
+            res = nameMap.containsKey(mac);
+        }
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Muted");
+        }
+        finally
+        {
+            semaphore.release(1);
+        }
+        return res;
     }
 
     private String partyTime(int t) {
@@ -152,13 +186,16 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (devices.contains(device.getMacAddress())) {
                 infoMap.remove(device.getMacAddress());
                 infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
+                scoreMap.remove(device.getMacAddress());
+                scoreMap.put(device.getMacAddress(), score);
+                addTimeMap.remove(device.getMacAddress());
                 addTimeMap.put(device.getMacAddress(), System.currentTimeMillis()/1000);
             }
             else {
                 Log.d(LOG_TAG, "Adding device:" + device.getMacAddress());
                 devices.add(device.getMacAddress());
                 infoMap.put(device.getMacAddress(), getText(device, score, timePartying));
-                addTimeMap.remove(device.getMacAddress());
+                scoreMap.put(device.getMacAddress(), score);
                 addTimeMap.put(device.getMacAddress(), System.currentTimeMillis()/1000);
             }
             notifyDataSetChanged();
@@ -171,6 +208,27 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         {
             semaphore.release(1);
         }
+    }
+
+    public Integer getScore() {
+        Integer score = 0;
+        try
+        {
+            semaphore.acquireUninterruptibly();
+
+            for (String mac : devices) {
+                score += scoreMap.get(mac);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Muted");
+        }
+        finally
+        {
+            semaphore.release(1);
+        }
+        return score;
     }
 
 

@@ -19,6 +19,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +37,7 @@ import com.polidea.rxandroidble.RxBleScanResult;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
@@ -57,6 +60,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     private CompositeSubscription subscriptions;
     private FyssaDeviceView deviceView;
     DataSender dataSender;
+
 
     private FyssaApp app;
     private FyssaGeocoder geocoder = null;
@@ -139,7 +143,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     }
 
     private void handleScanResult(RxBleDevice rxBleScanResult, Integer score, Integer timePartying) {
-        if (deviceView.nameMap.containsKey(rxBleScanResult.getMacAddress()))
+        if (deviceView.knowsDevice(rxBleScanResult.getMacAddress()))
             deviceView.handle(rxBleScanResult, score, timePartying);
         else {
             Log.d(LOG_TAG, "No name was found for " + rxBleScanResult.getMacAddress()
@@ -148,6 +152,37 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
         }
         // Testing for location info
         if (geocoder.isEnabled()) Log.d(LOG_TAG, geocoder.getLocationInfo());
+    }
+
+    private void sendParty() {
+        Log.d(LOG_TAG, "Sending a party");
+    //    dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
+      //          geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
+        //        "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getItemCount() +
+          //      "&score=" + deviceView.getScore());
+    // TODO: DEBUG MODE, REMOVE
+        dataSender.post(FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
+                         geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
+                        "&latitude=" + geocoder.getLatitude() + "&population=" + 3 +
+                        "&score=" + 100);
+    }
+
+    private void getParties() {
+        Log.d(LOG_TAG, "Getting parties");
+        dataSender.get(FyssaApp.SERVER_GET_PARTY_URL);
+    }
+
+
+    @OnClick({R.id.get_party, R.id.send_party})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.get_party:
+                getParties();
+                break;
+            case R.id.send_party:
+                sendParty();
+                break;
+        }
     }
 
     private boolean checkCoarseLocationPermission() {
@@ -267,7 +302,9 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     @Override
     public void onGetSuccess(String response) {
         Log.d(LOG_TAG, "onGetSucces:" +response);
-        deviceView.nameMap.put(response.substring(0, 17), response.substring(17));
+        if (response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':')
+            deviceView.putDevice(response.substring(0, 17), response.substring(17));
+        else toast(response);
 
         /*for (String i : deviceView.nameMap.keySet()) {
             Log.d(LOG_TAG, "Found in nameMap:" + i + ">" + deviceView.nameMap.get(i));

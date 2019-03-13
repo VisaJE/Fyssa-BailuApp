@@ -65,8 +65,9 @@ public class FyssaGeocoder implements LocationListener {
                 out = "";
             } else {
                 if (addresses.size() > 0) {
-                    out = addresses.get(0).getThoroughfare() + "! " + addresses.get(0).getPostalCode() + ", locality " + addresses.get(0).getLocality() + ", " + addresses.get(0).getCountryName() + ", " +
-                            addresses.get(0).getAddressLine(0) + ".";
+                    Log.d(TAG,  addresses.get(0).getThoroughfare() + "! " + addresses.get(0).getPostalCode() + ", locality " + addresses.get(0).getLocality() + ", " + addresses.get(0).getCountryName() + ", " +
+                            addresses.get(0).getAddressLine(0) + ".");
+                    out = addresses.get(0).getThoroughfare();
                 }
             }
         } catch (Exception e) {
@@ -76,6 +77,9 @@ public class FyssaGeocoder implements LocationListener {
         return out;
 
     }
+
+    double getLatitude() {return latitude;}
+    double getLongitude() {return  longitude;}
     public boolean isEnabled(){
         return enabled;
     }
