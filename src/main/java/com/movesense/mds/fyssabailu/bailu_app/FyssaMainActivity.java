@@ -111,7 +111,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     public void onGetSuccess(String response) {
         temp_threshold = Integer.parseInt(response);
         Log.d(TAG, "Threshold is now " + temp_threshold + ". Now sending the current name");
-        sender.post(FyssaApp.SERVER_INSERT_URL + "?name=" + app.getMemoryTools().getName() + "&mac=" + MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
+        sender.post(FyssaApp.SERVER_INSERT_URL + "?name=" + android.net.Uri.encode(app.getMemoryTools().getName()) + "&mac=" + MovesenseConnectedDevices.getConnectedRxDevice(0).getMacAddress());
 
     }
 

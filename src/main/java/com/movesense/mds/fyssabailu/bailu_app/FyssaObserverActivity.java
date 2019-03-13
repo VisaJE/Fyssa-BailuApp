@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.google.android.gms.common.util.Strings;
 import com.google.gson.Gson;
 import com.movesense.mds.fyssabailu.MainActivity;
 import com.movesense.mds.fyssabailu.R;
@@ -36,6 +37,8 @@ import com.movesense.mds.fyssabailu.online.DataUser;
 import com.polidea.rxandroidble.RxBleClient;
 import com.polidea.rxandroidble.RxBleDevice;
 import com.polidea.rxandroidble.RxBleScanResult;
+
+import java.net.URLEncoder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -161,7 +164,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     private void getDescriptionAndPost(String url) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Title");
+        builder.setTitle("Description");
 
         // Set up the input
         final EditText input = new EditText(this);
@@ -172,7 +175,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
             // Set up the buttons
         builder.setPositiveButton("OK", (dialog, which) -> {
             m_Text = input.getText().toString();
-            dataSender.post(url + "&description=" + m_Text);
+            dataSender.post(url + "&description=" + android.net.Uri.encode(m_Text));
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
@@ -183,7 +186,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
         Log.d(LOG_TAG, "Sending a party");
         if (deviceView.getItemCount() >= 2 || deviceView.getScore() > 10) {
             String url = FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
-                    geocoder.getLocationInfo() + "&longitude=" + geocoder.getLongitude() +
+                    android.net.Uri.encode(geocoder.getLocationInfo()) + "&longitude=" + geocoder.getLongitude() +
                     "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getPeopleCount() +
                     "&score=" + deviceView.getScore();
             new AlertDialog.Builder(FyssaObserverActivity.this)
