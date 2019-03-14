@@ -169,7 +169,7 @@
     <string name="start_update_text">Start</string>
     <string name="connected_after_update">Connected.</string>
     <string name="connected_after_bootloader">Connected. Booting sensor.</string>
-    <string name="send_party_text">Share a party</string>
+    <string name="send_party_text">Share</string>
     <string name="get_party">Get parties</string>
     <string name="dont_send">Nothing worth advertising here.</string>
 
