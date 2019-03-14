@@ -21,6 +21,7 @@ public class FyssaApp extends Application {
     public static final String SERVER_THRESHOLD_URL = "http://82.130.33.5:5000/bailu/threshold";
     public static final String SERVER_INSERT_URL = "http://82.130.33.5:5000/bailu/name/insert";
     public static final String SERVER_GET_URL = "http://82.130.33.5:5000/bailu/name/";
+    public static final String SERVER_GET_PARTY_URL = "http://82.130.33.5:5000/bailu/parties";
     // Accepted versions
     private static final String deviceVersions[] = {"1.1.1.BAR", "1.1.1.BSR"};
     private MemoryTools memoryTools;
