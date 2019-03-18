@@ -86,6 +86,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -256,7 +257,9 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         super.onResume();
         Log.d(TAG, "onResume()");
         try {
-            toast("Serial: " + MovesenseConnectedDevices.getConnectedDevice(0).getSerial());
+            String serial = MovesenseConnectedDevices.getConnectedDevice(0).getSerial();
+            if (updateAlert == null) toast("Serial: " + serial);
+
         } catch (Exception e) {
             startMainActivity();
             return;
