@@ -693,9 +693,9 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 new Handler(getMainLooper()).postDelayed(() -> {
                     Log.d(LOG_TAG, "Reconnected, finishing." + (longerWait?"Bootloader installed":"Not bootloaded"));
                     BleManager.INSTANCE.removeBleConnectionMonitorListener(FyssaSensorUpdateActivity.this);
-                    finish();
-                    //startActivity(new Intent(FyssaSensorUpdateActivity.this,
-                      //      FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    //finish();
+                    startActivity(new Intent(FyssaSensorUpdateActivity.this,
+                            FyssaMainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                 }, longerWait ? 13000:10000);
             }
             else Log.e(LOG_TAG, "Reconnected without dfu completion.");

@@ -62,12 +62,7 @@ public class MainActivity extends AppCompatActivity  {
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.title_help)
                         .setMessage(R.string.help_text)
-                        .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                }
+                        .setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss()
                         )
                         .create().show());
 

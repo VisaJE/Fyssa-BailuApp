@@ -250,7 +250,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         //removeAndDisconnectFromDevice();
         if (updateAlert != null) updateAlert.dismiss();
         subscriptions.clear();
-        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP ));
+        startActivity(new Intent(FyssaMainActivity.this, FyssaSensorUpdateActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK ));
     }
 
 
