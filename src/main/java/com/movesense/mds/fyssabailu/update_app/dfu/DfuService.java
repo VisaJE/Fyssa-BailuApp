@@ -22,6 +22,6 @@ public class DfuService extends DfuBaseService {
     @Override
     protected boolean isDebug() {
         Log.d(LOG_TAG, "isDebug() ");
-        return true;
+        return false;
     }
 }
