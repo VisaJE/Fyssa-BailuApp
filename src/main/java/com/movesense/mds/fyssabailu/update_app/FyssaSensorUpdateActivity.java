@@ -529,8 +529,11 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
 
         int i = tryWithBootloader ? selectedFile + bootPadding : selectedFile;
-
-
+        // Enable Notification Channel for Android OREO
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Context ctx = getApplicationContext();
+            serviceInitiator.createDfuNotificationChannel(ctx);
+        }
         Log.d(LOG_TAG, "Starting update with " + this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
         serviceInitiator.setZip(this.getResources().getIdentifier(listFiles[i], "raw", this.getPackageName()));
         serviceInitiator.start(this, DfuService.class);
