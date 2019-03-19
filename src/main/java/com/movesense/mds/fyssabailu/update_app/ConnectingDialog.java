@@ -1,7 +1,7 @@
 package com.movesense.mds.fyssabailu.update_app;
 
 import android.content.Context;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 
 import com.movesense.mds.fyssabailu.R;
 

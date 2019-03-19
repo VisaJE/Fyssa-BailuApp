@@ -11,19 +11,17 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
+import androidx.core.app.ActivityCompat;
 import android.util.Log;
 
 import java.util.List;
 import java.util.Locale;
 
-import static android.content.Context.LOCATION_SERVICE;
-
 public class FyssaGeocoder implements LocationListener {
     private final String TAG = "FyssaGeocoder/";
-    Context context;
+    private Context context;
     private LocationManager mLocationManager;
-    Geocoder geo;
+    private Geocoder geo;
     private double latitude = 0.0;
     private double longitude = 0.0;
     private boolean enabled = true;
@@ -80,7 +78,7 @@ public class FyssaGeocoder implements LocationListener {
 
     double getLatitude() {return latitude;}
     double getLongitude() {return  longitude;}
-    public boolean isEnabled(){
+    boolean isEnabled(){
         return enabled;
     }
 
@@ -95,8 +93,7 @@ public class FyssaGeocoder implements LocationListener {
     @Override
     public void onStatusChanged(String s, int status, Bundle b) {
         Log.d(TAG, "onStatusChanged " + s);
-        if (status == LocationProvider.AVAILABLE) enabled = true;
-        else enabled = false;
+        enabled = status == LocationProvider.AVAILABLE;
     }
 
     @Override

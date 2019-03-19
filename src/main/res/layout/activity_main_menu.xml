@@ -9,7 +9,7 @@
     android:orientation="vertical">
 
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -27,7 +27,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@mipmap/help_button_smaller"
             tools:ignore="ContentDescription"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

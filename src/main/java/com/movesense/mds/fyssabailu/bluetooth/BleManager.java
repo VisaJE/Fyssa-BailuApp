@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import com.movesense.mds.BLEDelegate;
@@ -167,6 +167,17 @@ public enum BleManager implements BLEDelegate {
                             // ..
                         }
                     }, new Action1<Throwable>() {
+                        private void run() {
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (isReconnectToLastConnectedDeviceEnable) {
+                                        MdsRx.Instance.connect(bleDevice, context);
+                                    }
+                                }
+                            }, CONNECTION_TIMEOUT_RETRY);
+                        }
+
                         @Override
                         public void call(Throwable throwable) {
                             // Unwind the connection (if it happened)
@@ -189,19 +200,7 @@ public enum BleManager implements BLEDelegate {
                             Log.e(TAG, "Could not connect to " + bleMac, throwable);
 
                             // try connect again in case of error but not if DFU mode is running
-                            context.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (isReconnectToLastConnectedDeviceEnable) {
-                                                MdsRx.Instance.connect(bleDevice, context);
-                                            }
-                                        }
-                                    }, CONNECTION_TIMEOUT_RETRY);
-                                }
-                            });
+                            context.runOnUiThread(this::run);
                         }
                     });
 
@@ -216,12 +215,9 @@ public enum BleManager implements BLEDelegate {
         disconnectTriggerSubject.onNext(null);
 
         // Try connect again after disconnect but not if DFU mode is running
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isReconnectToLastConnectedDeviceEnable) {
-                    MdsRx.Instance.connect(rxBleDevice, activity);
-                }
+        new Handler().postDelayed(() -> {
+            if (isReconnectToLastConnectedDeviceEnable) {
+                MdsRx.Instance.connect(rxBleDevice, activity);
             }
         }, CONNECTION_TIMEOUT_RETRY);
     }
@@ -253,12 +249,7 @@ public enum BleManager implements BLEDelegate {
         RxBleDevice here = MovesenseConnectedDevices.getConnectedRxDevice(0);
         disconnect(here);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                connect(here, activity);
-            }
-        }, 2000);
+        new Handler().postDelayed(() -> connect(here, activity), 2000);
     }
 
     private boolean isConnected(RxBleDevice rxBleDevice) {
@@ -270,18 +261,15 @@ public enum BleManager implements BLEDelegate {
         Log.d(TAG, "connectCb(" + wbAddress + ")");
 
         // Wait a bit before calling connectComplete (exit this thread)
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    // ..
-                }
-
-                Log.d(TAG, "calling connectCompleted(" + wbAddress + ")");
-                bleWrapper.connectCompleted(wbAddress, true);
+        new Thread(() -> {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                // ..
             }
+
+            Log.d(TAG, "calling connectCompleted(" + wbAddress + ")");
+            bleWrapper.connectCompleted(wbAddress, true);
         }).start();
 
         return true;
@@ -351,11 +339,8 @@ public enum BleManager implements BLEDelegate {
                 .setMaxBatchSize(MAXIMUM_TRANSMISSION_UNIT)
                 .build()
                 .toSingle()
-                .subscribe(new Action1<byte[]>() {
-                    @Override
-                    public void call(byte[] bytes) {
-                        //Log.d(TAG, "Send complete");
-                    }
+                .subscribe(bytes -> {
+                    //Log.d(TAG, "Send complete");
                 }, new ThrowableLoggingAction(TAG, "Data write failed"));
 
         return true;

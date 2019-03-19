@@ -16,17 +16,10 @@ ext {
     compileSdkVersion = 27
     buildToolsVersion = '28.0.3'
 
-
-    group = 'org.eclipse.paho'
-
-    serviceArchivesBaseName = 'org.eclipse.paho.android.service'
-    serviceVersion = '1.1.1'
-
     clientVersion = '1.1.0'
 
-    mavenUrl = "https://repo.eclipse.org/content/repositories/paho-releases/"
 
-    supportLibVersion = '27.1.1'
+    supportLibVersion = '1.0.0-beta01'
 
 }
 
@@ -55,16 +48,16 @@ android {
 //            storePassword 'android'
 //        }
 //    }
-    compileSdkVersion 27
+    compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.movesense.mds.fyssabailu"
         minSdkVersion 23
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {
@@ -85,24 +78,26 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.google.android.material:material:1.1.0-alpha04'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha03'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.annotation:annotation:1.0.2'
     // RxAndroidBle
     api 'com.polidea.rxandroidble:rxandroidble:1.4.3'
     api 'io.reactivex:rxandroid:1.2.1'
     // GSON
-    implementation 'com.google.code.gson:gson:2.8.2'
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation 'com.google.code.gson:gson:2.8.5'
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'
         // Exclude findbugs from Espresso in case of conflict with Google Api
         exclude group: 'com.google.code.findbugs'
     })
     testImplementation 'junit:junit:4.12'
     // Movesense .aar lib
-    api (name: 'mdslib', version: '1.3.1', ext: 'aar')
+    api (name: 'mdslib', version: '1.28.1(1)-release', ext: 'aar')
     // ButterKnife
-    implementation 'com.jakewharton:butterknife:8.8.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    implementation 'com.jakewharton:butterknife:9.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0'
     // GraphView
     implementation 'com.jjoe64:graphview:4.2.2'
     // Google Drive Api
@@ -116,17 +111,15 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'pub.devrel:easypermissions:0.2.1'
     //DFU Library
-    api 'no.nordicsemi.android:dfu:1.6.0'
+    api 'no.nordicsemi.android:dfu:1.9.0'
     // Constraint Layout
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    api(project(':org.eclipse.paho.android.service')) {
-        //exclude module: "org.eclipse.paho.client.mqttv3"
-        transitive = true
-    }
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'com.android.volley:volley:1.1.0'
 }
 
-configurations.compile.exclude module: 'org.eclipse.paho.client.mqttv3'
 task debug << {
     configurations.compile.each { println it }
+}
+configurations {
+    all*.exclude group: 'com.google.guava', module: 'listenablefuture'
 }

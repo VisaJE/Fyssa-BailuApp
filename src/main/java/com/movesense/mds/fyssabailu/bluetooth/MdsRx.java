@@ -13,7 +13,6 @@ import com.movesense.mds.MdsException;
 import com.movesense.mds.MdsNotificationListener;
 import com.movesense.mds.MdsResponseListener;
 import com.movesense.mds.MdsSubscription;
-import com.movesense.mds.fyssabailu.bluetooth.BleManager;
 import com.movesense.mds.fyssabailu.model.MdsConnectedDevice;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoNewSw;
 import com.movesense.mds.fyssabailu.model.MdsDeviceInfoOldSw;
@@ -162,12 +161,7 @@ public enum MdsRx {
                         }
                     });
 
-            stringEmitter.setCancellation(new Cancellable() {
-                @Override
-                public void cancel() {
-                    subscription.unsubscribe();
-                }
-            });
+            stringEmitter.setCancellation(() -> subscription.unsubscribe());
         }, Emitter.BackpressureMode.BUFFER);
     }
 }

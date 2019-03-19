@@ -1,6 +1,7 @@
 package com.movesense.mds.fyssabailu.scanner;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -98,18 +99,15 @@ class ScannedDevicesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.scanned_device_item, parent, false);
         final DeviceViewHolder viewHolder = new DeviceViewHolder(view);
 
         // Listen for clicks
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int pos = viewHolder.getAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    deviceSelectionSubject.onNext(devices.get(pos));
-                }
+        viewHolder.itemView.setOnClickListener(view1 -> {
+            int pos = viewHolder.getAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION) {
+                deviceSelectionSubject.onNext(devices.get(pos));
             }
         });
 

@@ -1,6 +1,6 @@
 package com.movesense.mds.fyssabailu.bailu_app;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,10 +40,10 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private HashMap<String, Integer> scoreMap;
     private HashMap<String, Long> addTimeMap;
     private final Vector<String> partyTexts;
-    TimerTask timerTask;
+    private TimerTask timerTask;
     Timer timer;
-    Boolean isGoing = false;
-    public void schedule() {
+    private Boolean isGoing = false;
+    private void schedule() {
         if (!isGoing) {
             try {
                 timer.schedule(timerTask, 3000, 3000);
@@ -65,7 +65,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         isGoing = false;
     }
-    Semaphore semaphore = new Semaphore(1, true);
+    private Semaphore semaphore = new Semaphore(1, true);
 
     FyssaDeviceView() {
 
@@ -96,7 +96,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             }
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception ignored)
                     {
                     }
                     finally
@@ -109,7 +109,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         schedule();
     }
 
-    public void putDevice(String mac, String name) {
+    void putDevice(String mac, String name) {
         try
         {
             semaphore.acquireUninterruptibly();
@@ -126,7 +126,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public boolean knowsDevice(String mac) {
+    boolean knowsDevice(String mac) {
         boolean res = false;
         try
         {
@@ -176,8 +176,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (score < 500) return "Next level shit.";
         if (score < 600) return "Total mayhem.";
         if (score < 700) return "Better than annihilation!";
-        if (score >= 700) return "This app is not prepared for these party levels.";
-        return "Ehh";
+        return "This app is not prepared for these party levels.";
     }
 
     private String getText(RxBleDevice device, int score, int timePartying) {
@@ -225,7 +224,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 p.lastSeen.substring(0, p.lastSeen.length()-4) +".";
     }
 
-    public void addParties(FyssaPartyResponse.Party[] parties) {
+    void addParties(FyssaPartyResponse.Party[] parties) {
         partyTexts.clear();
         for (FyssaPartyResponse.Party p : parties) {
             partyTexts.add(getPartyText(p));
@@ -233,7 +232,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public Integer getScore() {
+    Integer getScore() {
         Integer score = 0;
         try
         {
@@ -254,8 +253,8 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return score;
     }
 
-    public Integer getPeopleCount() {
-        Integer score = 0;
+    Integer getPeopleCount() {
+        int score = 0;
         try
         {
             semaphore.acquireUninterruptibly();
