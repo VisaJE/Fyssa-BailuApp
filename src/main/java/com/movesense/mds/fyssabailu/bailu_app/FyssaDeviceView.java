@@ -259,6 +259,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         {
             semaphore.acquireUninterruptibly();
             score = devices.size();
+            for (String mac : devices) Log.d(LOG_TAG, "Device: " + mac);
         }
         catch (Exception e) { Log.d(LOG_TAG, "Muted"); }
         finally
