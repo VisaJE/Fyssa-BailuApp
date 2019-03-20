@@ -180,7 +180,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
 
     private void sendParty() {
         Log.d(LOG_TAG, "Sending a party");
-        if (deviceView.getItemCount() >= 2 || deviceView.getScore() > 10) {
+        if (deviceView.getPeopleCount() >= 2 || deviceView.getScore() > 10) {
             String url = FyssaApp.SERVER_GET_PARTY_URL + "?place=" +
                     android.net.Uri.encode(geocoder.getLocationInfo()) + "&longitude=" + geocoder.getLongitude() +
                     "&latitude=" + geocoder.getLatitude() + "&population=" + deviceView.getPeopleCount() +
