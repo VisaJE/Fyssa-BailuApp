@@ -1,6 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <!-- komposti-SDS runtime configurable settings.
      Add this file to komposti config directory just like Devices.xml -->
-<?xml version="1.0" encoding="utf-8" ?>
 <komposti>
     <settings>
     	<!-- Komposti debug log level into the suuntoapp.log supports these debug levels:

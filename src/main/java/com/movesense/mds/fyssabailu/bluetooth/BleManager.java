@@ -77,103 +77,70 @@ public enum BleManager implements BLEDelegate {
         } else {
             final Subscription subscription = bleDevice.establishConnection(false)
                     .takeUntil(disconnectTriggerSubject)
-                    .flatMap(new Func1<RxBleConnection, Observable<RxBleDeviceServices>>() {
-                        @Override
-                        public Observable<RxBleDeviceServices> call(RxBleConnection rxBleConnection) {
-                            Log.d(TAG, "BLE connection to " + bleMac + " done!");
+                    .flatMap((Func1<RxBleConnection, Observable<RxBleDeviceServices>>) rxBleConnection -> {
+                        Log.d(TAG, "BLE connection to " + bleMac + " done!");
 
-                            // Add this connection to a map for later use
-                            connectionMap.put(bleMac, rxBleConnection);
+                        // Add this connection to a map for later use
+                        connectionMap.put(bleMac, rxBleConnection);
 
-                            return rxBleConnection.discoverServices();
-                        }
+                        return rxBleConnection.discoverServices();
                     })
-                    .map(new Func1<RxBleDeviceServices, ConnectedDevice>() {
-                        @Override
-                        public ConnectedDevice call(RxBleDeviceServices rxBleDeviceServices) {
-                            Log.d(TAG, "Got service BLE from " + bleMac);
+                    .map(rxBleDeviceServices -> {
+                        Log.d(TAG, "Got service BLE from " + bleMac);
 
-                            BluetoothGattService ngService = null;
-                            for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
-                                Log.e(TAG, "ngServices UUID: " + service.getUuid());
-                                Log.e(TAG, "ngServices Instance Id: " + service.getInstanceId());
-                                if (NG_SERVICE_UUID.equals(service.getUuid())) {
-                                    ngService = service;
-                                    break;
-                                }
+                        BluetoothGattService ngService = null;
+                        for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
+                            Log.e(TAG, "ngServices UUID: " + service.getUuid());
+                            Log.e(TAG, "ngServices Instance Id: " + service.getInstanceId());
+                            if (NG_SERVICE_UUID.equals(service.getUuid())) {
+                                ngService = service;
+                                break;
                             }
-
-                            // If there are no proper service, just throw an error
-                            if (ngService == null) {
-                                // try connect again in case of error
-                                context.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Log.e(TAG, "Connected device not a proper ng device");
-
-                                        new Handler().postDelayed(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                MdsRx.Instance.connect(bleDevice, context);
-                                            }
-                                        }, CONNECTION_TIMEOUT_RETRY);
-
-                                    }
-                                });
-                                return null;
-                            }
-
-                            BluetoothGattCharacteristic notifyCharacteristic = ngService.getCharacteristic(NG_NOTIFY_CHARACTERISTIC_UUID);
-                            BluetoothGattCharacteristic writeCharacteristic = ngService.getCharacteristic(NG_WRITE_CHARACTERISTIC_UUID);
-
-                            // Setup notifications for incoming data
-                            RxBleConnection connection = connectionMap.get(bleMac);
-                            Subscription notifySubscription = connection.setupNotification(notifyCharacteristic)
-                                    .doOnNext(new Action1<Observable<byte[]>>() {
-                                        @Override
-                                        public void call(Observable<byte[]> observable) {
-                                            Log.d(TAG, "Notifications set, calling bypassConnect()");
-
-                                            // Bypass connect in WB to make it aware of this new device
-                                            String wbAddress = addressMap.getOrCreateWbAddress(bleMac);
-                                            bleWrapper.bypassConnect(wbAddress);
-                                        }
-                                    })
-                                    .flatMap(new Func1<Observable<byte[]>, Observable<byte[]>>() {
-                                        @Override
-                                        public Observable<byte[]> call(Observable<byte[]> observable) {
-                                            return observable;
-                                        }
-                                    })
-                                    .subscribe(new Action1<byte[]>() {
-                                        @Override
-                                        public void call(byte[] bytes) {
-                                            dataAvailable(bleMac, bytes);
-                                        }
-                                    }, new ThrowableLoggingAction(TAG, "Error while receiving data"));
-
-                            ConnectedDevice device = new ConnectedDevice(bleDevice, notifySubscription, writeCharacteristic);
-                            MovesenseConnectedDevices.addRxConnectedDevice(bleDevice);
-                            devicesMap.put(bleMac, device);
-
-                            notifyConnectBleConnectionMonitorListeners(bleDevice);
-
-                            return device;
                         }
+
+                        // If there are no proper service, just throw an error
+                        if (ngService == null) {
+                            // try connect again in case of error
+                            context.runOnUiThread(() -> {
+                                Log.e(TAG, "Connected device not a proper ng device");
+
+                                new Handler().postDelayed(() -> MdsRx.Instance.connect(bleDevice, context), CONNECTION_TIMEOUT_RETRY);
+
+                            });
+                            return null;
+                        }
+
+                        BluetoothGattCharacteristic notifyCharacteristic = ngService.getCharacteristic(NG_NOTIFY_CHARACTERISTIC_UUID);
+                        BluetoothGattCharacteristic writeCharacteristic = ngService.getCharacteristic(NG_WRITE_CHARACTERISTIC_UUID);
+
+                        // Setup notifications for incoming data
+                        RxBleConnection connection = connectionMap.get(bleMac);
+                        Subscription notifySubscription = connection.setupNotification(notifyCharacteristic)
+                                .doOnNext(observable -> {
+                                    Log.d(TAG, "Notifications set, calling bypassConnect()");
+
+                                    // Bypass connect in WB to make it aware of this new device
+                                    String wbAddress = addressMap.getOrCreateWbAddress(bleMac);
+                                    bleWrapper.bypassConnect(wbAddress);
+                                })
+                                .flatMap((Func1<Observable<byte[]>, Observable<byte[]>>) observable -> observable)
+                                .subscribe(bytes -> dataAvailable(bleMac, bytes), new ThrowableLoggingAction(TAG, "Error while receiving data"));
+
+                        ConnectedDevice device = new ConnectedDevice(bleDevice, notifySubscription, writeCharacteristic);
+                        MovesenseConnectedDevices.addRxConnectedDevice(bleDevice);
+                        devicesMap.put(bleMac, device);
+
+                        notifyConnectBleConnectionMonitorListeners(bleDevice);
+
+                        return device;
                     })
-                    .subscribe(new Action1<ConnectedDevice>() {
-                        @Override
-                        public void call(ConnectedDevice connectedDevice) {
-                            // ..
-                        }
+                    .subscribe(connectedDevice -> {
+                        // ..
                     }, new Action1<Throwable>() {
                         private void run() {
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (isReconnectToLastConnectedDeviceEnable) {
-                                        MdsRx.Instance.connect(bleDevice, context);
-                                    }
+                            new Handler().postDelayed(() -> {
+                                if (isReconnectToLastConnectedDeviceEnable) {
+                                    MdsRx.Instance.connect(bleDevice, context);
                                 }
                             }, CONNECTION_TIMEOUT_RETRY);
                         }

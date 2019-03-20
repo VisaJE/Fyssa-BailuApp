@@ -58,7 +58,7 @@ import rx.subscriptions.CompositeSubscription;
 
 public class FyssaSensorUpdateActivity extends AppCompatActivity implements ScannerFragment.DeviceSelectionListener, BleManager.IBleConnectionMonitor {
 
-    FyssaApp app;
+    private FyssaApp app;
 
     @BindView(R.id.start_update) Button startUpdate;
     @BindView(R.id.dfu_select_device_btn2) Button dfuSelectDeviceBtn;
@@ -85,24 +85,22 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
     private boolean mIsDeviceReconnected = false;
     private boolean isDfuEnable = false;
 
-    private BluetoothAdapter bluetoothAdapter;
+    private CompositeSubscription cSubscriptions;
+    private Boolean subscribed = false;
+    private ArrayList<RxBleDevice> devices;
+    private ArrayList<Integer> signalStrengths;
+    private String knownMac;
 
-    CompositeSubscription cSubscriptions;
-    Boolean subscribed = false;
-    ArrayList<RxBleDevice> devices;
-    ArrayList<Integer> signalStrengths;
-    String knownMac;
+    private ScannerFragment scannerFragment;
 
-    ScannerFragment scannerFragment;
-
-    int selectedFile = -1;
-    boolean tryWithBootloader;
-    boolean wasConnected = false;
+    private int selectedFile = -1;
+    private boolean tryWithBootloader;
+    private boolean wasConnected = false;
 
     // Bootloaderfiles are automatically tried.
-    String[] listFiles;
-    int bootPadding;
-    String[] listExplanations;
+    private String[] listFiles;
+    private int bootPadding;
+    private String[] listExplanations;
     @Override
     protected void onCreate(Bundle savedInstanceState ) {
         tryWithBootloader = false;
@@ -142,18 +140,10 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                     .setCancelable(false)
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
                         this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            finishAndRemoveTask();
-                        } else {
-                            finish();
-                        }
+                        finishAndRemoveTask();
                     })
                     .setNegativeButton(R.string.no, (dialog, which) -> {
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            finishAndRemoveTask();
-                        } else {
-                            finish();
-                        }
+                        finishAndRemoveTask();
                     })
                     .create().show();
         }
@@ -174,7 +164,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
 
         // Ask For Bluetooth
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
             // Bluetooth is not enable so run
             bluetoothAdapter.enable();
@@ -193,7 +183,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
     }
 
-    DfuProgressListener dfuProgressListener = new DfuProgressListener() {
+    private DfuProgressListener dfuProgressListener = new DfuProgressListener() {
         @Override
         public void onDeviceConnecting(String deviceAddress) {
             Log.d(LOG_TAG, "DfuProgress onDeviceConnecting");
@@ -461,7 +451,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
 
 
     // Capture instance of RxBleClient to make code look cleaner
-    RxBleClient rxBleClient = RxBle.Instance.getClient();
+    private RxBleClient rxBleClient = RxBle.Instance.getClient();
 
     private void skipDeviceScanningDialog() {
         Log.d(LOG_TAG, "Subscribing to rxBle devices.");
@@ -524,7 +514,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
                 .setDeviceName(selectedDevice.getBluetoothDevice().getName())
                 .setKeepBond(false)
                 .setForceDfu(false)
-                .setPacketsReceiptNotificationsEnabled(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                .setPacketsReceiptNotificationsEnabled(false)
                 .setPacketsReceiptNotificationsValue(DfuServiceInitiator.DEFAULT_PRN_VALUE)
                 .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true);
 
@@ -656,7 +646,7 @@ public class FyssaSensorUpdateActivity extends AppCompatActivity implements Scan
         }
     }
 
-    public static void disconnectFromDevices(){
+    private static void disconnectFromDevices(){
         while (MovesenseConnectedDevices.getConnectedDevices().size() > 0) {
             MovesenseConnectedDevices.removeConnectedDevice((MovesenseConnectedDevices.getConnectedDevice(0)));
         }

@@ -25,7 +25,7 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
     private final String TAG = ScanActivity.class.getSimpleName();
 
     private CompositeSubscription subscriptions;
-    FyssaApp app;
+    private FyssaApp app;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

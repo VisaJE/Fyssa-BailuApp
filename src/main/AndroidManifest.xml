@@ -71,12 +71,17 @@
             android:name="com.movesense.mds.fyssabailu.scanner.UpdateScanActivity"
             android:screenOrientation="portrait">
         </activity>
+        <activity
+            android:name="com.movesense.mds.fyssabailu.update_app.dfu.NotificationActivity"
+            android:screenOrientation="portrait">
+        </activity>
 
 
 
         <service
             android:name="com.movesense.mds.fyssabailu.update_app.dfu.DfuService"
-            android:exported="true">
+            android:exported="true"
+            android:permission="">
         </service>
 
         <receiver

@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import rx.Emitter;
 import rx.Observable;
 import rx.Single;
-import rx.functions.Cancellable;
 import rx.functions.Func1;
 
 /**
@@ -44,18 +43,16 @@ public enum MdsRx {
 
     private static final String TAG = "MDS";
 
-    private final Charset utf8Charset;
     private final Gson gson;
 
 
     private BleManager bleManager;
 
     private RxBleDevice rxBleDevice;
-    private Activity activity;
     private Mds mMds;
 
     MdsRx() {
-        utf8Charset = Charset.forName("UTF-8"); // NON-NLS
+        Charset utf8Charset = Charset.forName("UTF-8");
         gson = new GsonBuilder().create();
     }
 
@@ -71,7 +68,7 @@ public enum MdsRx {
 
     public void connect(RxBleDevice bleDevice, Activity activity) {
         this.rxBleDevice = bleDevice;
-        this.activity = activity;
+        Activity activity1 = activity;
         bleManager.connect(bleDevice, activity);
     }
 

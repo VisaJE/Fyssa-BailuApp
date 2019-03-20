@@ -52,20 +52,17 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     @BindView(R.id.info_tv)
     TextView infoTv;
 
-    private BluetoothAdapter bluetoothAdapter;
-
     private static final int COARSE_PERMISSIONS_REQUEST_LOCATION = 99;
     private static final int FINE_PERMISSIONS_REQUEST_LOCATION = 97;
 
     private RxBleClient rxBleClient;
     private CompositeSubscription subscriptions;
     private FyssaDeviceView deviceView;
-    DataSender dataSender;
+    private DataSender dataSender;
 
     private String m_Text = "";
 
 
-    private FyssaApp app;
     private FyssaGeocoder geocoder = null;
 
     @Override
@@ -76,13 +73,13 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
         ButterKnife.bind(this);
         enclosingClass = this;
 
-        app = (FyssaApp) getApplication();
+        FyssaApp app = (FyssaApp) getApplication();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.app_name);
         }
         // Ask For Bluetooth
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled()) {
             // Bluetooth is not enable so run
             bluetoothAdapter.enable();
@@ -106,7 +103,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     }
 
 
-    protected void createView() {
+    private void createView() {
         // Set up list and adapter for scanned devices
         deviceView = new FyssaDeviceView();
         RecyclerView deviceList = findViewById(R.id.partiers_view);
@@ -128,7 +125,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     }
 
 
-    void checkScanResult(RxBleScanResult scanResult) {
+    private void checkScanResult(RxBleScanResult scanResult) {
         RxBleDevice device = scanResult.getBleDevice();
         //Log.d(LOG_TAG, "Found device " + device.getName()+ "\n");
         //Log.d(LOG_TAG, bytesToHex(scanResult.getScanRecord()));
@@ -248,7 +245,7 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     }
 
     private boolean checkLocationPermission() {
-        if (true || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Should we show an explanation?
@@ -375,14 +372,6 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     protected void onDestroy() {
         deviceView.timer.cancel();
         super.onDestroy();
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
     }
 
 }

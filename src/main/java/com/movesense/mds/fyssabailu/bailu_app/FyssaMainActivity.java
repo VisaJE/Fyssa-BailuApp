@@ -50,10 +50,10 @@ import rx.subscriptions.CompositeSubscription;
 public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
 
-    public static final String URI_EVENTLISTENER = "suunto://MDS/EventListener";
-    public static final String FYSSA_DEBUG_PATH = "/Fyssa/Debug";
-    public static final String BAILU_PATH = "/Fyssa/Bailu";
-    public static final String BATTERY_PATH = "/System/Energy";
+    private static final String URI_EVENTLISTENER = "suunto://MDS/EventListener";
+    private static final String FYSSA_DEBUG_PATH = "/Fyssa/Debug";
+    private static final String BAILU_PATH = "/Fyssa/Bailu";
+    private static final String BATTERY_PATH = "/System/Energy";
     private static Integer temp_threshold;
     private final String TAG = FyssaMainActivity.class.getSimpleName();
     @BindView(R.id.nimi_tv)
@@ -64,14 +64,14 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     Button batteryButton;
     @BindView(R.id.stop)
     Button stopButton;
-    DataSender sender;
+    private DataSender sender;
     private CompositeSubscription subscriptions;
     private FyssaApp app;
     private MdsSubscription mdsSubscription;
     private boolean closeApp = false;
     private boolean disconnect = false;
 
-    AlertDialog updateAlert;
+    private AlertDialog updateAlert;
 
     public static void removeAndDisconnectFromDevices() {
         BleManager.INSTANCE.isReconnectToLastConnectedDeviceEnable = false;
@@ -145,11 +145,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                     if (mdsConnectedDevice.getConnection() == null) {
                         Log.e(TAG, "call: Rx Disconnect");
                         if (closeApp) {
-                            if (Build.VERSION.SDK_INT >= 21) {
-                                finishAndRemoveTask();
-                            } else {
-                                finish();
-                            }
+                            finishAndRemoveTask();
                         } else if (disconnect) {
                             startMainActivity();
                         } else {

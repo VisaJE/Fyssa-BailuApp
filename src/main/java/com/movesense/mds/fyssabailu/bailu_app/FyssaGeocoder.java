@@ -19,22 +19,19 @@ import java.util.Locale;
 
 public class FyssaGeocoder implements LocationListener {
     private final String TAG = "FyssaGeocoder/";
-    private Context context;
-    private LocationManager mLocationManager;
     private Geocoder geo;
     private double latitude = 0.0;
     private double longitude = 0.0;
     private boolean enabled = true;
-    private boolean isUpdated = false;
 
     @SuppressLint("MissingPermission")
     FyssaGeocoder(Context context, LocationManager logman) {
 
-        this.context = context;
+        Context context1 = context;
 
-        mLocationManager = logman;
+        LocationManager mLocationManager = logman;
 
-        geo = new Geocoder(this.context, Locale.getDefault());
+        geo = new Geocoder(context1, Locale.getDefault());
 
         for (String i : mLocationManager.getProviders(true)) {
             Log.d(TAG, "Provider enabled: " + i);
@@ -62,11 +59,9 @@ public class FyssaGeocoder implements LocationListener {
                 Log.d(TAG, "Current position:" + latitude + ", " + longitude);
                 out = "";
             } else {
-                if (addresses.size() > 0) {
                     Log.d(TAG,  addresses.get(0).getThoroughfare() + "! " + addresses.get(0).getPostalCode() + ", locality " + addresses.get(0).getLocality() + ", " + addresses.get(0).getCountryName() + ", " +
                             addresses.get(0).getAddressLine(0) + ".");
                     out = addresses.get(0).getThoroughfare();
-                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error", e);
@@ -87,7 +82,7 @@ public class FyssaGeocoder implements LocationListener {
         Log.d(TAG, "onLocationChanged " + location.toString());
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        isUpdated = true;
+        boolean isUpdated = true;
     }
 
     @Override

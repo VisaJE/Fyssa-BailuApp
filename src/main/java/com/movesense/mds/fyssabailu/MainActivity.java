@@ -22,6 +22,8 @@ import com.movesense.mds.fyssabailu.tool.MemoryTools;
 import com.movesense.mds.fyssabailu.update_app.FyssaSensorUpdateActivity;
 import com.movesense.mds.fyssabailu.scanner.MainScanActivity;
 
+import java.util.Objects;
+
 import rx.subscriptions.CompositeSubscription;
 
 import static com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity.removeAndDisconnectFromDevices;
@@ -29,7 +31,6 @@ import static com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity.removeAnd
 public class MainActivity extends AppCompatActivity  {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private CompositeSubscription subscriptions;
     private AlertDialog alertDialog;
     private FyssaApp app;
 
@@ -37,10 +38,10 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = (FyssaApp) getApplication();
-        getSupportActionBar().setTitle(R.string.app_name);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.app_name);
         setContentView(R.layout.activity_main_menu);
 
-        subscriptions = new CompositeSubscription();
+        CompositeSubscription subscriptions = new CompositeSubscription();
 
         findViewById(R.id.start_button2).setOnClickListener(v -> {
             if (app.getMemoryTools().getName().equals(MemoryTools.DEFAULT_STRING)) {
@@ -62,12 +63,7 @@ public class MainActivity extends AppCompatActivity  {
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.title_help)
                         .setMessage(R.string.help_text)
-                        .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                }
+                        .setNeutralButton(R.string.ok, (dialogInterface, i) -> dialogInterface.dismiss()
                         )
                         .create().show());
 
@@ -75,11 +71,7 @@ public class MainActivity extends AppCompatActivity  {
                 .setTitle(R.string.close_app)
                 .setMessage(R.string.do_you_want_to_close_application)
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    if (Build.VERSION.SDK_INT >= 21) {
-                        finishAndRemoveTask();
-                    } else {
-                        finish();
-                    }
+                    finishAndRemoveTask();
                 })
                 .setNegativeButton(R.string.no, (dialog, which) -> alertDialog.dismiss())
                 .create();
@@ -99,11 +91,7 @@ public class MainActivity extends AppCompatActivity  {
                             this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         })
                         .setNegativeButton(R.string.no, (dialog, which) -> {
-                            if (Build.VERSION.SDK_INT >= 21) {
-                                finishAndRemoveTask();
-                            } else {
-                                finish();
-                            }
+                            finishAndRemoveTask();
                         })
                         .create().show();
 
@@ -139,7 +127,7 @@ public class MainActivity extends AppCompatActivity  {
                 return super.onOptionsItemSelected(item);
         }
     }
-    public void toast(String text) {
+    private void toast(String text) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
     @Override

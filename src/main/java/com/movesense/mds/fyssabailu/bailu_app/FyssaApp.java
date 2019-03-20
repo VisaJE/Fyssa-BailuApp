@@ -26,7 +26,7 @@ public class FyssaApp extends Application {
     private static final String deviceVersions[] = {"1.1.1.BAR", "1.1.1.BSR"};
     private MemoryTools memoryTools;
 
-    public static final Boolean isSupported(String deviceVersion) {
+    public static Boolean isSupported(String deviceVersion) {
         for (String i : deviceVersions) {
             if (i.equals(deviceVersion)) return true;
         }
@@ -47,12 +47,6 @@ public class FyssaApp extends Application {
         MdsRx.Instance.initialize(this);
 
         memoryTools = new MemoryTools(this);
-
-    }
-
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
 
     }
 
