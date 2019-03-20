@@ -24,18 +24,17 @@ public class MemoryTools {
     private final static int BUFFER_SIZE = 1024;
 
 
-    private Application app;
     private SharedPreferences sharedPref;
 
     public MemoryTools(Application app) {
-        this.app = app;
+        Application app1 = app;
         sharedPref = app.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }
 
     public void saveName(String name) {
         SharedPreferences.Editor edit = sharedPref.edit();
         edit.putString(NAME_SHARED_PREF, name);
-        edit.commit();
+        edit.apply();
     }
 
     public String getName() {
@@ -45,7 +44,7 @@ public class MemoryTools {
     public void saveSerial(String name) {
         SharedPreferences.Editor edit = sharedPref.edit();
         edit.putString(SERIAL_SHARED_PREF, name);
-        edit.commit();
+        edit.apply();
     }
 
     public String getSerial() {

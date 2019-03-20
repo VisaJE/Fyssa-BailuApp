@@ -6,6 +6,4 @@
 
     <color name="scanBackground">#A4A4A4</color>
     <color name="colorBackground">#FFFFFF</color>
-    <color name="colorText">#2d2d2d</color>
-    <color name="movesenseBackground">#5f72d8</color>
 </resources>

@@ -6,8 +6,6 @@ import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
@@ -16,10 +14,10 @@ import com.android.volley.toolbox.StringRequest;
 import java.io.File;
 
 public class DataSender {
-    final String TAG = DataSender.class.getSimpleName();
-    RequestQueue mRequestQueue;
-    Cache cache;
-    DataUser context;
+    private final String TAG = DataSender.class.getSimpleName();
+    private RequestQueue mRequestQueue;
+    private Cache cache;
+    private DataUser context;
 
 
     public DataSender(File cacheD, DataUser context) {

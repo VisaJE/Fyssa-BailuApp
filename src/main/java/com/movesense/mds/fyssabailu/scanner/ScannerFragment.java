@@ -115,12 +115,7 @@ public class ScannerFragment extends DialogFragment {
 
         // Listen for device selection
         Subscription selectionSubscription = scannedDevicesAdapter.deviceSelectionObservable()
-                .subscribe(new Action1<RxBleDevice>() {
-                    @Override
-                    public void call(RxBleDevice rxBleDevice) {
-                        deviceSelectionListener.onDeviceSelected(rxBleDevice);
-                    }
-                }, new ThrowableToastingAction(getContext()));
+                .subscribe(rxBleDevice -> deviceSelectionListener.onDeviceSelected(rxBleDevice), new ThrowableToastingAction(getContext()));
         subscriptions.add(selectionSubscription);
 
         // Start scanning immediately
@@ -170,12 +165,7 @@ public class ScannerFragment extends DialogFragment {
         Log.d(LOG_TAG, "START SCANNING !!!");
         // Start scanning
         subscriptions.add(rxBleClient.scanBleDevices()
-                .subscribe(new Action1<RxBleScanResult>() {
-                    @Override
-                    public void call(RxBleScanResult rxBleScanResult) {
-                        scannedDevicesAdapter.handleScanResult(rxBleScanResult);
-                    }
-                }, new ThrowableToastingAction(getContext())));
+                .subscribe(rxBleScanResult -> scannedDevicesAdapter.handleScanResult(rxBleScanResult), new ThrowableToastingAction(getContext())));
     }
 
 
@@ -188,13 +178,10 @@ public class ScannerFragment extends DialogFragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.title_location_permission)
                         .setMessage(R.string.text_location_permission)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION);
-                            }
+                        .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                            //Prompt the user once explanation has been shown
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                    MY_PERMISSIONS_REQUEST_LOCATION);
                         })
                         .create()
                         .show();
@@ -235,7 +222,6 @@ public class ScannerFragment extends DialogFragment {
 
                 if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF) {
                     // The user bluetooth is already disabled.
-                    return;
                 }
 
             }

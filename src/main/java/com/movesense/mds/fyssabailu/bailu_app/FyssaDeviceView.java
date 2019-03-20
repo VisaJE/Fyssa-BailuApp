@@ -273,8 +273,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.scanned_device_item, parent, false);
-        final DeviceViewHolder viewHolder = new DeviceViewHolder(view);
-/*
+        /*
         // Listen for clicks
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -286,7 +285,7 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         });*/
 
-        return viewHolder;
+        return new DeviceViewHolder(view);
     }
 
     @Override

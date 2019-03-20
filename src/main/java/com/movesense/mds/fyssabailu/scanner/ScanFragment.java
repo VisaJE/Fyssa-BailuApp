@@ -85,11 +85,7 @@ public class ScanFragment extends Fragment {
                         this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                     })
                     .setNegativeButton(R.string.no, (dialog, which) -> {
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            getActivity().finishAndRemoveTask();
-                        } else {
-                            getActivity().finish();
-                        }
+                        getActivity().finishAndRemoveTask();
                     })
                     .create().show();
 
@@ -184,13 +180,10 @@ public class ScanFragment extends Fragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.title_location_permission)
                         .setMessage(R.string.text_location_permission)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION);
-                            }
+                        .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
+                            //Prompt the user once explanation has been shown
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                    MY_PERMISSIONS_REQUEST_LOCATION);
                         })
                         .create()
                         .show();
@@ -231,7 +224,6 @@ public class ScanFragment extends Fragment {
 
                 if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF) {
                     // The user bluetooth is already disabled.
-                    return;
                 }
 
             }

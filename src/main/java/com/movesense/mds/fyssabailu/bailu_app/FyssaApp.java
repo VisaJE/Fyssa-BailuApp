@@ -26,14 +26,14 @@ public class FyssaApp extends Application {
     private static final String deviceVersions[] = {"1.1.1.BA", "1.1.1.BS"};
     private MemoryTools memoryTools;
 
-    public static final Boolean isSupported(String deviceVersion) {
+    public static Boolean isSupported(String deviceVersion) {
         for (String i : deviceVersions) {
             if (i.equals(deviceVersion)) return true;
         }
         return false;
     }
 
-    public static final Boolean hasBootloader(String deviceVersion) {
+    public static Boolean hasBootloader(String deviceVersion) {
         return deviceVersion.charAt(2) == '1' &&
                 (deviceVersion.contains("BA") || deviceVersion.contains("BS") ||
                         deviceVersion.contains("HW") || deviceVersion.contains("IMU"));
@@ -53,12 +53,6 @@ public class FyssaApp extends Application {
         MdsRx.Instance.initialize(this);
 
         memoryTools = new MemoryTools(this);
-
-    }
-
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
 
     }
 

@@ -19,7 +19,6 @@ public class ConnectedDevice {
     private static final byte ESCAPE_MARK = 0x7d;
 
     private final RxBleDevice bleDevice;
-    private final Subscription notifySubscription;
     private final BluetoothGattCharacteristic writeCharasteristic;
     private List<Byte> receivedData;
 
@@ -27,7 +26,7 @@ public class ConnectedDevice {
                            Subscription notifySubscription,
                            BluetoothGattCharacteristic writeCharasteristic) {
         this.bleDevice = bleDevice;
-        this.notifySubscription = notifySubscription;
+        Subscription notifySubscription1 = notifySubscription;
         this.writeCharasteristic = writeCharasteristic;
         this.receivedData = new ArrayList<>();
     }
@@ -74,9 +73,7 @@ public class ConnectedDevice {
         // Decode and validate
         List<Byte> decoded = Util.sfDecode(packet);
 
-        for(int i = 0; i < endPos + 1; i++) {
-            receivedData.remove(0);
-        }
+        receivedData.subList(0, endPos + 1).clear();
 
         // Decode and validate
         if (decoded.size() < 2) {

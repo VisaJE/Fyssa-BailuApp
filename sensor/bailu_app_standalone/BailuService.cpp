@@ -139,6 +139,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         prepareRun = false;
         isRunning = false;
         timerCounter = 0;
+        advNormal();
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
         res.seenDevices = mostDevices;
