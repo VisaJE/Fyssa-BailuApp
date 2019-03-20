@@ -5,8 +5,11 @@ import com.google.gson.annotations.SerializedName;
 
 public class FyssaBailuGson {
 
+    @SerializedName("fyssaBailuConfig")
+    private final FyssaBailuConfig fyssaBailuConfig;
+
     public FyssaBailuGson(FyssaBailuConfig fbc) {
-        FyssaBailuConfig fyssaBailuConfig = fbc;
+        fyssaBailuConfig = fbc;
     }
 
     public static class FyssaBailuConfig {
