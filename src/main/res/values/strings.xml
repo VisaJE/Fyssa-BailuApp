@@ -8,8 +8,8 @@
         <item>movesense_dfu_s_bootloader</item>
     </string-array>
     <string-array name="dfu_file_titles">
-        <item>Bailu2000A with seasonal configuration</item>
-        <item>Bailu2000B with autoactivation</item>
+        <item>Bailu2000A</item>
+        <item>Bailu2000B autoactivation (If you lack android.)</item>
     </string-array>
 
     <string name="disclaimer">"Your name and sensor number will be sent to the server"</string>
