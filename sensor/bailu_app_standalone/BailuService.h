@@ -10,6 +10,24 @@
 #include <string>
 #include <vector>
 
+
+#define ASSERT WB_DEBUG_ASSERT
+
+
+
+// Also the led blinking period
+#define TEMP_CHECK_TIME 15000
+// Shut down after this
+#define SHUTDOWN_TIME 30000
+
+#define DEFAULT_RUNNING_TIME 15 // In minutes
+#define MIN_ACC 1.0
+
+#define PARTY_THRESHOLD 10
+#define STAY_ON_SCORE 100
+
+#define REFRESH_STATE_ID 2
+#define REFRESH_PATH "/System/States/2"
 #define ACC_SAMPLERATE 13
 
 typedef struct {
@@ -80,7 +98,7 @@ private:
     */
     virtual void onGetResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData);
     virtual void onPutResult(whiteboard::RequestId requestId, whiteboard::ResourceId resourceId, whiteboard::Result resultCode, const whiteboard::Value& rResultData);
-    
+
 
 /**
     * Local client 'disconnect' notification handler.
@@ -141,7 +159,7 @@ private:
 
     void advPartyScore();
     void advNormal();
-    
+
     whiteboard::RequestId mRemoteRequestId;
 
     bool prepareRun;

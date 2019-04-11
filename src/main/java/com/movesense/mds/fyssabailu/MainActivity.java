@@ -41,8 +41,6 @@ public class MainActivity extends AppCompatActivity  {
         Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.app_name);
         setContentView(R.layout.activity_main_menu);
 
-        CompositeSubscription subscriptions = new CompositeSubscription();
-
         findViewById(R.id.start_button2).setOnClickListener(v -> {
             if (app.getMemoryTools().getName().equals(MemoryTools.DEFAULT_STRING)) {
                 startActivity(new Intent(MainActivity.this, FyssaInfoActivity.class)
@@ -116,7 +114,7 @@ public class MainActivity extends AppCompatActivity  {
             case R.id.reset_serial:
                 app.getMemoryTools().saveSerial(MemoryTools.DEFAULT_STRING);
                 removeAndDisconnectFromDevices();
-
+                toast("Known macs forgotten and disconnected.");
                 return true;
             case R.id.update_sensor:
                 startActivity(new Intent(MainActivity.this, FyssaSensorUpdateActivity.class)

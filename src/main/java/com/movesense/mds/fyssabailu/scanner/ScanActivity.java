@@ -21,6 +21,8 @@ import com.polidea.rxandroidble.RxBleDevice;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.CompositeSubscription;
 
+import static com.movesense.mds.fyssabailu.bailu_app.FyssaMainActivity.removeAndDisconnectFromDevices;
+
 public abstract class ScanActivity  extends AppCompatActivity implements ScanFragment.DeviceSelectionListener {
     private final String TAG = ScanActivity.class.getSimpleName();
 
@@ -95,6 +97,7 @@ public abstract class ScanActivity  extends AppCompatActivity implements ScanFra
     public void onBackPressed() {
         subscriptions.clear();
         ConnectingDialog.INSTANCE.dismissDialog();
+        removeAndDisconnectFromDevices();
         startActivity(new Intent(ScanActivity.this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }

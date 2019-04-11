@@ -2,7 +2,7 @@ swagger: '2.0'
 
 # Document metadata
 info:
-  version: "1.1.1.BAR"
+  version: "1.1.2.BAR"
   title: Gyroscope tests
   description: |
     This file defines API for Fyysikkokilta handwaving measurement service.

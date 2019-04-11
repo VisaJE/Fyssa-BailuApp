@@ -21,7 +21,7 @@ import java.util.concurrent.Semaphore;
 class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final String LOG_TAG = FyssaDeviceView.class.getSimpleName();
-    private final Long CLEAR_DELAY = 15L;
+    private final Long CLEAR_DELAY = 15L; // Seconds
 
     private static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
@@ -41,12 +41,12 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private HashMap<String, Long> addTimeMap;
     private final Vector<String> partyTexts;
     private TimerTask timerTask;
-    Timer timer;
+    private Timer timer;
     private Boolean isGoing = false;
     private void schedule() {
         if (!isGoing) {
             try {
-                timer.schedule(timerTask, 3000, 3000);
+                timer.schedule(timerTask, 1000, 1000);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Unexpected stuff", e);
             }
@@ -254,11 +254,11 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     Integer getPeopleCount() {
-        int score = 0;
+        int size = 0;
         try
         {
             semaphore.acquireUninterruptibly();
-            score = devices.size();
+            size = devices.size();
             for (String mac : devices) Log.d(LOG_TAG, "Device: " + mac);
         }
         catch (Exception e) { Log.d(LOG_TAG, "Muted"); }
@@ -266,7 +266,26 @@ class FyssaDeviceView extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         {
             semaphore.release(1);
         }
-        return score;
+        return size;
+    }
+
+    public void pause() {
+        stopTimer();
+        try
+        {
+            semaphore.acquireUninterruptibly();
+            devices.clear();
+            infoMap.clear();
+        }
+        catch (Exception e) { Log.d(LOG_TAG, "Muted"); }
+        finally
+        {
+            semaphore.release(1);
+        }
+    }
+
+    public void resume() {
+        schedule();
     }
 
 

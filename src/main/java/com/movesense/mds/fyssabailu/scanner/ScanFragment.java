@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.movesense.mds.fyssabailu.R;
 import com.movesense.mds.fyssabailu.ThrowableToastingAction;
@@ -107,7 +108,11 @@ public class ScanFragment extends Fragment {
 
         // Set up list and adapter for scanned devices
         String mac = ((FyssaApp) getActivity().getApplication()).getMemoryTools().getSerial();
-        if (mac.equals(MemoryTools.DEFAULT_STRING)) mac = "";
+        if (mac.equals(MemoryTools.DEFAULT_STRING)) {
+            mac = "";
+        } else {
+            toast( "Only showing your device.");
+        }
         scannedDevicesAdapter = new ScannedDevicesAdapter(true, mac);
         RecyclerView deviceList = view.findViewById(R.id.device_list);
         deviceList.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -124,6 +129,7 @@ public class ScanFragment extends Fragment {
 
         return view;
     }
+
 
     @Override
     public void onDestroyView() {
@@ -230,4 +236,8 @@ public class ScanFragment extends Fragment {
         }
     };
 
+
+    private void toast(String text) {
+        Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
+    }
 }
