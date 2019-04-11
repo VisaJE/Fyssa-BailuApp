@@ -10,19 +10,20 @@
 #include <string>
 #include <vector>
 
+
 #define ASSERT WB_DEBUG_ASSERT
 
 
 
 // Also the led blinking period
-#define TEMP_CHECK_TIME 10000
+#define TEMP_CHECK_TIME 15000
 // Shut down after this
 #define SHUTDOWN_TIME 30000
 
 #define DEFAULT_RUNNING_TIME 15 // In minutes
-#define MIN_ACC_SQUARED 2
+#define MIN_ACC 1.0
 
-#define PARTY_THRESHOLD 15
+#define PARTY_THRESHOLD 10
 #define STAY_ON_SCORE 100
 
 #define REFRESH_STATE_ID 2

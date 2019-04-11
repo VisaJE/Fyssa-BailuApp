@@ -28,7 +28,7 @@ const char* const BailuService::LAUNCHABLE_NAME = "BailuService";
 uint8_t s_customAvertiseData[] = {0x2,0x1,0x6,  // Block: Flags for BLE device
     0x8, 0xFF, 0xFE,0xFE,  0x0,0x0, 0x0, 0x0, 0x00            // Block: Data here is uint16_t for CompanyID, and five uint16_t for our data payload.
     };                  //Last byte determines the sensor to be advertising for this service when set 0xEA
-const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5; // Points to second last byte
+const size_t s_dataPayloadIndex = sizeof(s_customAvertiseData) -5;
 
 static const whiteboard::ExecutionContextId sExecutionContextId =
     WB_RES::LOCAL::FYSSA_BAILU::EXECUTION_CONTEXT;
@@ -126,7 +126,7 @@ void BailuService::onGetRequest(const whiteboard::Request& request,
         WB_RES::FyssaBailuResponse res;
         res.threshold = tempThreshold;
         res.seenDevices = mostDevices;
-        res.time = (runningTime * 60000 - timerCounter) * 60000;
+        res.time = (runningTime* 60000 - timerCounter)/60000;
         res.curTemp = currentTemp;
         returnResult(request, whiteboard::HTTP_CODE_OK,
              ResponseOptions::Empty, res);
@@ -251,13 +251,13 @@ void BailuService::onAccData(whiteboard::ResourceId resourceId, const whiteboard
     {
         whiteboard::FloatVector3D accValue = arrayData[i];
         double acc = sqrt(accValue.mX*accValue.mX + accValue.mY*accValue.mY + accValue.mZ*accValue.mZ) - 9.81;
-        if (acc*acc < MIN_ACC_SQUARED) acc = 0;
+        if (acc < MIN_ACC) acc = 0;
         secondAccAvr = secondAccAvr*(ACC_SAMPLERATE-1)/ACC_SAMPLERATE + acc/ACC_SAMPLERATE;
         if (secondAccAvr > 10) secondAccAvr = 0;
         if (msCounter >= ACC_SAMPLERATE)
         {
             msCounter = 0;
-            minuteAccAvr = minuteAccAvr*59/60 + secondAccAvr/60;
+            minuteAccAvr = (minuteAccAvr*59 + secondAccAvr)/60;
             if (minuteAccAvr > 7.0) minuteAccAvr = 0;
             hourAccAvr = (hourAccAvr*179 + minuteAccAvr)/180; // Looks nice on matlab, not a true average.
         }
@@ -293,13 +293,13 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
                     Device d;
                     d.address = res.address;
                     d.timeAdded = timerCounter;
-                    foundDevices.insert(foundDevices.end(), d);
+                    foundDevices.push_back(d);
                 }
                 else foundDevices[i] = {res.address, timerCounter};
             }
         }
-        if (foundDevices.size() > mostDevices) mostDevices = foundDevices.size();
         removeOldScans();
+        if (foundDevices.size() > mostDevices) mostDevices = foundDevices.size();
 
         break;
     }
@@ -376,8 +376,8 @@ void BailuService::startScanning()
     WB_RES::ScanParams pars;
     pars.active = false;
     pars.timeout = 0;
-    pars.window = 0x0055;
-    pars.interval = 0x1000;
+    pars.window = 0x0005;
+    pars.interval = 0x0200;
     if (asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(), AsyncRequestOptions::Empty, pars) == whiteboard::HTTP_CODE_OK)
     {
       isScanning = true;
@@ -421,7 +421,7 @@ double min(double a, double b)
 
 float BailuService::calculateScoreFloat()
 {
-    double tempMult = (currentTemp-(double)tempThreshold)/(5.0+currentTemp-(double)tempThreshold);
+    double tempMult = (currentTemp-(float)tempThreshold)/(5.0+currentTemp-(float)tempThreshold);
     double minuteCeil = min(minuteAccAvr, 2.0);
     double hourCeil = min(hourAccAvr, 5.0);
     double minuteMult = (minuteCeil+3.0)*minuteCeil;
@@ -459,7 +459,7 @@ void BailuService::advPartyScore()
     s_customAvertiseData[s_dataPayloadIndex+4] = (uint8_t) 0xEA;
     // Update advertising packet
     WB_RES::AdvSettings advSettings;
-    advSettings.interval = 6400; // 2000ms in 0.625ms BLE ticks
+    advSettings.interval = 1600; // 0.625ms BLE ticks
     advSettings.timeout = 0; // Advertise forever
     advSettings.advPacket = whiteboard::MakeArray<uint8>(s_customAvertiseData, sizeof(s_customAvertiseData));
     // NOTE: To modify scan response packet, just set similarily advSettings.scanRespPacket. Data format is the same
@@ -485,6 +485,7 @@ void BailuService::advNormal()
     // Here the scanRespPacket is left default so that the device is found with the usual name.
     asyncPut(WB_RES::LOCAL::COMM_BLE_ADV_SETTINGS(), AsyncRequestOptions::Empty, advSettings);
 }
+
 
 void BailuService::onTimer(whiteboard::TimerId timerId)
 {

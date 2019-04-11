@@ -159,7 +159,7 @@ private:
 
     void advPartyScore();
     void advNormal();
-    
+
     whiteboard::RequestId mRemoteRequestId;
 
     bool prepareRun;
@@ -171,8 +171,8 @@ private:
     uint32_t tempThreshold;
 
     double secondAccAvr;
-    double hourAccAvr;
     double minuteAccAvr;
+    double hourAccAvr;
     uint16_t msCounter;
 
     whiteboard::TimerId mTimer;

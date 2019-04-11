@@ -13,7 +13,6 @@
 #include <vector>
 
 
-
 int find(std::vector<Device> v, const char* s)
 {
     for (int i = 0; i < v.size(); i++)
@@ -349,13 +348,13 @@ void BailuService::onNotify(whiteboard::ResourceId resourceId, const whiteboard:
                     Device d;
                     d.address = res.address;
                     d.timeAdded = timerCounter;
-                    foundDevices.insert(foundDevices.end(), d);
+                    foundDevices.push_back(d);
                 }
                 else foundDevices[i] = {res.address, timerCounter};
             }
         }
-        if (foundDevices.size() > mostDevices) mostDevices = foundDevices.size();
         removeOldScans();
+        if (foundDevices.size() > mostDevices) mostDevices = foundDevices.size();
 
         break;
     }
@@ -467,6 +466,7 @@ void BailuService::checkPartyStatus()
     asyncGet(WB_RES::LOCAL::MEAS_TEMP(), NULL);
 }
 
+
 double min(double a, double b)
 {
     return (a < b) ? a : b;
@@ -492,7 +492,6 @@ uint32_t BailuService::calculateScore()
 }
 
 
-
 void BailuService::advPartyScore()
 {
     uint32_t score = calculateScore();
@@ -501,6 +500,8 @@ void BailuService::advPartyScore()
       score = 0;
     }
     if (score == 0) timePartying = 0;
+
+
     // Update data to advertise packet
     s_customAvertiseData[s_dataPayloadIndex] = (uint8_t)((score & 0xFF00) >> 8);
     s_customAvertiseData[s_dataPayloadIndex+1] = (uint8_t)(score & 0xFF);

@@ -332,13 +332,14 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     @Override
     public void onGetSuccess(String response) {
         Log.d(LOG_TAG, "onGetSucces");
-        if (response.length() > 17 && response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':')
+        if (response.length() > 17 && response.charAt(2) == ':' && response.charAt(5) == ':' && response.charAt(8) == ':') // Is this really the way
             deviceView.putDevice(response.substring(0, 17), response.substring(17));
         else {
             try {
                 FyssaPartyResponse.Party[] parties = new Gson().fromJson(response, FyssaPartyResponse.class).getParties();
                 deviceView.addParties(parties);
             } catch (Exception e) {
+                toast("No parties found.");
                 Log.e(LOG_TAG, "Unexpected response", e);
             }
 

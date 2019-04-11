@@ -54,7 +54,7 @@ android {
         applicationId "com.movesense.mds.fyssabailu"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1
+        versionCode 3
         versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
