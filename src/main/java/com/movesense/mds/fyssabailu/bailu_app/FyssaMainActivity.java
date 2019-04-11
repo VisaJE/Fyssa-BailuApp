@@ -283,6 +283,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
 
                         }, mHour, mMinute, true);
                 timePickerDialog.show();
+                toast("Set how long to measure.");
 
                 break;
             case R.id.stop:
@@ -304,7 +305,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
     }
 
     private void startService(int minutes) {
-
+        disableButtons();
         FyssaBailuGson fbc = new FyssaBailuGson(new FyssaBailuGson.FyssaBailuConfig(minutes, temp_threshold));
         Log.d(TAG, "startService()->" + new Gson().toJson(fbc) + ", for " + minutes + "minutes");
         Mds.builder().build(this).put(MdsRx.SCHEME_PREFIX +
@@ -334,6 +335,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
                         Log.d(TAG, "Stopped party metering at: " + MdsRx.SCHEME_PREFIX +
                                 MovesenseConnectedDevices.getConnectedDevice(0).getSerial() + BAILU_PATH);
                         Log.d(TAG, "deleteService: Got response" + s);
+                        toast("Stopped measuring.");
                         stopButton.setEnabled(true);
                     }
 

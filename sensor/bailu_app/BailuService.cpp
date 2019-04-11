@@ -12,19 +12,7 @@
 #include <math.h>
 #include <vector>
 
-#define ASSERT WB_DEBUG_ASSERT
 
-
-
-// Also the led blinking period
-#define TEMP_CHECK_TIME 10000
-// Shut down after this
-#define SHUTDOWN_TIME 220000
-
-#define RECOVERY_TIME 2
-#define MIN_ACC 1.0
-
-#define PARTY_THRESHOLD 15
 
 int find(std::vector<Device> v, const char* s)
 {
@@ -444,12 +432,10 @@ void BailuService::startScanning()
     WB_RES::ScanParams pars;
     pars.active = false;
     pars.timeout = 0;
-    pars.window = 0x0055;
-    pars.interval = 0x1000;
+    pars.window = 0x0005;
+    pars.interval = 0x0200;
     if (asyncSubscribe(WB_RES::LOCAL::COMM_BLE_SCAN(), AsyncRequestOptions::Empty, pars) == whiteboard::HTTP_CODE_OK)
-    {
-      isScanning = true;
-      DEBUGLOG("Scanning");
+    { isScanning = true; DEBUGLOG("Scanning");
     }
     else
     {
@@ -525,7 +511,7 @@ void BailuService::advPartyScore()
     s_customAvertiseData[s_dataPayloadIndex+4] = (uint8_t) 0xEA;
     // Update advertising packet
     WB_RES::AdvSettings advSettings;
-    advSettings.interval = 6400; // 2000ms in 0.625ms BLE ticks
+    advSettings.interval = 1600; // 0.625ms BLE ticks
     advSettings.timeout = 0; // Advertise forever
     advSettings.advPacket = whiteboard::MakeArray<uint8>(s_customAvertiseData, sizeof(s_customAvertiseData));
     // NOTE: To modify scan response packet, just set similarily advSettings.scanRespPacket. Data format is the same
@@ -544,13 +530,14 @@ void BailuService::advNormal()
 
     // Update advertising packet
     WB_RES::AdvSettings advSettings;
-    advSettings.interval = 6400; // 2000ms in 0.625ms BLE ticks
+    advSettings.interval = 1600; // 0.625ms BLE ticks
     advSettings.timeout = 0; // Advertise forever
     advSettings.advPacket = whiteboard::MakeArray<uint8>(s_customAvertiseData, sizeof(s_customAvertiseData));
     // NOTE: To modify scan response packet, just set similarily advSettings.scanRespPacket. Data format is the same
     // Here the scanRespPacket is left default so that the device is found with the usual name.
     asyncPut(WB_RES::LOCAL::COMM_BLE_ADV_SETTINGS(), AsyncRequestOptions::Empty, advSettings);
 }
+
 
 void BailuService::onTimer(whiteboard::TimerId timerId)
 {

@@ -10,6 +10,21 @@
 #include <string>
 #include <vector>
 
+
+#define ASSERT WB_DEBUG_ASSERT
+
+
+
+// Also the led blinking period
+#define TEMP_CHECK_TIME 15000
+// Shut down after this
+#define SHUTDOWN_TIME 220000
+
+#define RECOVERY_TIME 2
+#define MIN_ACC 1.0
+
+#define PARTY_THRESHOLD 10
+
 #define ACC_SAMPLERATE 13
 
 typedef struct {

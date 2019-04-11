@@ -13,23 +13,6 @@
 #include <math.h>
 #include <vector>
 
-#define ASSERT WB_DEBUG_ASSERT
-
-
-
-// Also the led blinking period
-#define TEMP_CHECK_TIME 10000
-// Shut down after this
-#define SHUTDOWN_TIME 30000
-
-#define DEFAULT_RUNNING_TIME 60 // In minutes
-#define MIN_ACC_SQUARED 2
-
-#define PARTY_THRESHOLD 15
-#define STAY_ON_SCORE 100
-
-#define REFRESH_STATE_ID 2
-#define REFRESH_PATH "/System/States/2"
 
 int find(std::vector<Device> v, const char* s)
 {

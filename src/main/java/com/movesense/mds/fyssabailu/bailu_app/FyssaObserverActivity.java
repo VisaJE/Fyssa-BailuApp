@@ -369,8 +369,19 @@ public class FyssaObserverActivity extends AppCompatActivity implements DataUser
     }
 
     @Override
+    protected void onPause() {
+        deviceView.pause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        deviceView.resume();
+        super.onResume();
+    }
+    @Override
     protected void onDestroy() {
-        deviceView.timer.cancel();
+        deviceView.pause();
         super.onDestroy();
     }
 

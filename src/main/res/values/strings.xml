@@ -42,9 +42,9 @@
     <string name="update">Update</string>
     <string name="_0percent">0%</string>
     <string name="reconnecting_to">"Reconnecting to the device…"</string>
-    <string name="main_button">Start</string>
+    <string name="main_button">Activate</string>
     <string name="stop_button">Stop</string>
-    <string name="battery_level">Battery level</string>
+    <string name="battery_level">Get battery level</string>
     <string name="reset_name_button">Reset username</string>
     <string name="reset_serial">Forget your device</string>
     <string name="title_help">Help</string>
