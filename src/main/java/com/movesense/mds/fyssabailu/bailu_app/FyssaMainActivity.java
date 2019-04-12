@@ -254,7 +254,7 @@ public class FyssaMainActivity extends AppCompatActivity implements DataUser {
         Log.d(TAG, "onResume()");
         try {
             String serial = MovesenseConnectedDevices.getConnectedDevice(0).getSerial();
-            if (updateAlert == null) toast("Serial: " + serial);
+            //if (updateAlert == null) toast("Serial: " + serial);
 
         } catch (Exception e) {
             startMainActivity();
